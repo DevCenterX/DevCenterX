@@ -1024,6 +1024,72 @@ body::before {
     transform: scale(1.05);
 }
 
+/* Chat Dropdown Menu */
+.chat-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow: hidden;
+    display: none;
+}
+
+.chat-dropdown-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.chat-dropdown-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chat-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.chat-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.chat-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.chat-item.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.chat-item.active .chat-item-title {
+    color: white;
+}
+
+.chat-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.chat-item-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
 /* Chat Header Bar - Theme Adaptive */
 .chat-header-bar {
     display: flex;

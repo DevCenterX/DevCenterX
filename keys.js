@@ -5,7 +5,7 @@
 
 // Google Gemini AI
 window.GEMINI_API_KEY = 'AIzaSyBSSc8rYJV4al0D1EBzgVyWmqhc3WiyFhY';
-window.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent';
+window.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // Supabase
 window.SUPABASE_URL = 'https://sgqnjgfkycfzsrtwzdfq.supabase.co';

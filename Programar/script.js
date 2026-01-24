@@ -64,7 +64,6 @@ class ThemeManager {
     }
 }
 
-// Initialize theme manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.themeManager = new ThemeManager();
     initializeChatSystem();
@@ -72,6 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debug: Log current theme
     console.log('Tema inicial aplicado:', window.themeManager.getCurrentTheme());
     console.log('Preferencia del sistema:', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+    setTimeout(() => {
+        initSaveAndSettings();
+        setupEditorChangeTracking();
+        initSyntaxHighlighting();
+    }, 200);
+    
+    init();
 });
 
 // Función para detectar tipo de dispositivo del usuario
@@ -878,6 +885,28 @@ window.saveProjectDetails = async function() {
     closeEditProjectModal();
 };
 
+function updatePreview() {
+    const htmlCode = elements.htmlEditor.value;
+    const cssCode = elements.cssEditor.value;
+    const jsCode = elements.jsEditor.value;
+    const source = `
+        <html>
+            <head>
+                <style>${cssCode}</style>
+            </head>
+            <body>
+                ${htmlCode}
+                <script>${jsCode}<\/script>
+            </body>
+        </html>
+    `;
+    elements.previewFrame.srcdoc = source;
+}
+
+function highlightCode(lang) {
+    // Placeholder
+}
+
 // Initialize
 function init() {
     loadDefaultCode(); // Primero inicializa vacío
@@ -890,39 +919,53 @@ function init() {
 // Chat state
 let chatStarted = false;
 
-// Start chat - hide initial header and show chat view
-function startChat() {
-    const chatHeaderBar = document.getElementById('chatHeaderBar');
-    const welcomeMessage = document.getElementById('welcomeMessage');
+async function handleBuild(message) {
+    if (!message || isGenerating) return;
 
-    if (!chatStarted) {
-        chatStarted = true;
-        if (chatHeaderBar) chatHeaderBar.style.display = 'flex';
-        if (welcomeMessage) welcomeMessage.style.display = 'none';
-    }
+    await generateCodeWithAI(message);
 }
 
-// Reset to new chat
-function resetToNewChat() {
-    createNewChat();
-    loadChat(currentChatId);
+function generateChatTitle(firstMessage) {
+    // Generate a title based on the first message
+    const words = firstMessage.split(' ').slice(0, 4).join(' ');
+    return words.length > 20 ? words.substring(0, 20) + '...' : words;
 }
 
-function initializeChatSystem() {
-    // Load chat history from localStorage
-    const savedChats = localStorage.getItem('devcenter_chats');
-    if (savedChats) {
-        chatHistory = JSON.parse(savedChats);
-    }
+function saveChatHistory() {
+    localStorage.setItem('devcenter_chats', JSON.stringify(chatHistory));
+}
 
-    // Create initial chat if none exists
-    if (chatHistory.length === 0) {
-        createNewChat();
-    } else {
-        loadChat(chatHistory[0].id);
-    }
+function updateChatDropdown() {
+    const chatList = document.getElementById('chatList');
+    if (!chatList) return;
 
-    updateChatDropdown();
+    // Clear existing items
+    chatList.innerHTML = '';
+
+    // Add chat items
+    chatHistory.forEach(chat => {
+        const chatItem = document.createElement('div');
+        chatItem.className = 'chat-item';
+        if (chat.id === currentChatId) {
+            chatItem.classList.add('active');
+        }
+        chatItem.innerHTML = `
+            <div class="chat-item-title">${chat.title}</div>
+            <div class="chat-item-date">${new Date(chat.createdAt).toLocaleDateString('es-ES')}</div>
+        `;
+        chatItem.addEventListener('click', () => {
+            loadChat(chat.id);
+            toggleChatDropdown(); // Close dropdown
+        });
+        chatList.appendChild(chatItem);
+    });
+
+    // Update current title
+    const currentChat = chatHistory.find(c => c.id === currentChatId);
+    if (currentChat) {
+        const currentChatTitle = document.getElementById('currentChatTitle');
+        if (currentChatTitle) currentChatTitle.textContent = currentChat.title;
+    }
 }
 
 function createNewChat() {
@@ -1002,31 +1045,46 @@ function loadChat(chatId) {
     }
 }
 
-function updateChatDropdown() {
-    // This would populate a dropdown menu with chat history
-    // For now, just update the current title
-    const currentChat = chatHistory.find(c => c.id === currentChatId);
-    if (currentChat) {
-        const currentChatTitle = document.getElementById('currentChatTitle');
-        if (currentChatTitle) currentChatTitle.textContent = currentChat.title;
+function toggleChatDropdown() {
+    const chatList = document.getElementById('chatList');
+    if (chatList) {
+        chatList.style.display = chatList.style.display === 'block' ? 'none' : 'block';
     }
 }
 
-function saveChatHistory() {
-    localStorage.setItem('devcenter_chats', JSON.stringify(chatHistory));
+function initializeChatSystem() {
+    // Load chat history from localStorage
+    const savedChats = localStorage.getItem('devcenter_chats');
+    if (savedChats) {
+        chatHistory = JSON.parse(savedChats);
+    }
+
+    // Create initial chat if none exists
+    if (chatHistory.length === 0) {
+        createNewChat();
+    } else {
+        loadChat(chatHistory[0].id);
+    }
+
+    updateChatDropdown();
 }
 
-function generateChatTitle(firstMessage) {
-    // Generate a title based on the first message
-    const words = firstMessage.split(' ').slice(0, 4).join(' ');
-    return words.length > 20 ? words.substring(0, 20) + '...' : words;
+// Start chat - hide initial header and show chat view
+function startChat() {
+    const chatHeaderBar = document.getElementById('chatHeaderBar');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+
+    if (!chatStarted) {
+        chatStarted = true;
+        if (chatHeaderBar) chatHeaderBar.style.display = 'flex';
+        if (welcomeMessage) welcomeMessage.style.display = 'none';
+    }
 }
 
-function toggleChatDropdown() {
-    // For now, just show an alert with available chats
-    // In a full implementation, this would show a dropdown menu
-    const chatList = chatHistory.map(chat => `${chat.title} (${new Date(chat.created).toLocaleDateString()})`).join('\n');
-    alert(`Chats disponibles:\n${chatList}\n\nFuncionalidad completa próximamente.`);
+// Reset to new chat
+function resetToNewChat() {
+    createNewChat();
+    loadChat(currentChatId);
 }
 
 // Send message function
@@ -1047,7 +1105,7 @@ function sendMessage() {
     }
     
     startChat();
-    handleBuild();
+    handleBuild(message);
 }
 
 // Event Listeners
@@ -1231,6 +1289,8 @@ function setupEventListeners() {
             closeProjectInfo();
         }
     });
+
+
 
     // Cursor position tracking
     [elements.htmlEditor, elements.jsEditor, elements.cssEditor].forEach(editor => {
@@ -1453,8 +1513,7 @@ function updateCursorPosition(editor) {
 }
 
 // Handle Build (AI Generation)
-async function handleBuild() {
-    const message = elements.chatInput.value.trim();
+async function handleBuild(message) {
     if (!message || isGenerating) return;
 
     await generateCodeWithAI(message);
@@ -1578,11 +1637,11 @@ async function generateCodeWithAI(prompt) {
         let generatedCss = '';
         let generatedJs = '';
         
-        // PASO 1: Generar HTML con instrucciones para CSS y JS
+        // PASO 1: Generar HTML completo con CSS y JS inline
         updateProgress('progressHtml', 'Generando...', null, true, false);
-        const startHtml = Date.now();
+        const startGeneration = Date.now();
         
-        const htmlPrompt = `🚀 ERES UN EXPERTO EN HTML5 Y DISEÑO WEB
+        const generationPrompt = `🚀 ERES UN EXPERTO EN DESARROLLO WEB FULL-STACK
 
 SOLICITUD DEL USUARIO: "${prompt}"
 
@@ -1591,211 +1650,93 @@ INFORMACIÓN DEL DISPOSITIVO:
 - Pantalla: ${device.screenWidth}x${device.screenHeight}px
 - ${device.optimizationAdvice}
 
+INFORMACIÓN CONTEXTUAL:
+- Fecha: ${context.day} de ${context.month} de ${context.year}
+- Día: ${context.weekDay}
+- Estación: ${context.season}
+- Tema del usuario: ${context.theme}
+
 TU TAREA:
-1. Genera el código HTML completo y semántico
-2. Deja instrucciones detalladas en comentarios para el CSS sobre qué estilos necesita cada sección
-3. Deja instrucciones detalladas en comentarios para el JavaScript sobre qué funcionalidades interactivas necesita
+Genera un archivo HTML completo y funcional que incluya:
+1. Estructura HTML5 semántica y responsive
+2. CSS moderno con diseño atractivo (incluye CSS inline o en <style>)
+3. JavaScript funcional (incluye JS inline o en <script>)
+4. Optimizado para ${device.type}
+5. Diseño moderno y profesional
 
-Responde SOLO con JSON:
-{
-  "html": "código HTML completo con comentarios de instrucciones",
-  "cssInstructions": "instrucciones detalladas para el CSS",
-  "jsInstructions": "instrucciones detalladas para el JavaScript"
-}`;
+Responde SOLO con el código HTML completo, sin explicaciones adicionales.`;
 
-        const htmlResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: htmlPrompt }] }],
+                contents: [{ parts: [{ text: generationPrompt }] }],
                 generationConfig: {
                     temperature: 1,
                     topK: 40,
                     topP: 0.95,
                     maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            html: { type: "string" },
-                            cssInstructions: { type: "string" },
-                            jsInstructions: { type: "string" }
-                        },
-                        required: ["html", "cssInstructions", "jsInstructions"]
-                    }
+                    responseMimeType: "text/plain"
                 }
             })
         });
 
-        if (!htmlResponse.ok) throw new Error('Error al generar HTML');
-        const htmlData = await htmlResponse.json();
-        const htmlResult = JSON.parse(htmlData.candidates[0].content.parts[0].text);
+        if (!response.ok) throw new Error('Error al generar el código');
+        const data = await response.json();
+        const generatedCode = data.candidates[0].content.parts[0].text.trim();
         
-        generatedHtml = htmlResult.html;
-        cssInstructions = htmlResult.cssInstructions;
-        htmlInstructions = htmlResult.jsInstructions;
+        // Limpiar el código generado (remover markdown si existe)
+        let cleanCode = generatedCode;
+        if (cleanCode.startsWith('```html')) {
+            cleanCode = cleanCode.replace(/^```html\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanCode.startsWith('```')) {
+            cleanCode = cleanCode.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
         
-        const htmlTime = Date.now() - startHtml;
-        updateProgress('progressHtml', 'Completado', formatTime(htmlTime), false, true);
+        const generationTime = Date.now() - startGeneration;
+        updateProgress('progressHtml', 'Completado', formatTime(generationTime), false, true);
         
-        // Actualizar editor HTML inmediatamente
-        elements.htmlEditor.value = generatedHtml;
+        // Actualizar editor HTML con el código generado
+        elements.htmlEditor.value = cleanCode;
         showNewIndicator('html');
         updatePreview();
         
-        // PASO 2: Generar CSS basándose en las instrucciones del HTML
-        updateProgress('progressCss', 'Generando...', null, true, false);
-        const startCss = Date.now();
+        // Limpiar editores CSS y JS
+        elements.cssEditor.value = '';
+        elements.jsEditor.value = '';
         
-        const cssPrompt = `🚀 ERES UN EXPERTO EN CSS Y DISEÑO VISUAL
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-INSTRUCCIONES DEL HTML:
-${cssInstructions}
-
-HTML GENERADO (para referencia):
-${generatedHtml.substring(0, 500)}...
-
-TU TAREA:
-1. Genera el código CSS completo siguiendo las instrucciones del HTML
-2. Incluye reglas anti-overflow: * { box-sizing: border-box; }, overflow-x: hidden
-3. Diseño responsive y moderno
-4. Deja instrucciones adicionales para el JavaScript sobre animaciones y efectos visuales
-
-Responde SOLO con JSON:
-{
-  "css": "código CSS completo",
-  "jsInstructions": "instrucciones adicionales para el JavaScript sobre animaciones"
-}`;
-
-        const cssResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: cssPrompt }] }],
-                generationConfig: {
-                    temperature: 1,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            css: { type: "string" },
-                            jsInstructions: { type: "string" }
-                        },
-                        required: ["css", "jsInstructions"]
-                    }
-                }
-            })
-        });
-
-        if (!cssResponse.ok) throw new Error('Error al generar CSS');
-        const cssData = await cssResponse.json();
-        const cssResult = JSON.parse(cssData.candidates[0].content.parts[0].text);
-        
-        generatedCss = cssResult.css;
-        cssInstructions = cssResult.jsInstructions;
-        
-        const cssTime = Date.now() - startCss;
-        updateProgress('progressCss', 'Completado', formatTime(cssTime), false, true);
-        
-        // Actualizar editor CSS inmediatamente
-        elements.cssEditor.value = generatedCss;
-        showNewIndicator('css');
-        updatePreview();
-        
-        // PASO 3: Generar JavaScript basándose en todas las instrucciones
-        updateProgress('progressJs', 'Generando...', null, true, false);
-        const startJs = Date.now();
-        
-        const jsPrompt = `🚀 ERES UN EXPERTO EN JAVASCRIPT Y DESARROLLO WEB
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-INSTRUCCIONES DEL HTML:
-${htmlInstructions}
-
-INSTRUCCIONES DEL CSS:
-${cssInstructions}
-
-HTML GENERADO:
-${generatedHtml.substring(0, 500)}...
-
-TU TAREA:
-1. Genera el código JavaScript completo siguiendo todas las instrucciones
-2. Implementa toda la interactividad necesaria
-3. Código limpio y funcional
-
-Responde SOLO con JSON:
-{
-  "js": "código JavaScript completo"
-}`;
-
-        const jsResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: jsPrompt }] }],
-                generationConfig: {
-                    temperature: 1,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            js: { type: "string" }
-                        },
-                        required: ["js"]
-                    }
-                }
-            })
-        });
-
-        if (!jsResponse.ok) throw new Error('Error al generar JavaScript');
-        const jsData = await jsResponse.json();
-        const jsResult = JSON.parse(jsData.candidates[0].content.parts[0].text);
-        
-        generatedJs = jsResult.js;
-        
-        const jsTime = Date.now() - startJs;
-        updateProgress('progressJs', 'Completado', formatTime(jsTime), false, true);
-        
-        // Actualizar editor JavaScript inmediatamente
-        elements.jsEditor.value = generatedJs;
-        showNewIndicator('js');
-        updatePreview();
-
         // Switch to preview to see the final result
         switchTab('preview');
-
-        // Clear input
-        elements.chatInput.value = '';
 
         // Remove thinking indicator
         if (thinkingDiv && thinkingDiv.parentNode) {
             thinkingDiv.parentNode.removeChild(thinkingDiv);
         }
 
-        // Add detailed AI response
-        const aiResponse = `¡Perfecto! He generado tu aplicación web completa basada en: "${prompt}"
-
-**Lo que se creó:**
-• **HTML**: Estructura semántica y responsive optimizada para ${device.type}
-• **CSS**: Estilos modernos con diseño adaptativo para ${device.screenWidth}x${device.screenHeight}px
-• **JavaScript**: Funcionalidades interactivas y dinámicas
-
-La aplicación está lista en la pestaña "Vista Previa". Puedes probar todas las funcionalidades, hacer ajustes visuales en el editor, o pedirme modificaciones específicas. ¿Qué te gustaría cambiar o mejorar?`;
-
+        // Add AI response with the generated code
+        const aiResponse = '¡Perfecto! He generado tu aplicación web completa basada en: "' + prompt + '"\n\nEl código se ha aplicado automáticamente al editor HTML y puedes verlo en la pestaña Preview.';
+        
         addChatMessage(aiResponse, 'ai');
+        
+        // Save to current chat
+        if (currentChatId) {
+            const currentChat = chatHistory.find(c => c.id === currentChatId);
+            if (currentChat) {
+                if (!currentChat.messages) currentChat.messages = [];
+                currentChat.messages.push({
+                    content: aiResponse,
+                    type: 'ai',
+                    timestamp: new Date().toISOString()
+                });
+                saveChatHistory();
+            }
+        }
         
         // Reset progress list but keep chat visible
         if (progressList) progressList.style.display = 'none';
-
     } catch (error) {
         console.error('Error generando código:', error);
         
@@ -1818,134 +1759,6 @@ La aplicación está lista en la pestaña "Vista Previa". Puedes probar todas la
     } finally {
         isGenerating = false;
         if (elements.sendBtn) elements.sendBtn.disabled = false;
-    }
-}
-
-// Add console log to display
-function addConsoleLog(type, ...args) {
-    const logDiv = document.createElement('div');
-    logDiv.className = `console-${type}`;
-    logDiv.textContent = args.map(arg => {
-        if (typeof arg === 'object') {
-            try {
-                return JSON.stringify(arg, null, 2);
-            } catch (e) {
-                return String(arg);
-            }
-        }
-        return String(arg);
-    }).join(' ');
-    
-    elements.consoleContent.appendChild(logDiv);
-    elements.consoleContent.scrollTop = elements.consoleContent.scrollHeight;
-    
-    consoleLogs.push({ type, args, timestamp: Date.now() });
-}
-
-// Update preview
-function updatePreview() {
-    const html = elements.htmlEditor.value;
-    const css = elements.cssEditor.value;
-    const js = elements.jsEditor.value;
-
-    if (!html && !css && !js) {
-        elements.previewFrame.srcdoc = '';
-        return;
-    }
-
-    const isFullHTML = html.trim().toLowerCase().startsWith('<!doctype');
-
-    // Inject console interceptor
-    const consoleInterceptor = `
-        <script>
-            (function() {
-                const originalLog = console.log;
-                const originalError = console.error;
-                const originalWarn = console.warn;
-                
-                console.log = function(...args) {
-                    originalLog.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'log', args: args.map(a => String(a)) }, '*');
-                };
-                
-                console.error = function(...args) {
-                    originalError.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'error', args: args.map(a => String(a)) }, '*');
-                };
-                
-                console.warn = function(...args) {
-                    originalWarn.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'warn', args: args.map(a => String(a)) }, '*');
-                };
-            })();
-        <\/script>
-    `;
-
-    let content;
-    if (isFullHTML) {
-        content = html
-            .replace(/<\/head>/i, `${consoleInterceptor}<style>${css}</style></head>`)
-            .replace(/<\/body>/i, `<script>${js}<\/script></body>`);
-    } else {
-        content = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    ${consoleInterceptor}
-    <style>${css}</style>
-</head>
-<body>
-    ${html}
-    <script>${js}<\/script>
-</body>
-</html>
-        `;
-    }
-
-    elements.previewFrame.srcdoc = content;
-}
-
-// Listen for console messages from iframe
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'console-log') {
-        addConsoleLog(event.data.level, ...event.data.args);
-    }
-});
-
-// Syntax highlighting with Prism.js
-function highlightCode(fileType) {
-    let editor, highlightElement, language;
-    
-    if (fileType === 'html') {
-        editor = elements.htmlEditor;
-        highlightElement = document.querySelector('#htmlHighlight code');
-        language = 'markup';
-    } else if (fileType === 'js') {
-        editor = elements.jsEditor;
-        highlightElement = document.querySelector('#jsHighlight code');
-        language = 'javascript';
-    } else if (fileType === 'css') {
-        editor = elements.cssEditor;
-        highlightElement = document.querySelector('#cssHighlight code');
-        language = 'css';
-    }
-    
-    if (editor && highlightElement) {
-        const code = editor.value;
-        highlightElement.textContent = code;
-        if (window.Prism) {
-            Prism.highlightElement(highlightElement);
-        }
-    }
-}
-
-// Sync scroll between editor and highlight layer
-function syncScroll(editor, highlightLayer) {
-    if (editor && highlightLayer) {
-        highlightLayer.scrollTop = editor.scrollTop;
-        highlightLayer.scrollLeft = editor.scrollLeft;
     }
 }
 
