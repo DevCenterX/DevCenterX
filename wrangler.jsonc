@@ -1,0 +1,13 @@
+{
+  "name": "devcenterx",
+  "compatibility_date": "2026-01-20",
+  "compatibility_flags": [],
+  "main": "server.js", // Indica aquí tu archivo de servidor principal
+  "assets": {
+    "directory": "./", // Indica que tus archivos HTML/CSS están en la raíz
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

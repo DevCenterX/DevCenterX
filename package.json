@@ -1,0 +1,13 @@
+{
+  "name": "devcenterx",
+  "version": "1.0.0",
+  "description": "Proyecto DevCenterX",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
