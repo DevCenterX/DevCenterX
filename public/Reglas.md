@@ -2,10 +2,6 @@
 
 ## 1. Gestión de Archivos
 
-### 1.1 Prohibición de Nuevos Archivos
-- **ESTRICTAMENTE PROHIBIDO** crear, generar o agregar archivos nuevos al proyecto
-- Todas las modificaciones deben realizarse dentro de los archivos existentes
-- Esta regla NO tiene excepciones
 
 ### 1.2 Modificación de Archivos Existentes
 - Solo se permite editar archivos que ya existen en el proyecto
@@ -54,25 +50,6 @@
   - Elementos que rompan el layout
 - Usar unidades flexibles (%, rem, vh, vw) en lugar de píxeles fijos cuando sea apropiado
 
-## 4. Base de Datos y Datos
-
-### 4.1 Supabase como Backend
-- Supabase es el backend oficial del proyecto (PostgreSQL)
-- Todas las operaciones de datos deben usar Supabase
-- No usar localStorage para datos que deben persistir entre sesiones
-
-### 4.2 Estructura de Datos
-- Respetar la estructura de las tablas existentes:
-  - `accounts`: Información de cuentas de usuario
-  - `personas`: Perfiles de usuario con proyectos (JSONB)
-  - `proyectos_publicos`: Metadata de proyectos públicos
-- **USAR DATOS REALES**: Las estadísticas, contadores y métricas deben obtenerse de Supabase
-- **PROHIBIDO** generar datos simulados o aleatorios para mostrar en la interfaz
-
-### 4.3 Consultas a Base de Datos
-- Optimizar consultas para minimizar llamadas a Supabase
-- Usar consultas por lote cuando sea posible (ej: `.in()` en lugar de múltiples `.eq()`)
-- Implementar manejo de errores adecuado
 
 ## 5. Código y Prácticas de Desarrollo
 
