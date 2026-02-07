@@ -19,9 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Redirigir a index si no estamos en formularios de auth
       if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
         window.location.href = '/index.html';
+      }
     } else {
       // No hay usuario autenticado
-      localStorage.setItem('devcenter_session_active', 'false');
+      // Evitar escribir flags en localStorage; solo limpiar datos sensibles
       localStorage.removeItem('devcenter_user_id');
       localStorage.removeItem('devcenter_user');
       localStorage.removeItem('devcenter_email');
@@ -59,13 +60,19 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleLogout() {
   const auth = getAuth();
   signOut(auth).then(() => {
-    localStorage.removeItem('devcenter_user');
-    localStorage.removeItem('devcenter_user_id');
-    localStorage.removeItem('devcenter_email');
-    localStorage.removeItem('devcenter_demo_mode');
-    localStorage.removeItem('devcenter_login_time');
-    localStorage.removeItem('devcenter_avatar');
-    window.location.href = '/index.html';
+    // Clear all client storage to appear as a fresh visitor
+    try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
+    try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
+    // Attempt to clear cookies for current path
+    try {
+      document.cookie.split(';').forEach(function(c) {
+        const name = c.split('=')[0].trim();
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
+      });
+    } catch (e) { console.warn('cookie clear failed', e); }
+    // Redirect to the public login page
+    window.location.href = '/new.html';
   }).catch((error) => {
     console.error('Error al cerrar sesión:', error);
   });

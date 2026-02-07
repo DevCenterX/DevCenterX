@@ -9,21 +9,21 @@
   <title>DevCenterX - Login & Registro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="new.css?v=1.0">
   <script>
+    // Inicializar bandera de logout
+    if (typeof window.isLoggingOut === 'undefined') {
+      window.isLoggingOut = false;
+    }
+    
     // Early session check usando lock de sesión
     (function() {
       // Por defecto, la sesión está inactiva
       let sessionActive = localStorage.getItem('devcenter_session_active');
-      
-      // Si no está definida, establecerla en false
-      if (sessionActive === null) {
-        sessionActive = 'false';
-        localStorage.setItem('devcenter_session_active', 'false');
-        console.log('⚠️ devcenter_session_active no estaba definida, establecida en false');
-      }
-      
+
+      // No crear la clave por defecto; tratar null como inactivo
       console.log('🔍 Estado de sesión:', sessionActive);
-      
+
       // Si sesión está marcada como activa, redirigir a index.html
       if (sessionActive === 'true') {
         console.log('✅ Sesión activa detectada, redirigiendo a index.html');
@@ -985,9 +985,17 @@
     window.firebaseDoc = doc;
     window.firebaseOnAuthStateChanged = onAuthStateChanged;
     window.firebaseSignOut = signOut;
+    
+    // Bandera para evitar redirecciones durante logout
+    window.isLoggingOut = false;
 
     // Auth State Listener - detecta si el usuario ya está autenticado en Firebase
     onAuthStateChanged(auth, async (user) => {
+      // Si estamos en proceso de logout, no hacer nada
+      if (window.isLoggingOut) {
+        console.log('⏳ Logout en progreso, ignorando onAuthStateChanged');
+        return;
+      }
       if (user) {
         // Usuario autenticado en Firebase
         localStorage.setItem('devcenter_user_id', user.uid);
@@ -1027,12 +1035,12 @@
         }
       } else {
         // No hay usuario autenticado en Firebase
-        localStorage.setItem('devcenter_session_active', 'false');
+        // No escribir flags en localStorage — simplemente limpiar datos sensibles
         localStorage.removeItem('devcenter_user_id');
         localStorage.removeItem('devcenter_user');
         localStorage.removeItem('devcenter_email');
         localStorage.removeItem('devcenter_login_time');
-        console.log('❌ Sesión desactivada');
+        console.log('❌ Sesión desactivada (sin escribir flags)');
       }
     });
   </script>
@@ -1824,54 +1832,8 @@
       }
     }
 
-    // Función para limpiar almacenamiento del cliente
-    window.clearClientStorage = async function() {
-      try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
-      try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
-      try {
-        document.cookie.split(';').forEach(function(c) {
-          const name = c.split('=')[0].trim();
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
-        });
-      } catch (e) { console.warn('cookie clear failed', e); }
-      try {
-        if (window.caches && caches.keys) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map(k => caches.delete(k)));
-        }
-      } catch (e) { console.warn('caches delete failed', e); }
-      try {
-        if (window.indexedDB && indexedDB.databases) {
-          const dbs = await indexedDB.databases();
-          await Promise.all((dbs || []).map(d => d.name ? indexedDB.deleteDatabase(d.name) : Promise.resolve()));
-        }
-      } catch (e) { console.warn('indexedDB delete failed', e); }
-    };
-
-    // Función para cerrar sesión completamente
-    window.performSignOutAndRedirect = async function() {
-      if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
-      
-      try {
-        if (window.firebaseAuth && window.firebaseSignOut) {
-          await window.firebaseSignOut(window.firebaseAuth);
-          console.log('✅ Sesión de Firebase cerrada');
-        } else if (window.supabaseClient && window.supabaseClient.auth) {
-          await window.supabaseClient.auth.signOut();
-          console.log('✅ Sesión de Supabase cerrada');
-        }
-      } catch (err) { console.warn('Error during provider signOut', err); }
-      
-      // Limpiar almacenamiento cliente
-      await window.clearClientStorage();
-      
-      // Marcar sesión como inactiva DESPUÉS de limpiar
-      localStorage.setItem('devcenter_session_active', 'false');
-      console.log('❌ Sesión cerrada - devcenter_session_active establecido en false');
-      
-      window.location.href = '/new.html';
-    };
+    // NOTE: logout and storage-cleanup functions are intentionally omitted from new.html
+    // Logout/cleanup should live in index.html so the app UI handles sign-out.
 
     // Exponer initializeAuthHandlers al window global
     window.initializeAuthHandlers = initializeAuthHandlers;
@@ -1883,254 +1845,5 @@
       window.initializeAuthHandlers();
     }
   </script>
-
-  <style>
-    /* Estilos para mensajes de error mejorados */
-    /* Toasts generales */
-    .auth-toast {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: rgba(34,34,34,0.95);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      z-index: 10001;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      font-size: 14px;
-      max-width: 360px;
-    }
-
-    .auth-toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .auth-toast.error { background: #d32f2f; }
-    .auth-toast.success { background: #2e7d32; }
-
-    .auth-error-details-btn {
-      background: none;
-      border: none;
-      color: inherit;
-      cursor: pointer;
-      padding: 2px 6px;
-      margin-left: 8px;
-      display: inline-flex;
-      align-items: center;
-      opacity: 0.8;
-      transition: opacity 0.2s;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      justify-content: center;
-    }
-
-    .auth-error-details-btn:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Modal de detalles del error */
-    .error-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      animation: fadeIn 0.2s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    .error-modal {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .error-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-      border-bottom: 1px solid #e0e0e0;
-      position: sticky;
-      top: 0;
-      background: white;
-    }
-
-    .error-modal-header h2 {
-      margin: 0;
-      font-size: 18px;
-      color: #1a1a1a;
-    }
-
-    .error-modal-close {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      color: #666;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
-
-    .error-modal-close:hover {
-      opacity: 1;
-    }
-
-    .error-modal-body {
-      padding: 20px;
-    }
-
-    .error-section {
-      margin-bottom: 20px;
-    }
-
-    .error-section h3 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .error-code-box,
-    .error-message-box,
-    .error-full-box {
-      background: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .error-code-box code,
-    .error-message-box p,
-    .error-full-box pre {
-      margin: 0;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 12px;
-      color: #d32f2f;
-      word-break: break-all;
-      flex: 1;
-    }
-
-    .error-full-box pre {
-      max-height: 200px;
-      overflow-y: auto;
-      color: #666;
-    }
-
-    .copy-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-
-    .copy-btn:hover {
-      background: #0056b3;
-    }
-
-    .copy-btn:active {
-      background: #004085;
-    }
-
-    .error-tips {
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      border-radius: 6px;
-      padding: 12px;
-    }
-
-    .error-tips h3 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      color: #856404;
-    }
-
-    .error-tips ul {
-      margin: 0;
-      padding-left: 20px;
-      color: #856404;
-      font-size: 13px;
-    }
-
-    .error-tips li {
-      margin-bottom: 6px;
-    }
-
-    .error-tips strong {
-      font-weight: 600;
-    }
-
-    /* Respuesta en móvil */
-    @media (max-width: 600px) {
-      .error-modal {
-        width: 95%;
-        max-height: 90vh;
-      }
-
-      .error-code-box,
-      .error-message-box,
-      .error-full-box {
-        flex-direction: column;
-      }
-
-      .copy-btn {
-        width: 100%;
-      }
-    }
-  </style>
 </body>
 </html>

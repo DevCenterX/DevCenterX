@@ -12,6 +12,12 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     (function() {
+      // Si estamos en proceso de logout, no redirigir
+      if (window.isLoggingOut) {
+        console.log('⏳ Logout en progreso, esperando redirección...');
+        return;
+      }
+      
       const sessionActive = localStorage.getItem('devcenter_session_active');
       window.isLoggedIn = sessionActive === 'true';
       window.currentPath = window.location.pathname;
@@ -19,7 +25,7 @@
         console.log('⚠️ Sin sesión activa, redirigiendo a new.html');
         window.location.href = "/new.html";
       } else {
-        console.log('✅ Sesión activa detectada');
+        console.log('✅ Sesión activa detectada1');
       }
     })();
   </script>
@@ -1310,6 +1316,11 @@
 
   <script type="module" src="script.js?v=4.0"></script>
   <script>
+    // Inicializar bandera de logout
+    if (typeof window.isLoggingOut === 'undefined') {
+      window.isLoggingOut = false;
+    }
+    
     // Configurar funcionalidad del sidebar
     document.addEventListener('DOMContentLoaded', () => {
       const sidebar = document.getElementById('mainSidebar');
@@ -1352,30 +1363,56 @@
       }
 
       async function performSignOutAndRedirect() {
+        // Determinar si hay sesión activa (Firebase o Supabase)
+        const hasFirebaseUser = !!(window.firebaseAuth && window.firebaseAuth.currentUser);
+        const hasSupabaseSession = !!(window.supabaseClient && window.supabaseClient.auth && (await (window.supabaseClient.auth.getSession ? window.supabaseClient.auth.getSession() : Promise.resolve({ data: { session: null } }))).data.session);
+
+        // Si no hay sesión activa, proceder a limpiar todo y redirigir (usuario nuevo)
+        if (!hasFirebaseUser && !hasSupabaseSession) {
+          console.log('ℹ️ No hay ninguna sesión activa — limpiando almacenamiento y redirigiendo a /');
+          // Activar bandera de logout para bloquear listeners
+          window.isLoggingOut = true;
+          await clearClientStorage();
+          // redirigir exactamente a la raíz
+          window.location.href = '/';
+          return;
+        }
+
+        // Si sí hay sesión, pedir confirmación antes de cerrar sesión
         if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+
+        window.isLoggingOut = true;
+        console.log('🚪 Iniciando logout...');
 
         try {
           // Cerrar sesión en proveedores
           if (window.firebaseAuth && window.firebaseSignOut) {
             await window.firebaseSignOut(window.firebaseAuth);
             console.log('✅ Sesión de Firebase cerrada');
-          } else if (window.supabaseClient && window.supabaseClient.auth) {
-            await window.supabaseClient.auth.signOut();
+          }
+        } catch (err) {
+          console.warn('Error cerrando sesión de Firebase', err);
+        }
+
+        try {
+          if (window.supabaseClient && window.supabaseClient.auth) {
+            if (window.supabaseClient.auth.signOut) {
+              await window.supabaseClient.auth.signOut();
+            } else if (window.supabaseClient.auth.logout) {
+              await window.supabaseClient.auth.logout();
+            }
             console.log('✅ Sesión de Supabase cerrada');
           }
         } catch (err) {
-          console.warn('Error during provider signOut', err);
+          console.warn('Error cerrando sesión de Supabase', err);
         }
 
-        // Limpiar almacenamiento cliente
+        // Limpiar almacenamiento cliente completamente (no dejar flags)
         await clearClientStorage();
+        console.log('🧹 Almacenamiento cliente limpiado');
 
-        // Marcar sesión como inactiva DESPUÉS de limpiar
-        localStorage.setItem('devcenter_session_active', 'false');
-        console.log('❌ Sesión cerrada - devcenter_session_active establecido en false');
-
-        // Redirigir a new.html
-        window.location.href = '/new.html';
+        // Redirigir exactamente a la raíz
+        setTimeout(() => { window.location.href = '/'; }, 250);
       }
 
       // Exponer globalmente para que otras páginas puedan invocarlo
