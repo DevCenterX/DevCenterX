@@ -12,13 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('devcenter_email', user.email);
       localStorage.setItem('devcenter_user', user.displayName || user.email.split('@')[0]);
       localStorage.setItem('devcenter_login_time', new Date().toISOString());
+      localStorage.setItem('devcenter_session_active', 'true');
       if (user.photoURL) {
         localStorage.setItem('devcenter_avatar', user.photoURL);
       }
-      // Redirigir a la página principal si no estamos en formularios de auth
+      // Redirigir a index si no estamos en formularios de auth
       if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
-        window.location.href = '/';
-      }
+        window.location.href = '/index.html';
+    } else {
+      // No hay usuario autenticado
+      localStorage.setItem('devcenter_session_active', 'false');
+      localStorage.removeItem('devcenter_user_id');
+      localStorage.removeItem('devcenter_user');
+      localStorage.removeItem('devcenter_email');
+      localStorage.removeItem('devcenter_login_time');
     }
   });
 

@@ -10,10 +10,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=1.1">
   <script>
+    // Early session check usando lock de sesión
     (function() {
-      const user = localStorage.getItem('devcenter_user');
-      if (user) {
-        window.location.href = '/';
+      const sessionActive = localStorage.getItem('devcenter_session_active');
+      
+      // Si sesión está marcada como activa, redirigir a index.html
+      if (sessionActive === 'true') {
+        console.log('✅ Sesión activa detectada, redirigiendo a index.html');
+        window.location.href = '/index.html';
       }
     })();
   </script>
@@ -970,17 +974,53 @@
     window.firebaseOnAuthStateChanged = onAuthStateChanged;
     window.firebaseSignOut = signOut;
 
-    // Auth State Listener
-    onAuthStateChanged(auth, (user) => {
+    // Auth State Listener - detecta si el usuario ya está autenticado en Firebase
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // Usuario autenticado en Firebase
         localStorage.setItem('devcenter_user_id', user.uid);
         localStorage.setItem('devcenter_email', user.email);
-        localStorage.setItem('devcenter_user', user.displayName || user.email.split('@')[0]);
-        localStorage.setItem('devcenter_login_time', new Date().toISOString());
-        // No redirigir aquí si estamos en la página de login
-        if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
-          window.location.href = '/';
+        
+        // Obtener username desde Firestore si existe
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const username = userData.username || userData.displayName || user.email.split('@')[0];
+            localStorage.setItem('devcenter_user', username);
+            console.log('✅ Usuario cargado desde Firestore:', username);
+          } else {
+            // Fallback al email si no existe en Firestore
+            const fallbackUser = user.displayName || user.email.split('@')[0];
+            localStorage.setItem('devcenter_user', fallbackUser);
+            console.log('✅ Usuario fallback establecido:', fallbackUser);
+          }
+        } catch (err) {
+          console.warn('Error obteniendo usuario de Firestore, usando fallback:', err);
+          localStorage.setItem('devcenter_user', user.displayName || user.email.split('@')[0]);
         }
+        
+        localStorage.setItem('devcenter_login_time', new Date().toISOString());
+        localStorage.setItem('devcenter_session_active', 'true');
+        console.log('✅ Sesión establecida en localStorage');
+        
+        // Si el usuario está autenticado en Firebase y no está en login/create, redirigir a index.html
+        if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
+          console.log('🔄 Redirigiendo a index.html');
+          setTimeout(() => {
+            window.location.href = '/index.html';
+          }, 500);
+        }
+      } else {
+        // No hay usuario autenticado en Firebase
+        localStorage.setItem('devcenter_session_active', 'false');
+        localStorage.removeItem('devcenter_user_id');
+        localStorage.removeItem('devcenter_user');
+        localStorage.removeItem('devcenter_email');
+        localStorage.removeItem('devcenter_login_time');
+        console.log('❌ Sesión desactivada');
       }
     });
   </script>
@@ -1453,18 +1493,24 @@
             const userCredential = await signInWithEmailAndPassword(auth, emailOrUser, password);
             const user = userCredential.user;
 
+            // Guardar sesión en localStorage INMEDIATAMENTE
+            localStorage.setItem('devcenter_user_id', user.uid);
+            localStorage.setItem('devcenter_email', user.email);
+
             // Obtener/actualizar datos del usuario en Firestore
             const userDocRef = doc(db, 'users', user.uid);
             const userDocSnap = await getDoc(userDocRef);
-
+            
+            let username;
             if (userDocSnap.exists()) {
               // Actualizar último login
+              username = userDocSnap.data().username || userDocSnap.data().displayName;
               await setDoc(userDocRef, {
                 updatedAt: new Date().toISOString()
               }, { merge: true });
             } else {
               // Si no existe el documento, crearlo
-              const username = user.displayName || user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+              username = user.displayName || user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
               await setDoc(userDocRef, {
                 uid: user.uid,
                 email: user.email,
@@ -1477,6 +1523,12 @@
               });
             }
 
+            // Guardar username en localStorage
+            localStorage.setItem('devcenter_user', username);
+            localStorage.setItem('devcenter_login_time', new Date().toISOString());
+            localStorage.setItem('devcenter_session_active', 'true');
+            
+            console.log('✅ Login exitoso:', username);
             showAuthMessage('¡Bienvenido! Redirigiendo...', 'success');
             setTimeout(() => window.location.href = '/', 1500);
           } catch (error) {
@@ -1529,6 +1581,13 @@
             const user = userCredential.user;
             const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
 
+            // Guardar sesión en localStorage INMEDIATAMENTE
+            localStorage.setItem('devcenter_user_id', user.uid);
+            localStorage.setItem('devcenter_email', email);
+            localStorage.setItem('devcenter_user', username);
+            localStorage.setItem('devcenter_login_time', new Date().toISOString());
+            localStorage.setItem('devcenter_session_active', 'true');
+
             // Guardar información adicional en Firestore - Colección: users
             await setDoc(doc(db, 'users', user.uid), {
               uid: user.uid,
@@ -1548,6 +1607,7 @@
               createdAt: new Date().toISOString()
             });
 
+            console.log('✅ Registro exitoso:', username);
             showAuthMessage('¡Cuenta creada! Redirigiendo...', 'success');
             setTimeout(() => window.location.href = '/', 1500);
           } catch (error) {
@@ -1733,6 +1793,54 @@
         animateStats();
       }
     }
+
+    // Función para limpiar almacenamiento del cliente
+    window.clearClientStorage = async function() {
+      try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
+      try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
+      try {
+        document.cookie.split(';').forEach(function(c) {
+          const name = c.split('=')[0].trim();
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
+        });
+      } catch (e) { console.warn('cookie clear failed', e); }
+      try {
+        if (window.caches && caches.keys) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+      } catch (e) { console.warn('caches delete failed', e); }
+      try {
+        if (window.indexedDB && indexedDB.databases) {
+          const dbs = await indexedDB.databases();
+          await Promise.all((dbs || []).map(d => d.name ? indexedDB.deleteDatabase(d.name) : Promise.resolve()));
+        }
+      } catch (e) { console.warn('indexedDB delete failed', e); }
+    };
+
+    // Función para cerrar sesión completamente
+    window.performSignOutAndRedirect = async function() {
+      if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+      
+      // Marcar sesión como inactiva PRIMERO
+      localStorage.setItem('devcenter_session_active', 'false');
+      
+      try {
+        if (window.firebaseAuth && window.firebaseSignOut) {
+          await window.firebaseSignOut(window.firebaseAuth);
+          console.log('✅ Sesión de Firebase cerrada');
+        } else if (window.supabaseClient && window.supabaseClient.auth) {
+          await window.supabaseClient.auth.signOut();
+          console.log('✅ Sesión de Supabase cerrada');
+        }
+      } catch (err) { console.warn('Error during provider signOut', err); }
+      
+      // Limpiar almacenamiento cliente
+      await window.clearClientStorage();
+      
+      window.location.href = '/new.html';
+    };
 
     // Exponer initializeAuthHandlers al window global
     window.initializeAuthHandlers = initializeAuthHandlers;

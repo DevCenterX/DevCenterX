@@ -12,13 +12,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     (function() {
-      const user = localStorage.getItem('devcenter_user');
-      window.isLoggedIn = !!user;
+      const sessionActive = localStorage.getItem('devcenter_session_active');
+      window.isLoggedIn = sessionActive === 'true';
       window.currentPath = window.location.pathname;
       if (!window.isLoggedIn) {
+        console.log('⚠️ Sin sesión activa, redirigiendo a new.html');
         window.location.href = "/new.html";
       } else {
-        console.log('Usuario detectado desde localStorage:', user);
+        console.log('✅ Sesión activa detectada');
       }
     })();
   </script>
@@ -1353,10 +1354,11 @@
       async function performSignOutAndRedirect() {
         if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
 
-        await clearClientStorage();
+        // Marcar sesión como inactiva PRIMERO
+        localStorage.setItem('devcenter_session_active', 'false');
 
-        // Intentar cerrar sesión en Firebase o Supabase si están disponibles
         try {
+          // Cerrar sesión en proveedores
           if (window.firebaseAuth && window.firebaseSignOut) {
             await window.firebaseSignOut(window.firebaseAuth);
             console.log('✅ Sesión de Firebase cerrada');
@@ -1368,8 +1370,11 @@
           console.warn('Error during provider signOut', err);
         }
 
-        // Redirigir al inicio
-        window.location.href = '/';
+        // Limpiar almacenamiento cliente
+        await clearClientStorage();
+
+        // Redirigir a new.html
+        window.location.href = '/new.html';
       }
 
       // Exponer globalmente para que otras páginas puedan invocarlo
@@ -1709,6 +1714,11 @@
           if (logoMenu) logoMenu.classList.remove('active');
         });
       }
+
+      function showTerms() {
+        const termsPage = document.getElementById('termsPage');
+        if (termsPage) {
+          termsPage.style.display = 'flex';
           setTimeout(() => termsPage.classList.add('active'), 10);
         }
       }
@@ -1795,31 +1805,9 @@
           }
         }
         
-        if (!window.isLoggedIn) {
+        // Si no hay sesión, redirigir a new.html
+        console.log('ℹ️ No hay sesión activa de Supabase');
         window.location.href = "/new.html";
-      } else {
-          showMainApp();
-          return;
-        }
-        
-        switch(hash) {
-          case '#login':
-            showLogin();
-            break;
-          case '#create':
-            showCreate();
-            break;
-          case '#terms':
-            showTerms();
-            return;
-          case '#privacy':
-            showPrivacy();
-            return;
-          default:
-            hideTerms();
-            hidePrivacy();
-            showLanding();
-        }
       }
       
       window.addEventListener('hashchange', navigate);
