@@ -2,6 +2,12 @@
 
 ## 1. Gestión de Archivos
 
+### 1.1 Creación de Archivos - PROHIBIDO
+- **NO crear nuevos archivos** a menos que sea absolutamente necesario
+- Solo se permiten archivos HTML, CSS (style.css) y JavaScript (script.js)
+- No crear archivos temporales, backups o archivos de prueba
+- Ejemplos prohibidos: `.tmp`, `.bak`, `index.html.tmp`, `tmpclaude-*`
+- Mantener la estructura limpia y minimal del proyecto
 
 ### 1.2 Modificación de Archivos Existentes
 - Solo se permite editar archivos que ya existen en el proyecto
@@ -23,7 +29,7 @@
 ### 2.2 Seguridad de API Keys
 - No agregar medidas de seguridad adicionales (cifrado, protecciones automáticas, etc.)
 - Las claves deben funcionar exactamente como están configuradas
-- Todas las claves deben cargarse exclusivamente desde `keys.js`
+- Todas las claves deben cargarse exclusivamente desde `.env`
 - **PROHIBIDO** definir o importar keys en cualquier otro archivo
 
 ## 3. Estilo Visual y Diseño
@@ -54,7 +60,7 @@
 ## 5. Código y Prácticas de Desarrollo
 
 ### 5.1 Calidad de Código
-- Código limpio y bien comentado (solo cuando sea necesario)
+- Código limpio y bien comentado 
 - Nombres de variables y funciones descriptivos
 - Evitar duplicación de código
 - Seguir los patrones existentes en el proyecto
@@ -81,36 +87,21 @@
 - Usar API REST v3 para operaciones de repositorio
 - Implementar manejo de rate limits
 
-## 7. Performance y Optimización
 
-### 7.1 Carga de Datos
-- Implementar sistema de caché cuando sea apropiado
-- No hacer llamadas innecesarias a la base de datos
-- Cargar datos solo cuando se necesiten
+
 
 ### 7.2 Renderizado
 - Optimizar renderizado de listas largas
 - Usar lazy loading cuando sea apropiado
 - Evitar re-renders innecesarios
+- Evita poner codigos respetidos o insesarios
 
-## 8. Reglas Específicas del Proyecto
-
-### 8.1 Proyectos de Usuario
-- Los proyectos se almacenan como JSONB en `personas.proyectos`
-- Las estadísticas (vistas, likes, comentarios) están en `proyectos_publicos`
-- Relacionar proyectos por el campo `titulo` / `nombre_proyecto`
-
-### 8.2 Autenticación
-- Sistema basado en Supabase Auth
-- Verificar sesión antes de operaciones sensibles
-- Manejar estados de login/logout correctamente
 
 ## 9. Prohibiciones Absolutas
 
-- Crear nuevos archivos
+- Crear nuevos archivos (usa lo exitentes)
 - Usar emojis en código o interfaz
-- Agregar lógica a keys.js
-- Definir API keys fuera de keys.js
+- Definir API keys fuera de .env
 - Generar datos simulados o aleatorios para la interfaz
 - Romper el diseño responsivo
 - Ignorar errores de base de datos
@@ -118,8 +109,71 @@
 
 ## 10. Orden de Prioridades
 
-1. **Datos Reales**: Siempre usar datos reales de Supabase
+
 2. **No Romper**: No romper funcionalidad existente
 3. **Coherencia**: Mantener coherencia con el código existente
 4. **Performance**: Optimizar para rendimiento
 5. **UX/UI**: Mantener experiencia de usuario fluida
+
+## 11. Sistema de Prompts Replit Integrado
+
+### 11.1 Funcionalidad
+- **Archivo**: `ai-prompts.js` - Sistema de prompts mejorados del Replit
+- **Ubicación**: `/public/ai-prompts.js`
+- **Funciones Globales**:
+  - `window.generateOptimizedPrompt()` - Genera prompts optimizados con contexto
+  - `window.selectPromptType()` - Detecta tipo de solicitud automáticamente
+  - `window.buildAIPrompt()` - Construye prompts mejorados
+  - `window.enhancePromptWithContext()` - Agrega contexto del proyecto
+
+### 11.2 Tipos de Prompts Disponibles
+1. **main** - Prompt principal del asistente DevCenterX
+2. **webGeneration** - Generación de código HTML/CSS/JS
+3. **debugging** - Debugging y resolución de errores
+4. **optimization** - Optimización de código
+5. **refactoring** - Refactorización y reestructuración
+6. **education** - Explicaciones conceptuales
+
+### 11.3 Herramientas Integradas
+Sistema automático de detección de herramientas:
+- **Generación Web** - Genera código completo
+- **Análisis de Código** - Detecta errores y mejoras
+- **Debugging** - Identifica y resuelve bugs
+- **Optimización** - Mejora performance
+- **Refactorización** - Reestructura código
+- **Documentación** - Genera documentación
+
+### 11.4 Configuración con .env
+- **GEMINI_API_KEY** - Clave para Gemini
+- **GEMINI_API_URL** - URL de API Gemini
+- **SUPABASE_URL** - URL de Supabase
+- **SUPABASE_ANON_KEY** - Clave anónima Supabase
+- **GITHUB_TOKEN** - Token de GitHub
+- **GITHUB_API_URL** - URL de GitHub API
+
+### 11.5 Uso en Desarrollo
+```javascript
+// Generar prompt optimizado automáticamente
+const optimizedPrompt = window.generateOptimizedPrompt(userMessage, {
+  device: 'desktop',
+  screenSize: '1920x1080',
+  theme: 'dark',
+  projectContext: currentProject
+});
+
+// Usar en llamada a API
+const response = await fetch(GEMINI_API_URL, {
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/json',
+    'x-goog-api-key': GEMINI_API_KEY
+  },
+  body: JSON.stringify({
+    contents: [{ parts: [{ text: optimizedPrompt.enhancedMessage }] }],
+    generationConfig: {
+      temperature: window.AI_CONFIG?.temperature || 1,
+      maxOutputTokens: window.AI_CONFIG?.maxTokens || 8192
+    }
+  })
+});
+```
