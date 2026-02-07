@@ -1,37 +1,29 @@
-// Login system for DevCenter
+// Firebase Login Handler
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
 document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  const demoBtn = document.getElementById('demoBtn');
+  // Verificar si el usuario ya está autenticado
+  const auth = getAuth();
+  
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Usuario está autenticado, guardar datos en localStorage
+      localStorage.setItem('devcenter_user_id', user.uid);
+      localStorage.setItem('devcenter_email', user.email);
+      localStorage.setItem('devcenter_user', user.displayName || user.email.split('@')[0]);
+      localStorage.setItem('devcenter_login_time', new Date().toISOString());
+      if (user.photoURL) {
+        localStorage.setItem('devcenter_avatar', user.photoURL);
+      }
+      // Redirigir a la página principal si no estamos en formularios de auth
+      if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
+        window.location.href = '/';
+      }
+    }
+  });
+
   const themeToggle = document.getElementById('themeToggle');
   
-  // Handle login form
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      
-      if (username && password) {
-        // Save user session
-        localStorage.setItem('devcenter_user', username);
-        localStorage.setItem('devcenter_login_time', new Date().toISOString());
-        
-        // Redirect to main page
-        window.location.href = '/';
-        return false;
-      }
-    });
-  }
-
-  // Demo access
-  if (demoBtn) {
-    demoBtn.addEventListener('click', () => {
-      localStorage.setItem('devcenter_user', 'Demo User');
-      localStorage.setItem('devcenter_demo_mode', 'true');
-      window.location.href = '/';
-    });
-  }
-
   // Theme toggle
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -56,10 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Logout handler
+// Logout handler con Firebase
 function handleLogout() {
-  localStorage.removeItem('devcenter_user');
-  localStorage.removeItem('devcenter_demo_mode');
-  localStorage.removeItem('devcenter_login_time');
-  window.location.href = '/index.html';
+  const auth = getAuth();
+  signOut(auth).then(() => {
+    localStorage.removeItem('devcenter_user');
+    localStorage.removeItem('devcenter_user_id');
+    localStorage.removeItem('devcenter_email');
+    localStorage.removeItem('devcenter_demo_mode');
+    localStorage.removeItem('devcenter_login_time');
+    localStorage.removeItem('devcenter_avatar');
+    window.location.href = '/index.html';
+  }).catch((error) => {
+    console.error('Error al cerrar sesión:', error);
+  });
 }

@@ -1319,6 +1319,63 @@
       const optionsBtn = document.getElementById('optionsBtn');
       const optionsMenu = document.getElementById('optionsMenu');
 
+      // Limpieza completa del almacenamiento del cliente
+      async function clearClientStorage() {
+        try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
+        try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
+
+        // Borrar cookies de la ruta actual
+        try {
+          document.cookie.split(';').forEach(function(c) {
+            const name = c.split('=')[0].trim();
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
+          });
+        } catch (e) { console.warn('cookie clear failed', e); }
+
+        // Borrar CacheStorage (service worker caches)
+        if (window.caches && caches.keys) {
+          try {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          } catch (e) { console.warn('caches delete failed', e); }
+        }
+
+        // Intentar borrar IndexedDB databases (cuando está disponible)
+        if (window.indexedDB && indexedDB.databases) {
+          try {
+            const dbs = await indexedDB.databases();
+            await Promise.all((dbs || []).map(d => d.name ? indexedDB.deleteDatabase(d.name) : Promise.resolve()));
+          } catch (e) { console.warn('indexedDB delete failed', e); }
+        }
+      }
+
+      async function performSignOutAndRedirect() {
+        if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+
+        await clearClientStorage();
+
+        // Intentar cerrar sesión en Firebase o Supabase si están disponibles
+        try {
+          if (window.firebaseAuth && window.firebaseSignOut) {
+            await window.firebaseSignOut(window.firebaseAuth);
+            console.log('✅ Sesión de Firebase cerrada');
+          } else if (window.supabaseClient && window.supabaseClient.auth) {
+            await window.supabaseClient.auth.signOut();
+            console.log('✅ Sesión de Supabase cerrada');
+          }
+        } catch (err) {
+          console.warn('Error during provider signOut', err);
+        }
+
+        // Redirigir al inicio
+        window.location.href = '/';
+      }
+
+      // Exponer globalmente para que otras páginas puedan invocarlo
+      window.performSignOutAndRedirect = performSignOutAndRedirect;
+      window.clearClientStorage = clearClientStorage;
+
       // Función para cerrar el sidebar
       function closeSidebar() {
         sidebar.classList.add('sidebar-hidden');
@@ -1379,36 +1436,7 @@
 
       if (optionsMenuLogout) {
         optionsMenuLogout.addEventListener('click', async () => {
-          const localUser = localStorage.getItem('devcenter_user');
-          const localUserId = localStorage.getItem('devcenter_user_id');
-          const { data: { session } } = await window.supabaseClient.auth.getSession();
-          
-          if (localUser && localUserId) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              localStorage.removeItem('devcenter_user');
-              localStorage.removeItem('devcenter_user_id');
-              localStorage.removeItem('devcenter_email');
-              localStorage.removeItem('devcenter_avatar');
-              localStorage.removeItem('devcenter_datos');
-              localStorage.removeItem('devcenter_login_time');
-              localStorage.removeItem('supabase_nombrepersona');
-              console.log('✅ Sesión de tabla cuentas cerrada');
-              window.location.href = '/';
-            }
-          } else if (session?.user) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              try {
-                await window.supabaseClient.auth.signOut();
-                console.log('✅ Sesión de Supabase cerrada');
-                window.location.href = '/';
-              } catch (error) {
-                console.error('Error al cerrar sesión en Supabase:', error);
-                alert('Error al cerrar sesión. Intenta de nuevo.');
-              }
-            }
-          } else {
-            alert('No hay ninguna sesión activa.');
-          }
+          await performSignOutAndRedirect();
           optionsMenu.classList.remove('active');
         });
       }
@@ -1675,40 +1703,12 @@
 
   <!-- Router Script -->
   <script>
-    (function() {
-      const sidebar = document.getElementById('mainSidebar');
-      const mainContent = document.querySelector('.main-content');
-      const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
-      const optionsMenu = document.getElementById('optionsMenu');
-      const sidebarOverlay = document.querySelector('.sidebar-overlay');
-      
-      function hideAll() {
-        }
-        }
-        if (sidebar) sidebar.style.display = 'none';
-        if (mainContent) mainContent.style.display = 'none';
-        if (sidebarCollapsedControls) sidebarCollapsedControls.style.display = 'none';
-        if (optionsMenu) optionsMenu.style.display = 'none';
+      if (menuLogout) {
+        menuLogout.addEventListener('click', async () => {
+          await performSignOutAndRedirect();
+          if (logoMenu) logoMenu.classList.remove('active');
+        });
       }
-      
-      function showLanding() {
-        hideAll();
-      }
-      
-      function showLogin() {
-        hideAll();
-        }
-      }
-      
-      function showCreate() {
-        hideAll();
-        }
-      }
-      
-      function showTerms() {
-        const termsPage = document.getElementById('termsPage');
-        if (termsPage) {
-          termsPage.style.display = 'flex';
           setTimeout(() => termsPage.classList.add('active'), 10);
         }
       }
