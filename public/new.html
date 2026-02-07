@@ -12,12 +12,24 @@
   <script>
     // Early session check usando lock de sesión
     (function() {
-      const sessionActive = localStorage.getItem('devcenter_session_active');
+      // Por defecto, la sesión está inactiva
+      let sessionActive = localStorage.getItem('devcenter_session_active');
+      
+      // Si no está definida, establecerla en false
+      if (sessionActive === null) {
+        sessionActive = 'false';
+        localStorage.setItem('devcenter_session_active', 'false');
+        console.log('⚠️ devcenter_session_active no estaba definida, establecida en false');
+      }
+      
+      console.log('🔍 Estado de sesión:', sessionActive);
       
       // Si sesión está marcada como activa, redirigir a index.html
       if (sessionActive === 'true') {
         console.log('✅ Sesión activa detectada, redirigiendo a index.html');
         window.location.href = '/index.html';
+      } else {
+        console.log('✅ Sin sesión activa - mostrando páginas de login/registro');
       }
     })();
   </script>
@@ -1841,9 +1853,6 @@
     window.performSignOutAndRedirect = async function() {
       if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
       
-      // Marcar sesión como inactiva PRIMERO
-      localStorage.setItem('devcenter_session_active', 'false');
-      
       try {
         if (window.firebaseAuth && window.firebaseSignOut) {
           await window.firebaseSignOut(window.firebaseAuth);
@@ -1856,6 +1865,10 @@
       
       // Limpiar almacenamiento cliente
       await window.clearClientStorage();
+      
+      // Marcar sesión como inactiva DESPUÉS de limpiar
+      localStorage.setItem('devcenter_session_active', 'false');
+      console.log('❌ Sesión cerrada - devcenter_session_active establecido en false');
       
       window.location.href = '/new.html';
     };

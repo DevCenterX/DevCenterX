@@ -1354,9 +1354,6 @@
       async function performSignOutAndRedirect() {
         if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
 
-        // Marcar sesión como inactiva PRIMERO
-        localStorage.setItem('devcenter_session_active', 'false');
-
         try {
           // Cerrar sesión en proveedores
           if (window.firebaseAuth && window.firebaseSignOut) {
@@ -1372,6 +1369,10 @@
 
         // Limpiar almacenamiento cliente
         await clearClientStorage();
+
+        // Marcar sesión como inactiva DESPUÉS de limpiar
+        localStorage.setItem('devcenter_session_active', 'false');
+        console.log('❌ Sesión cerrada - devcenter_session_active establecido en false');
 
         // Redirigir a new.html
         window.location.href = '/new.html';
