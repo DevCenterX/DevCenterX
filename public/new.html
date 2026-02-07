@@ -1646,12 +1646,20 @@
         try {
           const result = await signInWithPopup(auth, window.googleProvider);
           const user = result.user;
+          const username = user.displayName || user.email.split('@')[0];
+
+          // Guardar sesión en localStorage INMEDIATAMENTE
+          localStorage.setItem('devcenter_user_id', user.uid);
+          localStorage.setItem('devcenter_email', user.email);
+          localStorage.setItem('devcenter_user', username);
+          localStorage.setItem('devcenter_login_time', new Date().toISOString());
+          localStorage.setItem('devcenter_session_active', 'true');
 
           // Guardar/actualizar info del usuario en Firestore
           await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
             email: user.email,
-            username: user.displayName || user.email.split('@')[0],
+            username: username,
             displayName: user.displayName,
             avatar: user.photoURL || '',
             provider: 'google',
@@ -1670,6 +1678,7 @@
             });
           }
 
+          console.log('✅ Google login exitoso:', username);
           showAuthMessage('¡Iniciado con Google! Redirigiendo...', 'success');
           setTimeout(() => window.location.href = '/', 1500);
         } catch (error) {
@@ -1698,12 +1707,20 @@
         try {
           const result = await signInWithPopup(auth, window.githubProvider);
           const user = result.user;
+          const username = user.displayName || user.email.split('@')[0];
+
+          // Guardar sesión en localStorage INMEDIATAMENTE
+          localStorage.setItem('devcenter_user_id', user.uid);
+          localStorage.setItem('devcenter_email', user.email);
+          localStorage.setItem('devcenter_user', username);
+          localStorage.setItem('devcenter_login_time', new Date().toISOString());
+          localStorage.setItem('devcenter_session_active', 'true');
 
           // Guardar/actualizar info del usuario en Firestore
           await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
             email: user.email,
-            username: user.displayName || user.email.split('@')[0],
+            username: username,
             displayName: user.displayName,
             avatar: user.photoURL || '',
             provider: 'github',
@@ -1722,6 +1739,7 @@
             });
           }
 
+          console.log('✅ GitHub login exitoso:', username);
           showAuthMessage('¡Iniciado con GitHub! Redirigiendo...', 'success');
           setTimeout(() => window.location.href = '/', 1500);
         } catch (error) {
