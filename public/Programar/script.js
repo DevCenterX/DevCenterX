@@ -1641,7 +1641,33 @@ async function generateCodeWithAI(prompt) {
         updateProgress('progressHtml', 'Generando...', null, true, false);
         const startGeneration = Date.now();
         
-        const generationPrompt = `🚀 ERES UN EXPERTO EN DESARROLLO WEB FULL-STACK
+        // Usar el sistema de prompts mejorados si está disponible
+        let generationPrompt;
+        if (window.generateOptimizedPrompt && window.AI_CONFIG && window.AI_CONFIG.enableAdvancedPrompts) {
+            // Usar sistema de prompts mejorados
+            const projectContext = {
+                title: currentProject?.title,
+                description: currentProject?.description,
+                tags: currentProject?.tags,
+                device: device.type,
+                htmlCode: elements.htmlEditor.value,
+                cssCode: elements.cssEditor.value,
+                jsCode: elements.jsEditor.value
+            };
+            
+            const optimizedPrompt = window.generateOptimizedPrompt(prompt, {
+                device: device.type,
+                screenSize: `${device.screenWidth}x${device.screenHeight}`,
+                optimization: device.optimizationAdvice,
+                theme: context.theme,
+                dateContext: `${context.day} de ${context.month}`,
+                projectContext: projectContext
+            });
+            
+            generationPrompt = optimizedPrompt.enhancedMessage;
+        } else {
+            // Fallback al prompt original
+            generationPrompt = `🚀 ERES UN EXPERTO EN DESARROLLO WEB FULL-STACK
 
 SOLICITUD DEL USUARIO: "${prompt}"
 
@@ -1665,6 +1691,7 @@ Genera un archivo HTML completo y funcional que incluya:
 5. Diseño moderno y profesional
 
 Responde SOLO con el código HTML completo, sin explicaciones adicionales.`;
+        }
 
         const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
@@ -1675,10 +1702,10 @@ Responde SOLO con el código HTML completo, sin explicaciones adicionales.`;
             body: JSON.stringify({
                 contents: [{ parts: [{ text: generationPrompt }] }],
                 generationConfig: {
-                    temperature: 1,
+                    temperature: window.AI_CONFIG?.temperature || 1,
                     topK: 40,
                     topP: 0.95,
-                    maxOutputTokens: 8192,
+                    maxOutputTokens: window.AI_CONFIG?.maxTokens || 8192,
                     responseMimeType: "text/plain"
                 }
             })

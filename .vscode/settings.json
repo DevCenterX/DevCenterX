@@ -1,4 +1,10 @@
 {
     "chat.editing.autoAcceptDelay": 20,
-    "chat.editor.wordWrap": "on"
+    "chat.editor.wordWrap": "on",
+    "chat.tools.terminal.autoApprove": {
+        "/^git checkout public/index\\.html$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }
