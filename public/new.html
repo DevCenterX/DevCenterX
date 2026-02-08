@@ -1428,7 +1428,14 @@
           showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
-          alert('Error: ' + (err.message || err));
+          console.error('Google Auth Error:', err);
+          let friendlyMsg = 'Error iniciando sesión con Google';
+          if (err.code === 'auth/unauthorized-domain') {
+            friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
+          } else if (err.code === 'auth/popup-blocked') {
+            friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          }
+          showAuthMessage(friendlyMsg, 'error');
         }
       }
 
@@ -1451,7 +1458,14 @@
           showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
-          alert('Error: ' + (err.message || err));
+          console.error('GitHub Auth Error:', err);
+          let friendlyMsg = 'Error iniciando sesión con GitHub';
+          if (err.code === 'auth/unauthorized-domain') {
+            friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
+          } else if (err.code === 'auth/popup-blocked') {
+            friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          }
+          showAuthMessage(friendlyMsg, 'error');
         }
       }
 

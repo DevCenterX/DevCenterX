@@ -219,80 +219,38 @@ async function loadProject() {
     }
 }
 
-// Cargar proyecto desde Supabase
+// Cargar proyecto desde localStorage (Supabase migration)
 async function loadProjectFromSupabase() {
     try {
-        const supabase = initSupabase();
-        if (!supabase || !currentProject) return;
+        if (!currentProject) return;
         
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.log('No hay sesión activa en Supabase');
-            return;
-        }
+        // Usar localStorage para cargar datos del proyecto
+        const projectId = currentProject.id || currentProject.numeroProyecto;
+        const codeKey = `dc_project_code_${projectId}`;
+        const savedCode = localStorage.getItem(codeKey);
         
-        // Obtener nombre de usuario desde localStorage
-        const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!nombreUsuario) {
-            console.log('No se encontró el nombre de usuario en localStorage');
-            return;
-        }
-        
-        // Buscar el usuario en la tabla personas
-        const { data: personaData, error } = await supabase
-            .from('personas')
-            .select('proyectos')
-            .eq('nombrepersona', nombreUsuario)
-            .single();
-        
-        if (error || !personaData) {
-            console.log('Usuario no encontrado en Supabase');
-            return;
-        }
-        
-        // Buscar el proyecto en el array de proyectos
-        const proyectos = personaData.proyectos || [];
-        const proyecto = proyectos.find(p => p.numeroProyecto === currentProject.id);
-        
-        if (proyecto) {
-            // Actualizar currentProject con datos de Supabase (NUNCA cargar code de Supabase)
-            // El código solo debe cargarse desde localStorage o backup slots
-            currentProject.title = proyecto.titulo || currentProject.title;
-            currentProject.description = proyecto.descripcion || currentProject.description;
-            currentProject.tags = proyecto.tags || currentProject.tags;
-            currentProject.status = proyecto.status || currentProject.status;
-            currentProject.link = proyecto.link || currentProject.link;
-            currentProject.devcenter = proyecto.devcenter || currentProject.devcenter;
-            
-            // Cargar código desde localStorage si existe
-            const projectId = currentProject.id || currentProject.numeroProyecto;
-            const codeKey = `dc_project_code_${projectId}`;
-            const savedCode = localStorage.getItem(codeKey);
-            if (savedCode) {
-                try {
-                    const codeData = JSON.parse(savedCode);
-                    if (codeData.code) {
-                        currentProject.code = codeData.code;
-                        elements.htmlEditor.value = codeData.code.html || '';
-                        elements.cssEditor.value = codeData.code.css || '';
-                        elements.jsEditor.value = codeData.code.js || '';
-                        console.log(`💾 Código cargado desde localStorage (${codeKey})`);
-                    }
-                } catch (e) {
-                    console.log('Error parseando código de localStorage');
+        if (savedCode) {
+            try {
+                const codeData = JSON.parse(savedCode);
+                if (codeData.code) {
+                    currentProject.code = codeData.code;
+                    if (elements && elements.htmlEditor) elements.htmlEditor.value = codeData.code.html || '';
+                    if (elements && elements.cssEditor) elements.cssEditor.value = codeData.code.css || '';
+                    if (elements && elements.jsEditor) elements.jsEditor.value = codeData.code.js || '';
+                    console.log(`💾 Código cargado desde localStorage (${codeKey})`);
                 }
+            } catch (e) {
+                console.log('Error parseando código de localStorage');
             }
-            
-            if (!activeBackupSlot) {
-                localStorage.setItem('currentProject', JSON.stringify(currentProject));
-            }
-            
-            console.log('✅ Proyecto cargado desde Supabase');
-        } else {
-            console.log('Proyecto no encontrado en Supabase, usando localStorage');
         }
+        
+        if (!activeBackupSlot) {
+            localStorage.setItem('currentProject', JSON.stringify(currentProject));
+        }
+        
+        console.log('✅ Proyecto cargado desde localStorage');
     } catch (error) {
-        console.error('Error al cargar desde Supabase:', error);
+        console.error('Error al cargar proyecto:', error);
     }
 }
 
@@ -789,13 +747,23 @@ window.closeEditProjectModal = function() {
     }
 };
 
-// Initialize Supabase client
+// Initialize Supabase client (STUB - Migrado a Firebase)
 let supabaseClient = null;
 
 function initSupabase() {
-    if (!supabaseClient && window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    // Retorna un stub de Supabase para compatibilidad
+    // La autenticación ahora se maneja con Firebase en new.html
+    if (!supabaseClient) {
+        supabaseClient = {
+            from: () => ({
+                select: async () => ({ data: [], error: null }),
+                insert: async () => ({ data: [], error: null }),
+                update: async () => ({ data: [], error: null })
+            }),
+            auth: {
+                getSession: async () => ({ data: { session: null }, error: null })
+            }
+        };
     }
     return supabaseClient;
 }
@@ -1904,58 +1872,20 @@ async function insertIntoProyectosPublicos(nombreProyecto) {
 
 async function updatePublishLinkInSupabase(pagesUrl) {
     try {
-        const supabase = initSupabase();
-        if (!supabase || !currentProject) return;
+        if (!currentProject) return;
         
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.log('No hay sesión activa en Supabase, link guardado solo en localStorage');
-            return;
-        }
+        // Solo guardar en localStorage (Supabase migration)
+        const publishedProjects = JSON.parse(localStorage.getItem('dc_published_projects') || '{}');
+        publishedProjects[currentProject.id] = {
+            ...publishedProjects[currentProject.id],
+            link: pagesUrl,
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('dc_published_projects', JSON.stringify(publishedProjects));
         
-        // Obtener nombre de usuario desde localStorage
-        const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!nombreUsuario) {
-            console.log('No se encontró el nombre de usuario en localStorage');
-            return;
-        }
-        
-        const { data: personaData, error: fetchError } = await supabase
-            .from('personas')
-            .select('id, proyectos')
-            .eq('nombrepersona', nombreUsuario)
-            .single();
-        
-        if (fetchError || !personaData) {
-            console.error('Usuario no encontrado en Supabase:', fetchError);
-            return;
-        }
-        
-        let proyectos = personaData.proyectos || [];
-        const projectIndex = proyectos.findIndex(p => p.numeroProyecto === currentProject.id);
-        
-        if (projectIndex !== -1) {
-            proyectos[projectIndex].link = pagesUrl;
-            
-            // Eliminar campo code de todos los proyectos antes de guardar
-            const proyectosParaGuardar = proyectos.map(p => {
-                const { code, ...proyectoSinCode } = p;
-                return proyectoSinCode;
-            });
-            
-            const { error: updateError } = await supabase
-                .from('personas')
-                .update({ proyectos: proyectosParaGuardar })
-                .eq('id', personaData.id);
-            
-            if (updateError) {
-                console.error('Error al actualizar link en Supabase:', updateError);
-            } else {
-                console.log('✅ Link de publicación guardado en Supabase correctamente');
-            }
-        }
+        console.log('✅ Link de publicación guardado en localStorage');
     } catch (error) {
-        console.error('Error al actualizar link en Supabase:', error);
+        console.error('Error al guardar link de publicación:', error);
     }
 }
 

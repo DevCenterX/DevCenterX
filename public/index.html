@@ -1396,12 +1396,11 @@
       }
 
       if (optionsMenuLogout) {
-        optionsMenuLogout.addEventListener('click', async () => {
+        optionsMenuLogout.addEventListener('click', () => {
           const localUser = localStorage.getItem('devcenter_user');
           const localUserId = localStorage.getItem('devcenter_user_id');
-          const { data: { session } } = await window.supabaseClient.auth.getSession();
           
-          if (localUser && localUserId) {
+          if (localUser || localUserId) {
             if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
               localStorage.removeItem('devcenter_user');
               localStorage.removeItem('devcenter_user_id');
@@ -1410,19 +1409,9 @@
               localStorage.removeItem('devcenter_datos');
               localStorage.removeItem('devcenter_login_time');
               localStorage.removeItem('supabase_nombrepersona');
-              console.log('✅ Sesión de tabla cuentas cerrada');
-              window.location.href = '/';
-            }
-          } else if (session?.user) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              try {
-                await window.supabaseClient.auth.signOut();
-                console.log('✅ Sesión de Supabase cerrada');
-                window.location.href = '/';
-              } catch (error) {
-                console.error('Error al cerrar sesión en Supabase:', error);
-                alert('Error al cerrar sesión. Intenta de nuevo.');
-              }
+              localStorage.removeItem('devcenter_session');
+              console.log('✅ Sesión cerrada');
+              window.location.href = '/new.html';
             }
           } else {
             alert('No hay ninguna sesión activa.');
@@ -1489,12 +1478,11 @@
       }
 
       if (menuLogout) {
-        menuLogout.addEventListener('click', async () => {
+        menuLogout.addEventListener('click', () => {
           const localUser = localStorage.getItem('devcenter_user');
           const localUserId = localStorage.getItem('devcenter_user_id');
-          const { data: { session } } = await window.supabaseClient.auth.getSession();
           
-          if (localUser && localUserId) {
+          if (localUser || localUserId) {
             if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
               localStorage.removeItem('devcenter_user');
               localStorage.removeItem('devcenter_user_id');
@@ -1503,19 +1491,9 @@
               localStorage.removeItem('devcenter_datos');
               localStorage.removeItem('devcenter_login_time');
               localStorage.removeItem('supabase_nombrepersona');
-              console.log('✅ Sesión de tabla cuentas cerrada');
-              window.location.href = '/';
-            }
-          } else if (session?.user) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              try {
-                await window.supabaseClient.auth.signOut();
-                console.log('✅ Sesión de Supabase cerrada');
-                window.location.href = '/';
-              } catch (error) {
-                console.error('Error al cerrar sesión en Supabase:', error);
-                alert('Error al cerrar sesión. Intenta de nuevo.');
-              }
+              localStorage.removeItem('devcenter_session');
+              console.log('✅ Sesión cerrada');
+              window.location.href = '/new.html';
             }
           } else {
             alert('No hay ninguna sesión activa.');
@@ -1701,8 +1679,6 @@
       const sidebarOverlay = document.querySelector('.sidebar-overlay');
       
       function hideAll() {
-        }
-        }
         if (sidebar) sidebar.style.display = 'none';
         if (mainContent) mainContent.style.display = 'none';
         if (sidebarCollapsedControls) sidebarCollapsedControls.style.display = 'none';
@@ -1715,12 +1691,10 @@
       
       function showLogin() {
         hideAll();
-        }
       }
       
       function showCreate() {
         hideAll();
-        }
       }
       
       function showTerms() {
@@ -1769,720 +1743,35 @@
       }
       
       async function navigate() {
-        const hash = window.location.hash;
-        
-        // Verificar sesión desde localStorage (tabla 'cuentas')
+        // Check if user is logged in from Firebase (via localStorage)
         const localUser = localStorage.getItem('devcenter_user');
+        
         if (localUser) {
-          console.log('Sesion activa desde tabla cuentas:', localUser);
+          console.log('Usuario autenticado:', localUser);
           window.isLoggedIn = true;
-          
-          // Inicializar usuario en Supabase personas si es necesario
-          if (window.supabaseClient) {
-            try {
-              const { data: persona } = await window.supabaseClient
-                .from('personas')
-                .select('*')
-                .eq('nombrepersona', localUser)
-                .maybeSingle();
-              
-              if (persona) {
-                window.currentSupabaseUser = persona;
-                localStorage.setItem('supabase_nombrepersona', localUser);
-              }
-            } catch (e) {
-              console.log('Error cargando persona:', e);
-            }
-          }
-          
           showMainApp();
           return;
         }
         
-        // Verificar sesión de Supabase Auth (respaldo para OAuth)
-        if (window.supabaseClient) {
-          try {
-            const { data: { session } } = await window.supabaseClient.auth.getSession();
-            if (session?.user) {
-              window.isLoggedIn = true;
-              showMainApp();
-              return;
-            }
-          } catch (e) {
-            console.log('Error verificando sesión:', e);
-          }
-        }
-        
-        if (!window.isLoggedIn) {
+        // No user logged in - redirect to login page
+        console.log('No hay usuario autenticado, redirigiendo a login');
         window.location.href = "/new.html";
-      } else {
-          showMainApp();
-          return;
-        }
-        
-        switch(hash) {
-          case '#login':
-            showLogin();
-            break;
-          case '#create':
-            showCreate();
-            break;
-          case '#terms':
-            showTerms();
-            return;
-          case '#privacy':
-            showPrivacy();
-            return;
-          default:
-            hideTerms();
-            hidePrivacy();
-            showLanding();
-        }
       }
       
       window.addEventListener('hashchange', navigate);
       navigate();
       
       // ==========================================
-      // SUPABASE AUTH - Login con email/password y proveedores sociales
-      // Esperar a que Supabase esté listo
+      // NOTA: Firebase Authentication & Firestore
+      // Ya está manejado en new.html
+      // El usuario está autenticado si existe en localStorage
       // ==========================================
-      function waitForSupabase(callback, maxAttempts = 100) {
-        // Si ya está disponible, ejecutar inmediatamente
-        if (window.supabaseClient) {
-          callback(window.supabaseClient);
-          return;
-        }
-        
-        let resolved = false;
-        
-        // Escuchar evento personalizado
-        const handleEvent = (e) => {
-          if (!resolved) {
-            resolved = true;
-            window.removeEventListener('supabaseReady', handleEvent);
-            callback(e.detail?.client || window.supabaseClient);
-          }
-        };
-        window.addEventListener('supabaseReady', handleEvent);
-        
-        // Fallback: polling con más intentos
-        let attempts = 0;
-        const check = () => {
-          if (resolved) return;
-          attempts++;
-          if (window.supabaseClient) {
-            resolved = true;
-            window.removeEventListener('supabaseReady', handleEvent);
-            callback(window.supabaseClient);
-          } else if (attempts < maxAttempts) {
-            setTimeout(check, 100);
-          } else {
-            console.error('Supabase client no disponible después de esperar 10 segundos');
-          }
-        };
-        setTimeout(check, 100);
-      }
-      
-      waitForSupabase((authSupabase) => {
-        console.log('Supabase Auth inicializado para login/signup');
-        
-        // Función auxiliar para generar username unico
-        async function generateUniqueUsername(baseUsername, supabaseClient) {
-          let finalUsername = baseUsername;
-          let attempts = 0;
-          const maxAttempts = 5;
-          
-          while (attempts < maxAttempts) {
-            const { data: existingUser } = await supabaseClient
-              .from('cuentas')
-              .select('usuario')
-              .eq('usuario', finalUsername)
-              .maybeSingle();
-            
-            if (!existingUser) {
-              return finalUsername;
-            }
-            
-            attempts++;
-            finalUsername = baseUsername + Math.floor(Math.random() * 9999);
-          }
-          
-          return baseUsername + '_' + Date.now();
-        }
-        
-        // Función para procesar usuario OAuth y crear/actualizar cuenta
-        async function processOAuthUser(session) {
-          if (!session?.user) return false;
-          
-          console.log('✅ Usuario OAuth autenticado:', session.user.email);
-          console.log('📋 Provider:', session.user.app_metadata?.provider);
-          console.log('📋 User ID (auth.users):', session.user.id);
-          
-          const authUserId = session.user.id;
-          const email = session.user.email || '';
-          const provider = session.user.app_metadata?.provider || 'oauth';
-          let baseUsername = session.user.user_metadata?.preferred_username || 
-                         session.user.user_metadata?.user_name ||
-                         session.user.user_metadata?.name ||
-                         session.user.user_metadata?.full_name?.replace(/\s+/g, '') ||
-                         email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') || 
-                         'user' + Date.now();
-          
-          const avatar = session.user.user_metadata?.avatar_url || 
-                        session.user.user_metadata?.picture || '';
-          
-          const fullName = session.user.user_metadata?.full_name || 
-                          session.user.user_metadata?.name || baseUsername;
-          
-          let savedUsername = baseUsername;
-          let accountSaved = false;
-          let personaSaved = false;
-          
-          try {
-            // 1. Verificar/Crear en tabla cuentas
-            console.log('🔍 Verificando tabla cuentas...');
-            const { data: existingAccount, error: searchError } = await authSupabase
-              .from('cuentas')
-              .select('*')
-              .eq('email', email)
-              .maybeSingle();
-            
-            if (searchError && searchError.code !== 'PGRST116') {
-              console.log('⚠️ Error buscando en cuentas:', searchError.message);
-            }
-            
-            if (existingAccount) {
-              console.log('✅ Cuenta existente encontrada en cuentas:', existingAccount.usuario);
-              savedUsername = existingAccount.usuario;
-              accountSaved = true;
-              
-              localStorage.setItem('devcenter_user', existingAccount.usuario);
-              localStorage.setItem('devcenter_user_id', existingAccount.id);
-              localStorage.setItem('devcenter_auth_user_id', authUserId);
-              localStorage.setItem('devcenter_email', existingAccount.email);
-              localStorage.setItem('devcenter_login_time', new Date().toISOString());
-              localStorage.setItem('supabase_nombrepersona', existingAccount.usuario);
-              localStorage.setItem('devcenter_provider', provider);
-              if (existingAccount.avatar) localStorage.setItem('devcenter_avatar', existingAccount.avatar);
-            } else {
-              // Generar username unico antes de insertar
-              const uniqueUsername = await generateUniqueUsername(savedUsername, authSupabase);
-              console.log('📝 Creando nueva cuenta en tabla cuentas para:', uniqueUsername);
-              
-              const insertData = {
-                usuario: uniqueUsername,
-                email: email,
-                contrasena: '',
-                avatar: avatar,
-                datos: JSON.stringify({ 
-                  provider: provider, 
-                  auth_id: authUserId,
-                  full_name: fullName,
-                  created_via: 'oauth'
-                })
-              };
-              console.log('📤 Datos a insertar en cuentas:', insertData);
-              
-              const { data: nuevaCuenta, error: insertError } = await authSupabase
-                .from('cuentas')
-                .insert([insertData])
-                .select()
-                .single();
-              
-              if (insertError) {
-                console.error('❌ Error creando en cuentas:', insertError);
-                console.error('Código:', insertError.code, 'Mensaje:', insertError.message);
-              } else {
-                console.log('✅ Cuenta creada exitosamente en cuentas:', nuevaCuenta);
-                savedUsername = uniqueUsername;
-                accountSaved = true;
-                
-                localStorage.setItem('devcenter_user', uniqueUsername);
-                localStorage.setItem('devcenter_user_id', nuevaCuenta.id);
-                localStorage.setItem('devcenter_auth_user_id', authUserId);
-                localStorage.setItem('devcenter_email', email);
-                localStorage.setItem('devcenter_login_time', new Date().toISOString());
-                localStorage.setItem('supabase_nombrepersona', uniqueUsername);
-                localStorage.setItem('devcenter_provider', provider);
-                if (avatar) localStorage.setItem('devcenter_avatar', avatar);
-              }
-            }
-            
-            // 2. Verificar/Crear en tabla personas (para proyectos)
-            console.log('🔍 Verificando tabla personas...');
-            const { data: existingPersona, error: personaSearchError } = await authSupabase
-              .from('personas')
-              .select('*')
-              .eq('nombrepersona', savedUsername)
-              .maybeSingle();
-            
-            if (personaSearchError && personaSearchError.code !== 'PGRST116') {
-              console.log('⚠️ Error buscando en personas:', personaSearchError.message);
-            }
-            
-            if (existingPersona) {
-              console.log('✅ Usuario ya existe en personas:', existingPersona.nombrepersona);
-              window.currentSupabaseUser = existingPersona;
-              personaSaved = true;
-            } else {
-              console.log('📝 Creando registro en tabla personas...');
-              const { data: newPersona, error: personaInsertError } = await authSupabase
-                .from('personas')
-                .insert([{
-                  nombrepersona: savedUsername,
-                  limite: 0,
-                  status: 0,
-                  proyectos: []
-                }])
-                .select()
-                .single();
-              
-              if (personaInsertError) {
-                console.log('⚠️ No se pudo crear en personas:', personaInsertError.message);
-              } else {
-                console.log('✅ Registro creado en personas:', newPersona);
-                window.currentSupabaseUser = newPersona;
-                personaSaved = true;
-              }
-            }
-            
-            // Siempre guardar en localStorage para permitir el acceso
-            if (!accountSaved) {
-              localStorage.setItem('devcenter_user', savedUsername);
-              localStorage.setItem('devcenter_auth_user_id', authUserId);
-              localStorage.setItem('devcenter_email', email);
-              localStorage.setItem('devcenter_login_time', new Date().toISOString());
-              localStorage.setItem('supabase_nombrepersona', savedUsername);
-              localStorage.setItem('devcenter_provider', provider);
-              if (avatar) localStorage.setItem('devcenter_avatar', avatar);
-            }
-            
-            window.isLoggedIn = true;
-            console.log('🎉 Proceso OAuth completado para:', savedUsername, '| Cuenta guardada:', accountSaved, '| Persona guardada:', personaSaved);
-            return true;
-          } catch (e) {
-            console.error('❌ Error procesando usuario OAuth:', e);
-            localStorage.setItem('devcenter_user', savedUsername);
-            localStorage.setItem('devcenter_email', email);
-            localStorage.setItem('devcenter_auth_user_id', authUserId);
-            localStorage.setItem('devcenter_login_time', new Date().toISOString());
-            localStorage.setItem('supabase_nombrepersona', savedUsername);
-            window.isLoggedIn = true;
-            return true;
-          }
-        }
-        
-        // Detectar si es un callback de OAuth (tiene access_token en el hash)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const isOAuthCallback = hashParams.has('access_token');
-        
-        if (isOAuthCallback) {
-          console.log('🔑 Detectado callback de OAuth, procesando sesión...');
-        }
-        
-        // Escuchar cambios de autenticación (más confiable para OAuth)
-        authSupabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('🔔 Auth State Change:', event, session ? 'Con sesión' : 'Sin sesión');
-          
-          if (event === 'SIGNED_IN' && session) {
-            const processed = await processOAuthUser(session);
-            if (processed) {
-              // Limpiar el hash de la URL
-              if (window.location.hash.includes('access_token')) {
-                window.history.replaceState(null, '', '/');
-              }
-              showMainApp();
-            }
-          }
-        });
-        
-        // También verificar sesión existente
-        (async () => {
-          try {
-            const { data: { session }, error } = await authSupabase.auth.getSession();
-            console.log('🔍 Verificando sesión de Supabase Auth:', session ? 'Sesión encontrada' : 'Sin sesión');
-            
-            if (error) {
-              console.error('Error obteniendo sesión:', error);
-            }
-            
-            if (session?.user) {
-              const processed = await processOAuthUser(session);
-              if (processed) {
-                if (isOAuthCallback) {
-                  window.history.replaceState(null, '', '/');
-                }
-                showMainApp();
-              }
-            } else {
-              console.log('ℹ️ No hay sesión activa de Supabase');
-            }
-          } catch (e) {
-            console.error('Error verificando sesión:', e);
-          }
-        })();
-      
-      // Función para mostrar mensajes de error/éxito como toast
-      function showAuthMessage(container, message, type = 'error') {
-        console.log('showAuthMessage llamado:', message, type);
-        
-        // Siempre usar el toast propio para mayor control
-        let toast = document.getElementById('auth-toast');
-        if (!toast) {
-          toast = document.createElement('div');
-          toast.id = 'auth-toast';
-          toast.className = 'auth-toast';
-          document.body.appendChild(toast);
-          console.log('Toast creado');
-        }
-        
-        // Remover clase show primero para reiniciar animación
-        toast.classList.remove('show');
-        toast.className = 'auth-toast';
-        
-        // Forzar reflow para reiniciar animación
-        void toast.offsetWidth;
-        
-        toast.textContent = message;
-        toast.className = 'auth-toast ' + type + ' show';
-        console.log('Toast mostrado con clase:', toast.className);
-        
-        setTimeout(() => { 
-          toast.classList.remove('show'); 
-        }, 4000);
-      }
-      
-      function clearAuthMessage(container) {
-        // Ya no se necesita limpiar porque usamos toasts
-      }
-      
-      // Toggle mostrar formulario de email
-      const showEmailLoginBtn = document.getElementById('showEmailLoginBtn');
-      const loginFormEl = document.getElementById('loginForm');
-      if (showEmailLoginBtn && loginFormEl) {
-        showEmailLoginBtn.addEventListener('click', () => {
-          const isVisible = loginFormEl.style.display !== 'none';
-          loginFormEl.style.display = isVisible ? 'none' : 'block';
-          showEmailLoginBtn.style.display = isVisible ? 'flex' : 'none';
-        });
-      }
-      
-      const showEmailSignupBtn = document.getElementById('showEmailSignupBtn');
-      const createFormEl = document.getElementById('createForm');
-      if (showEmailSignupBtn && createFormEl) {
-        showEmailSignupBtn.addEventListener('click', () => {
-          const isVisible = createFormEl.style.display !== 'none';
-          createFormEl.style.display = isVisible ? 'none' : 'block';
-          showEmailSignupBtn.style.display = isVisible ? 'flex' : 'none';
-        });
-      }
-      
-      // Password visibility toggle
-      document.querySelectorAll('.password-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetId = btn.dataset.target;
-          const input = document.getElementById(targetId);
-          const eyeOpen = btn.querySelector('.eye-open');
-          const eyeClosed = btn.querySelector('.eye-closed');
-          
-          if (input.type === 'password') {
-            input.type = 'text';
-            eyeOpen.style.display = 'none';
-            eyeClosed.style.display = 'block';
-          } else {
-            input.type = 'password';
-            eyeOpen.style.display = 'block';
-            eyeClosed.style.display = 'none';
-          }
-        });
-      });
-      
-      // Password strength checker
-      const createPasswordInput = document.getElementById('createPassword');
-      const strengthContainer = document.getElementById('passwordStrength');
-      const strengthFill = document.getElementById('strengthFill');
-      const strengthText = document.getElementById('strengthText');
-      
-      if (createPasswordInput && strengthContainer) {
-        createPasswordInput.addEventListener('input', () => {
-          const password = createPasswordInput.value;
-          if (password.length === 0) {
-            strengthContainer.style.display = 'none';
-            return;
-          }
-          
-          strengthContainer.style.display = 'flex';
-          let strength = 0;
-          let label = '';
-          
-          if (password.length >= 6) strength++;
-          if (password.length >= 8) strength++;
-          if (/[A-Z]/.test(password)) strength++;
-          if (/[0-9]/.test(password)) strength++;
-          if (/[^A-Za-z0-9]/.test(password)) strength++;
-          
-          strengthFill.className = 'strength-fill';
-          strengthText.className = 'strength-text';
-          
-          if (strength <= 1) {
-            label = 'Debil';
-            strengthFill.classList.add('weak');
-            strengthText.classList.add('weak');
-          } else if (strength === 2) {
-            label = 'Regular';
-            strengthFill.classList.add('fair');
-            strengthText.classList.add('fair');
-          } else if (strength === 3) {
-            label = 'Buena';
-            strengthFill.classList.add('good');
-            strengthText.classList.add('good');
-          } else {
-            label = 'Fuerte';
-            strengthFill.classList.add('strong');
-            strengthText.classList.add('strong');
-          }
-          
-          strengthText.textContent = label;
-        });
-      }
-      
-      // Login con email/password - Usando tabla 'cuentas'
-      if (loginFormEl) {
-        loginFormEl.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const emailOrUser = document.getElementById('loginEmail').value.trim();
-          const password = document.getElementById('loginPassword').value;
-          const submitBtn = loginFormEl.querySelector('.split-submit-btn');
-          
-          if (!emailOrUser || !password) {
-            showAuthMessage(container, 'Por favor completa todos los campos');
-            return;
-          }
-          
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Iniciando sesion...';
-          clearAuthMessage(container);
-          
-          try {
-            // Buscar usuario por email O por nombre de usuario
-            const isEmail = emailOrUser.includes('@');
-            let cuenta = null;
-            
-            if (isEmail) {
-              const { data, error } = await authSupabase
-                .from('cuentas')
-                .select('*')
-                .eq('email', emailOrUser)
-                .maybeSingle();
-              if (error) throw new Error('Error al buscar cuenta');
-              cuenta = data;
-            } else {
-              const { data, error } = await authSupabase
-                .from('cuentas')
-                .select('*')
-                .eq('usuario', emailOrUser)
-                .maybeSingle();
-              if (error) throw new Error('Error al buscar cuenta');
-              cuenta = data;
-            }
-            
-            if (!cuenta) {
-              throw new Error('no_existe');
-            }
-            
-            // Verificar contrasena
-            if (cuenta.contrasena !== password) {
-              throw new Error('contrasena_incorrecta');
-            }
-            
-            // Guardar sesion en localStorage
-            localStorage.setItem('devcenter_user', cuenta.usuario);
-            localStorage.setItem('devcenter_user_id', cuenta.id);
-            localStorage.setItem('devcenter_email', cuenta.email);
-            localStorage.setItem('devcenter_login_time', new Date().toISOString());
-            if (cuenta.avatar) localStorage.setItem('devcenter_avatar', cuenta.avatar);
-            if (cuenta.datos) localStorage.setItem('devcenter_datos', JSON.stringify(cuenta.datos));
-            
-            // Crear/actualizar registro en personas para compatibilidad
-            const { data: existingPersona } = await authSupabase
-              .from('personas')
-              .select('id')
-              .eq('nombrepersona', cuenta.usuario)
-              .maybeSingle();
-            
-            if (!existingPersona) {
-              await authSupabase.from('personas').insert([{
-                nombrepersona: cuenta.usuario,
-                limite: 0,
-                status: 0,
-                proyectos: []
-              }]);
-            }
-            
-            showAuthMessage(container, 'Bienvenido ' + cuenta.usuario + '! Redirigiendo...', 'success');
-            
-            setTimeout(() => {
-              window.location.href = '/';
-            }, 1000);
-          } catch (error) {
-            if (error.message === 'no_existe') {
-              showAuthMessage(container, 'Cuenta no encontrada. Verifica tu email o usuario.');
-            } else if (error.message === 'contrasena_incorrecta') {
-              showAuthMessage(container, 'Contraseña incorrecta. Intenta de nuevo.');
-            } else {
-              showAuthMessage(container, error.message);
-            }
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Iniciar sesion';
-          }
-        });
-      }
-      
-      // Registro con email/password - Usando tabla 'cuentas'
-      if (createFormEl) {
-        createFormEl.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const email = document.getElementById('createEmail').value.trim();
-          const password = document.getElementById('createPassword').value;
-          const submitBtn = createFormEl.querySelector('.split-submit-btn');
-          
-          if (!email || !password) {
-            showAuthMessage(container, 'Por favor completa todos los campos');
-            return;
-          }
-          
-          if (password.length < 6) {
-            showAuthMessage(container, 'La contrasena debe tener al menos 6 caracteres');
-            return;
-          }
-          
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Creando cuenta...';
-          clearAuthMessage(container);
-          
-          try {
-            // Generar username desde email
-            const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-            
-            // Verificar si email ya existe en 'cuentas'
-            const { data: existingEmail } = await authSupabase
-              .from('cuentas')
-              .select('email')
-              .eq('email', email)
-              .maybeSingle();
-            
-            if (existingEmail) {
-              throw new Error('email_existe');
-            }
-            
-            // Verificar si username ya existe en 'cuentas'
-            const { data: existingUser } = await authSupabase
-              .from('cuentas')
-              .select('usuario')
-              .eq('usuario', username)
-              .maybeSingle();
-            
-            const finalUsername = existingUser ? username + Math.floor(Math.random() * 1000) : username;
-            
-            // Crear registro en tabla 'cuentas'
-            const { data: nuevaCuenta, error: insertError } = await authSupabase
-              .from('cuentas')
-              .insert([{
-                usuario: finalUsername,
-                email: email,
-                contrasena: password,
-                avatar: '',
-                datos: {}
-              }])
-              .select()
-              .single();
-            
-            if (insertError) {
-              console.error('Error creando cuenta:', insertError);
-              throw new Error('Error al crear la cuenta: ' + insertError.message);
-            }
-            
-            // Guardar sesion en localStorage
-            localStorage.setItem('devcenter_user', finalUsername);
-            localStorage.setItem('devcenter_user_id', nuevaCuenta.id);
-            localStorage.setItem('devcenter_email', email);
-            localStorage.setItem('devcenter_login_time', new Date().toISOString());
-            
-            // Crear registro en personas para compatibilidad
-            await authSupabase.from('personas').insert([{
-              nombrepersona: finalUsername,
-              limite: 0,
-              status: 0,
-              proyectos: []
-            }]);
-            
-            // Guardar flag de onboarding pendiente
-            localStorage.setItem('devcenter_onboarding_pending', 'true');
-            
-            showAuthMessage(container, 'Cuenta creada! Configuremos tu perfil...', 'success');
-            setTimeout(() => {
-              startOnboarding(finalUsername);
-            }, 1000);
-          } catch (error) {
-            if (error.message === 'email_existe') {
-              showAuthMessage(container, 'Este email ya tiene cuenta. Por favor inicia sesion.');
-            } else {
-              showAuthMessage(container, error.message);
-            }
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Crear cuenta';
-          }
-        });
-      }
-      
-      // Login con Google
-      const googleLoginBtn = document.getElementById('googleLoginBtn');
-      const googleSignupBtn = document.getElementById('googleSignupBtn');
-      
-      async function handleGoogleAuth() {
-        try {
-          const { data, error } = await authSupabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: window.location.origin + '/'
-            }
-          });
-          if (error) throw error;
-        } catch (error) {
-          console.error('Error con Google Auth:', error);
-          alert('Error al conectar con Google: ' + error.message);
-        }
-      }
-      
-      if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleAuth);
-      if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleAuth);
-      
-      // Login con GitHub
-      const githubLoginBtn = document.getElementById('githubLoginBtn');
-      const githubSignupBtn = document.getElementById('githubSignupBtn');
-      
-      async function handleGitHubAuth() {
-        try {
-          const { data, error } = await authSupabase.auth.signInWithOAuth({
-            provider: 'github',
-            options: {
-              redirectTo: window.location.origin + '/'
-            }
-          });
-          if (error) throw error;
-        } catch (error) {
-          console.error('Error con GitHub Auth:', error);
-          alert('Error al conectar con GitHub: ' + error.message);
-        }
-      }
-      
-      if (githubLoginBtn) githubLoginBtn.addEventListener('click', handleGitHubAuth);
-      if (githubSignupBtn) githubSignupBtn.addEventListener('click', handleGitHubAuth);
-      
-      }); // Cierre de waitForSupabase callback
+      console.log('✅ index.html cargó correctamente con usuario:', localStorage.getItem('devcenter_user'));
+      // ==========================================
+      // Auth form handlers (removed - not used in index.html)
+      // All auth is handled in new.html with Firebase
+      // ==========================================
+      console.log('✅ Auth section initialized');
       
       const landingDemoBtn = document.getElementById('landingDemoBtn');
       if (landingDemoBtn) {
@@ -2960,50 +2249,31 @@
           onboardingComplete.innerHTML = 'Guardando...';
           
           try {
-            // Esperar que Supabase este listo
-            await waitForSupabase(async (supabase) => {
-              const userId = localStorage.getItem('devcenter_user_id');
-              
-              // Actualizar cuenta con username y avatar
-              const updateData = {
-                usuario: onboardingData.username,
-                avatar: onboardingData.avatar,
-                datos: {
-                  avatarImage: onboardingData.avatarImage
-                }
-              };
-              
-              const { error } = await supabase
-                .from('cuentas')
-                .update(updateData)
-                .eq('id', userId);
-              
-              if (error) {
-                console.error('Error guardando onboarding:', error);
-              }
-              
-              // Guardar en localStorage
-              localStorage.setItem('devcenter_user', onboardingData.username);
+            // Save onboarding data to localStorage (Firebase auth is already in localStorage)
+            localStorage.setItem('devcenter_user', onboardingData.username);
+            if (onboardingData.avatar) {
               localStorage.setItem('devcenter_avatar', onboardingData.avatar);
-              if (onboardingData.avatarImage) {
-                localStorage.setItem('devcenter_avatar_image', onboardingData.avatarImage);
-              }
-              localStorage.removeItem('devcenter_onboarding_pending');
-              
-              // Limpiar progreso de onboarding (completado)
-              clearOnboardingProgress();
-              
-              // Limpiar hash
-              window.location.hash = '';
-              
-              // Mostrar pantalla de carga
-              document.getElementById('loadingScreen').style.display = 'flex';
-              
-              // Redirigir despues de 2 segundos
-              setTimeout(() => {
-                window.location.href = '/';
-              }, 2500);
-            });
+            }
+            if (onboardingData.avatarImage) {
+              localStorage.setItem('devcenter_avatar_image', onboardingData.avatarImage);
+            }
+            
+            // Clear onboarding flag
+            localStorage.removeItem('devcenter_onboarding_pending');
+            
+            // Clear onboarding progress (completed)
+            clearOnboardingProgress();
+            
+            // Clear hash
+            window.location.hash = '';
+            
+            // Show loading screen
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            // Redirect after 2 seconds
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2500);
           } catch (error) {
             console.error('Error en onboarding:', error);
             onboardingComplete.disabled = false;

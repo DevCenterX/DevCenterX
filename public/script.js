@@ -116,90 +116,56 @@ function createLoadingSpinner(message = 'Cargando...', size = 'normal') {
 // Hacer disponible globalmente
 window.createLoadingSpinner = createLoadingSpinner;
 
-// ==================== SUPABASE CLIENT ====================
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// ==================== SUPABASE CLIENT (STUB - Migrado a Firebase) ====================
+// Supabase ha sido reemplazado por Firebase Authentication + Firestore
+// Este stub previene errores en código legacy que aún menciona supabaseClient
 
-const supabaseUrl = window.SUPABASE_URL;
-const supabaseKey = window.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = {
+  from: () => ({
+    select: async () => ({ data: [], error: null }),
+    insert: async () => ({ data: [], error: null }),
+    update: async () => ({ data: [], error: null }),
+    delete: async () => ({ data: [], error: null })
+  }),
+  auth: {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    signOut: async () => ({ error: null })
+  }
+};
 
-// Hacer disponible globalmente para logout
+// Hacer disponible globalmente para evitar errores de referencias
 window.supabaseClient = supabase;
 
-// Disparar evento cuando Supabase esté listo
+// Disparar evento cuando Supabase esté "listo" (para compatibilidad)
 window.dispatchEvent(new CustomEvent('supabaseReady', { detail: { client: supabase } }));
 
-console.log('✅ Cliente Supabase inicializado');
+console.log('✅ Stub de Cliente Supabase inicializado (Firebase activo)');
 
-// Usuario actual de Supabase
+// Usuario actual - usar localStorage en lugar de Supabase
 let currentSupabaseUser = null;
 
-// Funciones de Supabase - Verificar y crear usuario si NO existe
+// Funciones de Supabase - LEGACY (simplificadas para Firebase migration)
 async function initSupabaseUser(userName, userId = null) {
   if (!userName) {
-    console.warn('⚠️ No se puede inicializar usuario de Supabase sin nombre de usuario');
+    console.warn('⚠️ No se puede inicializar usuario sin nombre de usuario');
     return null;
   }
   try {
-    let user = null;
-    let error = null;
-
-    // Buscar usuario por nombrepersona
-    const result = await supabase
-      .from("personas")
-      .select("*")
-      .eq("nombrepersona", userName)
-      .maybeSingle();
+    // En Firebase, los usuarios se crean en new.html durante auth
+    // Aquí solo cargamos desde localStorage
+    console.log(`✅ Usuario inicializado: ${userName}`);
     
-    user = result.data;
-    error = result.error;
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error buscando usuario:', error);
-      return null;
-    }
-
-    // Si el usuario existe, devolverlo
-    if (user) {
-      console.log(`✅ Usuario encontrado: ${userName}`);
-      
-      currentSupabaseUser = user;
-      
-      // Guardar nombrepersona en localStorage para que Programar/ pueda accederlo
-      localStorage.setItem('supabase_nombrepersona', user.nombrepersona);
-      console.log('✅ Usuario Supabase cargado:', user.nombrepersona);
-      console.log('💾 Nombre guardado en localStorage:', user.nombrepersona);
-      
-      return user;
-    }
-
-    // Si NO existe, crear nuevo usuario automáticamente
-    console.log(`📝 Usuario ${userName} no existe, creando automáticamente...`);
+    currentSupabaseUser = {
+      nombrepersona: userName,
+      limite: 0,
+      status: 0,
+      proyectos: []
+    };
     
-    const { data: newUser, error: insertError } = await supabase
-      .from("personas")
-      .insert([{
-        nombrepersona: userName,
-        limite: 0,
-        status: 0,
-        proyectos: []
-      }])
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('❌ Error creando usuario:', insertError);
-      return null;
-    }
-
-    currentSupabaseUser = newUser;
+    // Guardar nombre en localStorage para compatibilidad
+    localStorage.setItem('supabase_nombrepersona', userName);
     
-    // Guardar nombrepersona en localStorage para que Programar/ pueda accederlo
-    localStorage.setItem('supabase_nombrepersona', newUser.nombrepersona);
-    console.log('✅ Usuario creado y cargado exitosamente:', newUser.nombrepersona);
-    console.log('💾 Nombre guardado en localStorage:', newUser.nombrepersona);
-    
-    return newUser;
+    return currentSupabaseUser;
   } catch (err) {
     console.error('Error en initSupabaseUser:', err);
     return null;
@@ -1329,56 +1295,8 @@ const POP_CONSISTENCY_PENALTY = 0.1;
     await initSupabaseUser(loggedUserName, null);
     console.log(`✅ Usuario inicializado desde tabla 'cuentas'`);
   } else {
-    // SEGUNDO: Verificar sesión de Supabase Auth (para OAuth)
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('🔍 Verificando sesión de Supabase Auth:', session ? 'Sesión activa' : 'Sin sesión');
-    
-    if (session?.user) {
-      try {
-        const userEmail = session.user.email;
-        console.log(`✅ Sesión activa detectada, email: ${userEmail}`);
-        
-        // Obtener username desde la tabla "cuentas" usando email
-        const { data: cuentaData } = await supabase
-          .from('cuentas')
-          .select('usuario')
-          .eq('email', userEmail)
-          .maybeSingle();
-        
-        if (cuentaData?.usuario) {
-          loggedUserName = cuentaData.usuario;
-          console.log(`✅ Username encontrado en cuentas: ${loggedUserName}`);
-          
-          // Inicializar o crear usuario en tabla "personas"
-          await initSupabaseUser(loggedUserName);
-          isUserLoggedIn = true;
-          console.log(`✅ Usuario Supabase inicializado correctamente`);
-          
-          // Verificar si hay redirección pendiente después del login
-          const redirectAfterLogin = localStorage.getItem('redirect_after_login');
-          if (redirectAfterLogin) {
-            console.log(`🔄 Redirección pendiente a: ${redirectAfterLogin}`);
-            // Eliminar el valor de redirección
-            localStorage.removeItem('redirect_after_login');
-            
-            // Cambiar a la sección correspondiente
-            setTimeout(() => {
-              const targetNavItem = document.querySelector(`.nav-item[data-section="${redirectAfterLogin}"]`);
-              if (targetNavItem) {
-                targetNavItem.click();
-                console.log(`✅ Redirigido a sección: ${redirectAfterLogin}`);
-              }
-            }, 500); // Esperar medio segundo para que todo se cargue
-          }
-        } else {
-          console.log('⚠️ No se encontró usuario en cuentas para este email');
-        }
-      } catch (e) {
-        console.error('❌ Error al verificar sesión:', e);
-      }
-    } else {
-      console.log('ℹ️ No hay sesión activa de Supabase');
-    }
+    // SEGUNDO: Sin usuario en localStorage, Firebase OAuth se maneja en new.html
+    console.log('ℹ️ Sin sesión local encontrada. Firebase authentication en new.html');
   }
   
   // Actualizar información del plan del usuario SOLO si está logeado
@@ -5844,34 +5762,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Exponer funciones útiles globalmente
 window.trackAIUsage = async (increment = 5) => {
-  // Primero intentar obtener el nombre de localStorage
+  // Obtener nombre de usuario desde localStorage
   const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
   
-  if (nombreUsuario) {
-    return await window.supabaseIntegration.updateUsageLimit(nombreUsuario, increment);
-  }
-  
-  // Si no hay en localStorage, intentar desde sesión de Supabase
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (session?.user) {
+  if (nombreUsuario && window.supabaseIntegration) {
     try {
-      const userEmail = session.user.email;
-      
-      // Obtener username desde la tabla "cuentas" usando email
-      const { data: cuentaData } = await supabase
-        .from('cuentas')
-        .select('usuario')
-        .eq('email', userEmail)
-        .maybeSingle();
-      
-      if (cuentaData?.usuario) {
-        return await window.supabaseIntegration.updateUsageLimit(cuentaData.usuario, increment);
-      }
+      return await window.supabaseIntegration.updateUsageLimit(nombreUsuario, increment);
     } catch (e) {
-      console.error('Error al obtener usuario:', e);
+      console.error('Error al actualizar límite de uso:', e);
+      return false;
     }
   }
+  
+  // Si no hay usuario, simplemente retornar false
+  console.warn('No user found for usage tracking');
   return false;
 };
 
