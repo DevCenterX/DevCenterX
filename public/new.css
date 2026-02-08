@@ -1,0 +1,130 @@
+/* Epic Onboarding Styles - new.css */
+:root{
+  --bg-gradient-1: #0f172a; /* dark navy */
+  --bg-gradient-2: #0ea5a3; /* teal */
+  --card-bg: rgba(255,255,255,0.04);
+  --muted: rgba(255,255,255,0.7);
+  --accent: #ffb703;
+}
+
+/* Fullscreen onboarding overlay */
+.onboarding-modal-overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter: blur(6px) saturate(120%);
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(14,165,163,0.14), transparent 10%),
+              radial-gradient(900px 500px at 90% 90%, rgba(255,183,3,0.06), transparent 10%),
+              linear-gradient(135deg,var(--bg-gradient-1), #042f2e 60%);
+  z-index:9999;
+}
+
+.onboarding-modal{
+  width:min(740px, 94%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius:16px;
+  padding:28px;
+  box-shadow: 0 10px 40px rgba(2,6,23,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+  color: #e6f6f5;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.onboarding-modal h2{
+  margin:0 0 10px 0;
+  font-size:22px;
+  letter-spacing: -0.2px;
+  color: #fff;
+}
+
+.onboarding-modal label{
+  display:block;
+  margin-top:12px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.onboarding-modal input[type="text"], .onboarding-modal input[type="email"], .onboarding-modal input[readonly]{
+  width:100%;
+  padding:10px 12px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.25);
+  color:#fff;
+  outline:none;
+}
+
+.onboarding-modal input[readonly]{
+  opacity:0.85;
+}
+
+#usernameError{ font-size:13px; color:#ff6b6b; margin-top:8px; }
+
+.onboarding-modal .actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+  justify-content:flex-end;
+}
+
+.onboarding-modal button{
+  padding:10px 16px;
+  border-radius:10px;
+  border:0;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.onboarding-modal button#onboardSaveBtn{
+  background: linear-gradient(90deg,var(--accent), #ff8a00);
+  color:#071014;
+  box-shadow: 0 6px 18px rgba(255,136,0,0.18);
+}
+
+.onboarding-modal button#chooseInitialAvatar{
+  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+.onboarding-modal input[type="file"]{
+  color:var(--muted);
+}
+
+/* mobile tweaks */
+@media (max-width:520px){
+  .onboarding-modal{ padding:18px; border-radius:12px; }
+  .onboarding-modal h2{ font-size:18px; }
+}
+
+/* small decorative corner glow */
+.onboarding-modal:before{
+  content:'';
+  position:absolute;
+  width:320px; height:320px; border-radius:50%;
+  right:-140px; top:-120px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,183,3,0.12), transparent 30%);
+  pointer-events:none;
+}
+
+/* subtle entrance animation */
+.onboarding-modal-overlay .onboarding-modal{
+  transform: translateY(8px) scale(0.995);
+  opacity:0;
+  transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .25s ease;
+}
+.onboarding-modal-overlay[style*="display:flex"] .onboarding-modal{
+  transform: translateY(0) scale(1);
+  opacity:1;
+}
+
+/* Toast style for messages (reused) */
+.auth-toast{ position: fixed; left:50%; transform:translateX(-50%); bottom:36px; padding:10px 16px; border-radius:10px; background: rgba(10,20,20,0.9); color:#fff; z-index:10010; box-shadow:0 8px 30px rgba(2,6,23,0.6); }
+.auth-toast.error{ background: linear-gradient(90deg,#ff5c53, #ff8a66); }
+.auth-toast.success{ background: linear-gradient(90deg,#00d4a7,#008f7a); }
+
+/* ensure file input and choose button are inline */
+.onboarding-modal .avatar-row{ display:flex; gap:10px; align-items:center; margin-top:8px; }

@@ -9,6 +9,7 @@
   <title>DevCenterX - Login & Registro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="new.css?v=1.0">
   <script>
     (function() {
       const user = localStorage.getItem('devcenter_user');
@@ -1097,9 +1098,8 @@
                   <button id="chooseInitialAvatar">Usar inicial</button>
                   <input id="avatarFile" type="file" accept="image/*" />
                 </div>
-                <div style="margin-top:12px;display:flex;gap:8px;">
+                <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
                   <button id="onboardSaveBtn">Guardar</button>
-                  <button id="onboardSkipBtn">Omitir</button>
                 </div>
               </div>`;
             document.body.appendChild(modal);
@@ -1162,10 +1162,7 @@
             resolve(updated);
           };
 
-          document.getElementById('onboardSkipBtn').onclick = () => {
-            modal.style.display = 'none';
-            resolve(null);
-          };
+          // Skip removed: users must complete username/avatar to continue (default avatar allowed)
         } catch (err) {
           console.error('Onboarding error', err);
           reject(err);
