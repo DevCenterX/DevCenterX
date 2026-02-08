@@ -938,7 +938,11 @@
       doc,
       setDoc,
       getDoc,
-      serverTimestamp
+      serverTimestamp,
+      collection,
+      query,
+      where,
+      getDocs
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -966,6 +970,63 @@
     };
 
     // Firestore helpers based on FIREBASE_SCHEMA.md
+    
+    // Buscar usuario por email
+    async function findUserByEmail(email) {
+      if (!email) return null;
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          return { uid: snapshot.docs[0].id, data: snapshot.docs[0].data() };
+        }
+      } catch (error) {
+        console.error('Error buscando usuario por email:', error);
+      }
+      return null;
+    }
+
+    // Vincular nuevo proveedor a usuario existente
+    async function linkProviderToExistingUser(existingUid, newUser, newProvider) {
+      try {
+        const userRef = doc(db, 'users', existingUid);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) return null;
+        
+        const existing = userDoc.data();
+        let providers = existing.provider || 'email';
+        
+        // Convertir a array si es string
+        if (typeof providers === 'string') {
+          providers = [providers];
+        } else if (!Array.isArray(providers)) {
+          providers = [newProvider];
+        }
+        
+        // Agregar nuevo provider si no existe
+        if (!providers.includes(newProvider)) {
+          providers.push(newProvider);
+        }
+        
+        // Actualizar el documento
+        await setDoc(userRef, {
+          ...existing,
+          provider: providers,
+          displayName: newUser.displayName || existing.displayName,
+          avatar: newUser.photoURL || existing.avatar,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        
+        return { uid: existingUid, providers };
+      } catch (error) {
+        console.error('Error vinculando proveedor:', error);
+        return null;
+      }
+    }
+
+    // Crear o actualizar usuario
     async function createOrUpdateUserRecord(user, opts = {}) {
       if (!user || !user.uid) return null;
       const uid = user.uid;
@@ -1021,10 +1082,31 @@
       },
       signInWithProvider: async (providerName) => {
         const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
-        try { await createOrUpdateUserRecord(result.user, { provider: providerName }); } catch (e) { console.error('firestore user create error', e); }
-        return result;
+        const newUser = result.user;
+        
+        // Buscar si el email ya existe en otra cuenta
+        const existingUser = await findUserByEmail(newUser.email);
+        
+        if (existingUser) {
+          // El email ya existe, vincular el nuevo proveedor
+          console.log(`📎 Vinculando ${providerName} a usuario existente`, existingUser.uid);
+          await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
+          // Devolver los datos del usuario existente para mantener continuidad
+          return {
+            user: { ...newUser, uid: existingUser.uid },
+            existingUserId: existingUser.uid,
+            existingUserData: existingUser.data
+          };
+        } else {
+          // Email no existe, crear nuevo usuario
+          console.log(`✨ Creando nuevo usuario con ${providerName}`);
+          const userData = await createOrUpdateUserRecord(newUser, { provider: providerName });
+          return { user: newUser, userData };
+        }
       },
-      createOrUpdateUserRecord
+      createOrUpdateUserRecord,
+      findUserByEmail,
+      linkProviderToExistingUser
     };
 
     // fire an event for pages waiting for Firebase
@@ -1413,19 +1495,27 @@
         try {
           const result = await authHelpers.signInWithProvider('google');
           const user = result.user;
+          
+          // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
+          const userId = result.existingUserId || user.uid;
+          const userData = result.existingUserData || result.userData;
+          
           const sessionData = {
             usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
-            id: user.uid,
+            id: userId,
             email: user.email,
             loginTime: new Date().toISOString(),
             avatar: user.photoURL || ''
           };
+          
           localStorage.setItem('devcenter_user', sessionData.usuario);
           localStorage.setItem('devcenter_user_id', sessionData.id);
           localStorage.setItem('devcenter_email', sessionData.email);
           localStorage.setItem('devcenter_login_time', sessionData.loginTime);
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
-          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
+          
+          const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
+          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
           console.error('Google Auth Error:', err);
@@ -1443,19 +1533,27 @@
         try {
           const result = await authHelpers.signInWithProvider('github');
           const user = result.user;
+          
+          // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
+          const userId = result.existingUserId || user.uid;
+          const userData = result.existingUserData || result.userData;
+          
           const sessionData = {
             usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
-            id: user.uid,
+            id: userId,
             email: user.email,
             loginTime: new Date().toISOString(),
             avatar: user.photoURL || ''
           };
+          
           localStorage.setItem('devcenter_user', sessionData.usuario);
           localStorage.setItem('devcenter_user_id', sessionData.id);
           localStorage.setItem('devcenter_email', sessionData.email);
           localStorage.setItem('devcenter_login_time', sessionData.loginTime);
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
-          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
+          
+          const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
+          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
           console.error('GitHub Auth Error:', err);
