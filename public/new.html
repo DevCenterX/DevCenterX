@@ -135,7 +135,7 @@
         </div>
         <div class="trusted-logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
-          <span>Supabase</span>
+          <span>Firebase</span>
         </div>
         <div class="trusted-logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"/></svg>
@@ -196,7 +196,7 @@
             </svg>
           </div>
           <h3>Almacenamiento en la Nube</h3>
-          <p>Tus proyectos se guardan automaticamente en la nube con Supabase. Accede desde cualquier lugar.</p>
+          <p>Tus proyectos se guardan automaticamente en la nube con Firebase. Accede desde cualquier lugar.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon feature-icon-export">
@@ -476,7 +476,7 @@
             </svg>
             <h3>Como funciona el almacenamiento?</h3>
           </div>
-          <p class="faq-answer">Utilizamos Supabase, una plataforma de base de datos en la nube, para almacenar tus proyectos de forma segura. Puedes acceder a ellos desde cualquier dispositivo en cualquier momento.</p>
+          <p class="faq-answer">Utilizamos Firebase, una plataforma de servicios en la nube de Google, para almacenar y autenticar tus proyectos de forma segura. Puedes acceder a ellos desde cualquier dispositivo en cualquier momento.</p>
         </div>
       </div>
     </section>
@@ -919,6 +919,118 @@
   <script src="keys.js?v=4.0"></script>
   <script src="ai-prompts-min.js?v=1.0"></script>
 
+  <script type="module">
+    // Initialize Firebase and expose simple auth helpers on window
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      GithubAuthProvider,
+      signInWithPopup,
+      updateProfile,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+      authDomain: "devcenter-agent-48c86.firebaseapp.com",
+      projectId: "devcenter-agent-48c86",
+      storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+      messagingSenderId: "911929994293",
+      appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+      measurementId: "G-S5GTYBRVK8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseApp = app;
+    window.firebaseAnalytics = analytics;
+    window.firebaseAuth = auth;
+    window.firebaseDB = db;
+    window.firebaseProviders = {
+      google: new GoogleAuthProvider(),
+      github: new GithubAuthProvider()
+    };
+
+    // Firestore helpers based on FIREBASE_SCHEMA.md
+    async function createOrUpdateUserRecord(user, opts = {}) {
+      if (!user || !user.uid) return null;
+      const uid = user.uid;
+      const userRef = doc(db, 'users', uid);
+      const now = serverTimestamp();
+
+      const existing = await getDoc(userRef);
+      const username = user.displayName ? user.displayName.replace(/\s+/g, '') : (user.email ? user.email.split('@')[0] : uid);
+
+      const data = {
+        uid: uid,
+        email: user.email || '',
+        username: username,
+        displayName: user.displayName || '',
+        avatar: user.photoURL || '',
+        provider: opts.provider || 'email',
+        updatedAt: now,
+        plan: opts.plan || 'free',
+        limit: opts.limit || 0
+      };
+
+      if (!existing.exists()) {
+        data.createdAt = now;
+      }
+
+      await setDoc(userRef, data, { merge: true });
+
+      // ensure proyectos doc exists
+      const proyectosRef = doc(db, 'proyectos', uid);
+      const projExisting = await getDoc(proyectosRef);
+      if (!projExisting.exists()) {
+        await setDoc(proyectosRef, {
+          uid: uid,
+          proyectos: [],
+          createdAt: now
+        });
+      }
+
+      return data;
+    }
+
+    // expose simple helpers used by the non-module script
+    window.firebaseAuthHelpers = {
+      signInEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
+      createEmail: async (email, password, displayName) => {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        if (displayName) {
+          try { await updateProfile(userCred.user, { displayName }); } catch (e) { /* ignore */ }
+        }
+        // create Firestore records
+        try { await createOrUpdateUserRecord(userCred.user, { provider: 'email' }); } catch (e) { console.error('firestore user create error', e); }
+        return userCred;
+      },
+      signInWithProvider: async (providerName) => {
+        const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
+        try { await createOrUpdateUserRecord(result.user, { provider: providerName }); } catch (e) { console.error('firestore user create error', e); }
+        return result;
+      },
+      createOrUpdateUserRecord
+    };
+
+    // fire an event for pages waiting for Firebase
+    window.dispatchEvent(new CustomEvent('firebaseReady', { detail: { helpers: window.firebaseAuthHelpers } }));
+  </script>
+
   <!-- ==================== TERMS MODAL (#terms) ==================== -->
   <div id="termsPage" class="legal-modal-overlay" style="display: none;">
     <div class="legal-modal">
@@ -1003,9 +1115,9 @@
   </div>
 
   <script>
-    function waitForSupabase(callback, maxAttempts = 100) {
-      if (window.supabaseClient) {
-        callback(window.supabaseClient);
+    function waitForFirebase(callback, maxAttempts = 100) {
+      if (window.firebaseAuthHelpers) {
+        callback(window.firebaseAuthHelpers);
         return;
       }
 
@@ -1013,24 +1125,24 @@
       const handleEvent = (e) => {
         if (!resolved) {
           resolved = true;
-          window.removeEventListener('supabaseReady', handleEvent);
-          callback(e.detail?.client || window.supabaseClient);
+          window.removeEventListener('firebaseReady', handleEvent);
+          callback(e.detail?.helpers || window.firebaseAuthHelpers);
         }
       };
-      window.addEventListener('supabaseReady', handleEvent);
+      window.addEventListener('firebaseReady', handleEvent);
 
       let attempts = 0;
       const check = () => {
         if (resolved) return;
         attempts++;
-        if (window.supabaseClient) {
+        if (window.firebaseAuthHelpers) {
           resolved = true;
-          window.removeEventListener('supabaseReady', handleEvent);
-          callback(window.supabaseClient);
+          window.removeEventListener('firebaseReady', handleEvent);
+          callback(window.firebaseAuthHelpers);
         } else if (attempts < maxAttempts) {
           setTimeout(check, 100);
         } else {
-          console.error('Supabase client no disponible');
+          console.error('Firebase auth helpers no disponibles');
         }
       };
       setTimeout(check, 100);
@@ -1194,8 +1306,8 @@
     };
     navigate();
 
-    waitForSupabase((authSupabase) => {
-      // Login con email/password
+    waitForFirebase((authHelpers) => {
+      // Login con email/password (Firebase)
       if (loginFormEl) {
         loginFormEl.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -1212,54 +1324,32 @@
           submitBtn.textContent = 'Iniciando sesion...';
 
           try {
-            const isEmail = emailOrUser.includes('@');
-            let cuenta = null;
+            const email = emailOrUser; // Firebase auth uses email
+            const userCred = await authHelpers.signInEmail(email, password);
+            const user = userCred.user;
+            try {
+              await authHelpers.createOrUpdateUserRecord(user, { provider: 'email' });
+            } catch (e) { console.error('createOrUpdateUserRecord error', e); }
 
-            if (isEmail) {
-              const { data } = await authSupabase
-                .from('cuentas')
-                .select('*')
-                .eq('email', emailOrUser)
-                .maybeSingle();
-              cuenta = data;
-            } else {
-              const { data } = await authSupabase
-                .from('cuentas')
-                .select('*')
-                .eq('usuario', emailOrUser)
-                .maybeSingle();
-              cuenta = data;
-            }
-
-            if (!cuenta) throw new Error('no_existe');
-            if (cuenta.contrasena !== password) throw new Error('contrasena_incorrecta');
-
-            // Guardar toda la sesión con todos los datos
             const sessionData = {
-              usuario: cuenta.usuario,
-              id: cuenta.id,
-              email: cuenta.email,
+              usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+              id: user.uid,
+              email: user.email,
               loginTime: new Date().toISOString(),
-              avatar: cuenta.avatar || '',
-              datos: cuenta.datos || {}
+              avatar: user.photoURL || ''
             };
-            localStorage.setItem('devcenter_user', cuenta.usuario);
-            localStorage.setItem('devcenter_user_id', cuenta.id);
-            localStorage.setItem('devcenter_email', cuenta.email);
-            localStorage.setItem('devcenter_login_time', new Date().toISOString());
-            if (cuenta.avatar) localStorage.setItem('devcenter_avatar', cuenta.avatar);
+
+            localStorage.setItem('devcenter_user', sessionData.usuario);
+            localStorage.setItem('devcenter_user_id', sessionData.id);
+            localStorage.setItem('devcenter_email', sessionData.email);
+            localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+            if (sessionData.avatar) localStorage.setItem('devcenter_avatar', sessionData.avatar);
             localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
 
-            showAuthMessage('Bienvenido ' + cuenta.usuario + '! Redirigiendo...', 'success');
+            showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
             setTimeout(() => { window.location.href = '/index.html'; }, 1500);
           } catch (error) {
-            if (error.message === 'no_existe') {
-              showAuthMessage('Cuenta no encontrada.');
-            } else if (error.message === 'contrasena_incorrecta') {
-              showAuthMessage('Contraseña incorrecta.');
-            } else {
-              showAuthMessage(error.message);
-            }
+            showAuthMessage(error.message || 'Error iniciando sesion');
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Iniciar sesion';
@@ -1267,7 +1357,7 @@
         });
       }
 
-      // Registro con email/password
+      // Registro con email/password (Firebase)
       if (createFormEl) {
         createFormEl.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -1285,67 +1375,27 @@
 
           try {
             const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+            const userCred = await authHelpers.createEmail(email, password, username);
+            const user = userCred.user;
 
-            const { data: existingEmail } = await authSupabase
-              .from('cuentas')
-              .select('email')
-              .eq('email', email)
-              .maybeSingle();
-
-            if (existingEmail) throw new Error('email_existe');
-
-            const { data: existingUser } = await authSupabase
-              .from('cuentas')
-              .select('usuario')
-              .eq('usuario', username)
-              .maybeSingle();
-
-            const finalUsername = existingUser ? username + Math.floor(Math.random() * 1000) : username;
-
-            const { data: nuevaCuenta, error } = await authSupabase
-              .from('cuentas')
-              .insert([{
-                usuario: finalUsername,
-                email: email,
-                contrasena: password,
-                avatar: '',
-                datos: {}
-              }])
-              .select()
-              .single();
-
-            if (error) throw error;
-
-            // Guardar toda la sesión con todos los datos
             const sessionData = {
-              usuario: finalUsername,
-              id: nuevaCuenta.id,
-              email: email,
+              usuario: user.displayName || username,
+              id: user.uid,
+              email: user.email,
               loginTime: new Date().toISOString(),
-              avatar: '',
-              datos: nuevaCuenta.datos || {}
+              avatar: user.photoURL || ''
             };
-            localStorage.setItem('devcenter_user', finalUsername);
-            localStorage.setItem('devcenter_user_id', nuevaCuenta.id);
-            localStorage.setItem('devcenter_email', email);
-            localStorage.setItem('devcenter_login_time', new Date().toISOString());
-            localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
 
-            await authSupabase.from('personas').insert([{
-              nombrepersona: finalUsername,
-              limite: 0,
-              status: 0,
-              proyectos: []
-            }]);
+            localStorage.setItem('devcenter_user', sessionData.usuario);
+            localStorage.setItem('devcenter_user_id', sessionData.id);
+            localStorage.setItem('devcenter_email', sessionData.email);
+            localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+            localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
 
             showAuthMessage('Cuenta creada! Redirigiendo...', 'success');
             setTimeout(() => { window.location.href = '/index.html'; }, 1500);
           } catch (error) {
-            if (error.message === 'email_existe') {
-              showAuthMessage('Este email ya tiene cuenta.');
-            } else {
-              showAuthMessage(error.message);
-            }
+            showAuthMessage(error.message || 'Error creando cuenta');
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Crear cuenta';
@@ -1353,26 +1403,56 @@
         });
       }
 
-      // OAuth
+      // OAuth (Firebase)
       const googleLoginBtn = document.getElementById('googleLoginBtn');
       const googleSignupBtn = document.getElementById('googleSignupBtn');
       const githubLoginBtn = document.getElementById('githubLoginBtn');
       const githubSignupBtn = document.getElementById('githubSignupBtn');
 
       async function handleGoogleAuth() {
-        const { error } = await authSupabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin + '/' }
-        });
-        if (error) alert('Error: ' + error.message);
+        try {
+          const result = await authHelpers.signInWithProvider('google');
+          const user = result.user;
+          const sessionData = {
+            usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+            id: user.uid,
+            email: user.email,
+            loginTime: new Date().toISOString(),
+            avatar: user.photoURL || ''
+          };
+          localStorage.setItem('devcenter_user', sessionData.usuario);
+          localStorage.setItem('devcenter_user_id', sessionData.id);
+          localStorage.setItem('devcenter_email', sessionData.email);
+          localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+          localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
+          setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        }
       }
 
       async function handleGitHubAuth() {
-        const { error } = await authSupabase.auth.signInWithOAuth({
-          provider: 'github',
-          options: { redirectTo: window.location.origin + '/' }
-        });
-        if (error) alert('Error: ' + error.message);
+        try {
+          const result = await authHelpers.signInWithProvider('github');
+          const user = result.user;
+          const sessionData = {
+            usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+            id: user.uid,
+            email: user.email,
+            loginTime: new Date().toISOString(),
+            avatar: user.photoURL || ''
+          };
+          localStorage.setItem('devcenter_user', sessionData.usuario);
+          localStorage.setItem('devcenter_user_id', sessionData.id);
+          localStorage.setItem('devcenter_email', sessionData.email);
+          localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+          localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
+          setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+        } catch (err) {
+          alert('Error: ' + (err.message || err));
+        }
       }
 
       if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleAuth);
@@ -1380,7 +1460,7 @@
       if (githubLoginBtn) githubLoginBtn.addEventListener('click', handleGitHubAuth);
       if (githubSignupBtn) githubSignupBtn.addEventListener('click', handleGitHubAuth);
 
-      // Animated Stats
+      // Animated Stats (unchanged)
       const animateStats = () => {
         const statNumbers = document.querySelectorAll('.stat-number[data-target]');
 
