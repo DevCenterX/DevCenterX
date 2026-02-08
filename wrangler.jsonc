@@ -11,8 +11,9 @@
     "GEMINI_API_URL": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
     "GITHUB_API_URL": "https://api.github.com"
   },
+  // Development environment (local testing)
   "env": {
-    "production": {
+    "development": {
       "vars": {
         "GEMINI_API_KEY": "",
         "GEMINI_API_URL": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
@@ -20,6 +21,18 @@
         "SUPABASE_ANON_KEY": "",
         "GITHUB_API_URL": "https://api.github.com"
       }
+    },
+    // Production environment (Cloudflare Pages deployment)
+    // Configure these secrets in your Cloudflare Dashboard: Settings → Environment
+    "production": {
+      "vars": {
+        "GEMINI_API_URL": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+        "GITHUB_API_URL": "https://api.github.com"
+      }
+      // NOTE: Add to Cloudflare Dashboard Secrets:
+      // - GEMINI_API_KEY
+      // - SUPABASE_URL
+      // - SUPABASE_ANON_KEY
     }
   }
 }

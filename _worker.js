@@ -7,7 +7,21 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
-    // Handle /api/config endpoint
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Accept',
+          'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+          'Cross-Origin-Embedder-Policy': 'require-corp'
+        }
+      });
+    }
+    
+    // Handle /api/config endpoint (returns environment configuration)
     if (url.pathname === '/api/config' && request.method === 'GET') {
       return new Response(
         JSON.stringify({
@@ -21,6 +35,9 @@ export default {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Cache-Control': 'public, max-age=3600',
             'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
             'Cross-Origin-Embedder-Policy': 'require-corp'
           }
@@ -29,19 +46,31 @@ export default {
     }
 
     // Serve static assets from the /public directory
-    const assetRequest = new Request(new URL(url.pathname, request.url).toString(), request);
-    let response = await env.ASSETS.fetch(assetRequest);
-    
-    // If asset not found and path doesn't start with /api, serve index.html (SPA)
-    if (response.status === 404 && !url.pathname.startsWith('/api')) {
-      response = await env.ASSETS.fetch(new Request(new URL('/index.html', request.url).toString(), request));
+    if (!url.pathname.startsWith('/api')) {
+      const assetRequest = new Request(new URL(url.pathname, request.url).toString(), request);
+      let response = await env.ASSETS.fetch(assetRequest);
+      
+      // If asset not found, serve index.html (SPA fallback)
+      if (response.status === 404) {
+        response = await env.ASSETS.fetch(new Request(new URL('/index.html', request.url).toString(), request));
+      }
+
+      // Add security headers
+      const newResponse = new Response(response.body, response);
+      newResponse.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+      newResponse.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+      
+      return newResponse;
     }
 
-    // Add security headers
-    const newResponse = new Response(response.body, response);
-    newResponse.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-    newResponse.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
-    
-    return newResponse;
+    // 404 for unknown API endpoints
+    return new Response(JSON.stringify({ error: 'Not Found' }), {
+      status: 404,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
   }
 };
+
