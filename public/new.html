@@ -932,7 +932,9 @@
       GithubAuthProvider,
       signInWithPopup,
       updateProfile,
-      onAuthStateChanged
+      onAuthStateChanged,
+      fetchSignInMethodsForEmail,
+      updatePassword
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
     import {
       getFirestore,
@@ -1098,6 +1100,8 @@
                   <button id="chooseInitialAvatar">Usar inicial</button>
                   <input id="avatarFile" type="file" accept="image/*" />
                 </div>
+                <label style="margin-top:8px">Contraseña (opcional)</label>
+                <input id="onboardPassword" type="password" placeholder="Deja vacío si no quieres crear contraseña" />
                 <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
                   <button id="onboardSaveBtn">Guardar</button>
                 </div>
@@ -1156,6 +1160,29 @@
               updatedAt: serverTimestamp()
             };
             if (chosenAvatarUrl) updated.avatar = chosenAvatarUrl;
+
+            // If user provided a password, try to link/set it for the signed-in user
+            try {
+              const pwInput = document.getElementById('onboardPassword');
+              const pw = pwInput ? (pwInput.value || '').trim() : '';
+              if (pw) {
+                if (auth && auth.currentUser) {
+                  try {
+                    await updatePassword(auth.currentUser, pw);
+                    if (!providers.includes('email')) providers.push('email');
+                  } catch (pwErr) {
+                    console.error('Error actualizando contraseña:', pwErr);
+                    usernameError.textContent = 'No se pudo establecer la contraseña: ' + (pwErr.message || pwErr);
+                    usernameError.style.display = 'block';
+                    return;
+                  }
+                } else {
+                  console.warn('No hay usuario autenticado para asociar contraseña');
+                }
+              }
+            } catch (e) {
+              console.error('Error al procesar la contraseña de onboarding', e);
+            }
 
             await setDoc(userRef, updated, { merge: true });
             modal.style.display = 'none';
@@ -1216,21 +1243,21 @@
     window.firebaseAuthHelpers = {
       signInEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
       createEmail: async (email, password, displayName) => {
-        // PASO 1: Buscar si el email ya existe en Firestore
-        const existingUser = await findUserByEmail(email);
-
-        if (existingUser) {
-          // El email ya está registrado, devolver error especial
-          const providers = Array.isArray(existingUser.data.provider)
-            ? existingUser.data.provider.join(', ')
-            : existingUser.data.provider;
-
-          const error = new Error(`Este email ya está registrado con: ${providers}. Por favor inicia sesión con el método existente.`);
-          error.code = 'auth/email-already-registered';
-          throw error;
+        // PASO 1: Verificar si el email ya tiene métodos de inicio en Firebase Auth
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if (methods && methods.length > 0) {
+            const error = new Error(`Este email ya está registrado con: ${methods.join(', ')}. Por favor inicia sesión con el método existente.`);
+            error.code = 'auth/email-already-registered';
+            throw error;
+          }
+        } catch (e) {
+          // Si fetchSignInMethods falla por alguna razón, fail-safe: rethrow
+          console.error('Error verificando métodos de inicio para el email', e);
+          throw e;
         }
 
-        // PASO 2: Email no existe, crear nuevo usuario en Firebase Auth
+        // PASO 2: Email no existe en Auth, crear nuevo usuario en Firebase Auth
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         if (displayName) {
           try { await updateProfile(userCred.user, { displayName }); } catch (e) { /* ignore */ }
@@ -1615,6 +1642,23 @@
 
           submitBtn.disabled = true;
           submitBtn.textContent = 'Creando cuenta...';
+
+          // Check if email has existing sign-in methods to avoid duplicate accounts
+          try {
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            // If there are methods and it's not only password, inform user to sign in with existing provider
+            const otherMethods = methods.filter(m => m !== 'password');
+            if (otherMethods.length > 0) {
+              const providerNames = otherMethods.join(', ');
+              showAuthMessage(`Este correo ya está registrado con: ${providerNames}. Inicia sesión con ese proveedor y luego agrega una contraseña en tu perfil.`, 'error');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Crear cuenta';
+              return;
+            }
+          } catch (err) {
+            console.warn('No se pudo verificar métodos de inicio de sesión:', err);
+            // proceed cautiously
+          }
 
           try {
             const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
