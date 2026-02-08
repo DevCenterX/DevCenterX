@@ -1026,6 +1026,153 @@
       }
     }
 
+    // Buscar usuario por username
+    async function findUserByUsername(username) {
+      if (!username) return null;
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', username));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          return { uid: snapshot.docs[0].id, data: snapshot.docs[0].data() };
+        }
+      } catch (error) {
+        console.error('Error buscando usuario por username:', error);
+      }
+      return null;
+    }
+
+    // Cloudinary upload (uses provided credentials) - NOTE: embedding API secret client-side is insecure
+    async function cloudinaryUpload(fileBlob, fileName) {
+      try {
+        const cloudName = 'duybqkv24';
+        const apiKey = '445151322255556';
+        const apiSecret = 'zOxNfHhz-K5E4vOPx2-34H_pJgI';
+        const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+        const timestamp = Math.floor(Date.now() / 1000);
+        const toSign = `timestamp=${timestamp}${apiSecret}`;
+
+        const sigBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(toSign));
+        const sigArray = Array.from(new Uint8Array(sigBuffer));
+        const signature = sigArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const form = new FormData();
+        form.append('file', fileBlob, fileName || 'upload.png');
+        form.append('api_key', apiKey);
+        form.append('timestamp', String(timestamp));
+        form.append('signature', signature);
+
+        const res = await fetch(url, { method: 'POST', body: form });
+        const json = await res.json();
+        if (json && json.secure_url) return json.secure_url;
+        console.error('Cloudinary upload failed', json);
+        return null;
+      } catch (err) {
+        console.error('Cloudinary upload error', err);
+        return null;
+      }
+    }
+
+    // Onboarding modal flow: ask username (unique) and avatar choice/upload
+    window.showOnboardingModal = async function(uid, email, provider) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          // Ensure modal exists; if not, create minimal modal
+          let modal = document.getElementById('onboardingModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'onboardingModal';
+            modal.className = 'onboarding-modal-overlay';
+            modal.innerHTML = `
+              <div class="onboarding-modal">
+                <h2>Bienvenido - Completa tu perfil</h2>
+                <label>Tu correo</label>
+                <input id="onboardEmail" readonly />
+                <label>Nombre de usuario</label>
+                <input id="onboardUsername" placeholder="ej: justininventor" />
+                <div id="usernameError" style="color:red;display:none;margin-top:6px"></div>
+                <label>Avatar</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <button id="chooseInitialAvatar">Usar inicial</button>
+                  <input id="avatarFile" type="file" accept="image/*" />
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px;">
+                  <button id="onboardSaveBtn">Guardar</button>
+                  <button id="onboardSkipBtn">Omitir</button>
+                </div>
+              </div>`;
+            document.body.appendChild(modal);
+          }
+
+          document.getElementById('onboardEmail').value = email || '';
+          const usernameInput = document.getElementById('onboardUsername');
+          const usernameError = document.getElementById('usernameError');
+          const fileInput = document.getElementById('avatarFile');
+          const chooseInitialBtn = document.getElementById('chooseInitialAvatar');
+
+          modal.style.display = 'flex';
+
+          // Initial avatar selection generates SVG blob
+          let chosenAvatarUrl = null;
+          chooseInitialBtn.onclick = async () => {
+            const initials = (email && email.split('@')[0][0]) ? email.split('@')[0][0].toUpperCase() : (email ? email[0].toUpperCase() : 'U');
+            const color = '#'+Math.floor(Math.random()*16777215).toString(16);
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${color}'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='96' fill='#fff' font-family='Arial'>${initials}</text></svg>`;
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const uploaded = await cloudinaryUpload(blob, 'avatar.svg');
+            if (uploaded) chosenAvatarUrl = uploaded;
+            alert('Avatar inicial seleccionado');
+          };
+
+          document.getElementById('onboardSaveBtn').onclick = async () => {
+            usernameError.style.display = 'none';
+            const username = usernameInput.value.trim();
+            if (!username) { usernameError.textContent = 'El nombre de usuario es requerido'; usernameError.style.display = 'block'; return; }
+            // check uniqueness
+            const exists = await findUserByUsername(username);
+            if (exists && exists.uid !== uid) { usernameError.textContent = 'Este nombre de usuario ya existe'; usernameError.style.display = 'block'; return; }
+
+            // handle file upload if provided
+            if (fileInput.files && fileInput.files[0]) {
+              const uploaded = await cloudinaryUpload(fileInput.files[0], fileInput.files[0].name);
+              if (uploaded) chosenAvatarUrl = uploaded;
+            }
+
+            // update user record
+            const userRef = doc(db, 'users', uid);
+            const userDoc = await getDoc(userRef);
+            const existing = userDoc.exists() ? userDoc.data() : {};
+            let providers = existing.provider || [];
+            if (typeof providers === 'string') providers = [providers];
+            if (!providers.includes(provider)) providers.push(provider);
+
+            const updated = {
+              ...existing,
+              username: username,
+              email: existing.email || email,
+              displayName: existing.displayName || username,
+              provider: providers,
+              updatedAt: serverTimestamp()
+            };
+            if (chosenAvatarUrl) updated.avatar = chosenAvatarUrl;
+
+            await setDoc(userRef, updated, { merge: true });
+            modal.style.display = 'none';
+            resolve(updated);
+          };
+
+          document.getElementById('onboardSkipBtn').onclick = () => {
+            modal.style.display = 'none';
+            resolve(null);
+          };
+        } catch (err) {
+          console.error('Onboarding error', err);
+          reject(err);
+        }
+      });
+    };
+
     // Crear o actualizar usuario
     async function createOrUpdateUserRecord(user, opts = {}) {
       if (!user || !user.uid) return null;
@@ -1072,13 +1219,30 @@
     window.firebaseAuthHelpers = {
       signInEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
       createEmail: async (email, password, displayName) => {
+        // PASO 1: Buscar si el email ya existe en Firestore
+        const existingUser = await findUserByEmail(email);
+
+        if (existingUser) {
+          // El email ya está registrado, devolver error especial
+          const providers = Array.isArray(existingUser.data.provider)
+            ? existingUser.data.provider.join(', ')
+            : existingUser.data.provider;
+
+          const error = new Error(`Este email ya está registrado con: ${providers}. Por favor inicia sesión con el método existente.`);
+          error.code = 'auth/email-already-registered';
+          throw error;
+        }
+
+        // PASO 2: Email no existe, crear nuevo usuario en Firebase Auth
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         if (displayName) {
           try { await updateProfile(userCred.user, { displayName }); } catch (e) { /* ignore */ }
         }
-        // create Firestore records
-        try { await createOrUpdateUserRecord(userCred.user, { provider: 'email' }); } catch (e) { console.error('firestore user create error', e); }
-        return userCred;
+
+        // PASO 3: Crear registros en Firestore y devolver datos creados
+        let userData = null;
+        try { userData = await createOrUpdateUserRecord(userCred.user, { provider: 'email' }); } catch (e) { console.error('firestore user create error', e); }
+        return { user: userCred.user, userData };
       },
       signInWithProvider: async (providerName) => {
         const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
@@ -1457,15 +1621,21 @@
 
           try {
             const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-            const userCred = await authHelpers.createEmail(email, password, username);
-            const user = userCred.user;
+            const res = await authHelpers.createEmail(email, password, username);
+            const user = res.user;
+            const userData = res.userData;
+
+            // If a new user was created, open onboarding modal to collect username/avatar
+            if (userData) {
+              await window.showOnboardingModal(user.uid, user.email, 'email');
+            }
 
             const sessionData = {
               usuario: user.displayName || username,
               id: user.uid,
               email: user.email,
               loginTime: new Date().toISOString(),
-              avatar: user.photoURL || ''
+              avatar: user.photoURL || (userData ? userData.avatar : '')
             };
 
             localStorage.setItem('devcenter_user', sessionData.usuario);
@@ -1477,7 +1647,20 @@
             showAuthMessage('Cuenta creada! Redirigiendo...', 'success');
             setTimeout(() => { window.location.href = '/index.html'; }, 1500);
           } catch (error) {
-            showAuthMessage(error.message || 'Error creando cuenta');
+            // Manejar error específico de email ya registrado
+            if (error.code === 'auth/email-already-registered') {
+              showAuthMessage(error.message + '\n\nRedirigiendo a iniciar sesión...', 'error');
+              setTimeout(() => {
+                window.location.hash = '#login';
+                // Llenar el campo de email en el formulario de login
+                setTimeout(() => {
+                  const loginEmailField = document.getElementById('loginEmail');
+                  if (loginEmailField) loginEmailField.value = email;
+                }, 300);
+              }, 3000);
+            } else {
+              showAuthMessage(error.message || 'Error creando cuenta');
+            }
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Crear cuenta';
@@ -1495,25 +1678,30 @@
         try {
           const result = await authHelpers.signInWithProvider('google');
           const user = result.user;
-          
+
+          // If a new Firestore user was created, run onboarding
+          if (result.userData) {
+            await window.showOnboardingModal(user.uid, user.email, 'google');
+          }
+
           // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
           const userId = result.existingUserId || user.uid;
           const userData = result.existingUserData || result.userData;
-          
+
           const sessionData = {
             usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
             id: userId,
             email: user.email,
             loginTime: new Date().toISOString(),
-            avatar: user.photoURL || ''
+            avatar: (userData && userData.avatar) ? userData.avatar : (user.photoURL || '')
           };
-          
+
           localStorage.setItem('devcenter_user', sessionData.usuario);
           localStorage.setItem('devcenter_user_id', sessionData.id);
           localStorage.setItem('devcenter_email', sessionData.email);
           localStorage.setItem('devcenter_login_time', sessionData.loginTime);
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
-          
+
           const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
           showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
@@ -1533,25 +1721,30 @@
         try {
           const result = await authHelpers.signInWithProvider('github');
           const user = result.user;
-          
+
+          // If a new Firestore user was created, run onboarding
+          if (result.userData) {
+            await window.showOnboardingModal(user.uid, user.email, 'github');
+          }
+
           // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
           const userId = result.existingUserId || user.uid;
           const userData = result.existingUserData || result.userData;
-          
+
           const sessionData = {
             usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
             id: userId,
             email: user.email,
             loginTime: new Date().toISOString(),
-            avatar: user.photoURL || ''
+            avatar: (userData && userData.avatar) ? userData.avatar : (user.photoURL || '')
           };
-          
+
           localStorage.setItem('devcenter_user', sessionData.usuario);
           localStorage.setItem('devcenter_user_id', sessionData.id);
           localStorage.setItem('devcenter_email', sessionData.email);
           localStorage.setItem('devcenter_login_time', sessionData.loginTime);
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
-          
+
           const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
           showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);

@@ -12,7 +12,6 @@ firestore (devcenter-agent-48c86)
 │       ├── uid: string
 │       ├── email: string
 │       ├── username: string
-│       ├── displayName: string
 │       ├── avatar: string
 │       ├── provider: "email" | "google" | "github"
 │       ├── createdAt: timestamp
