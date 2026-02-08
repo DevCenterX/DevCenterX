@@ -2,7 +2,7 @@
   "name": "devcenterx",
   "compatibility_date": "2026-01-20",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "server.js",
+  "main": "_worker.js",
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
