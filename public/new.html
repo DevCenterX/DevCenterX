@@ -1079,8 +1079,8 @@
       }
     }
 
-    // Onboarding modal flow: simple username and optional avatar
-    window.showOnboardingModal = async function(uid, email, provider) {
+    // Onboarding modal flow: professional profile completion
+    window.showOnboardingModal = async function(uid, email, provider, photoURL) {
       return new Promise(async (resolve, reject) => {
         try {
           let modal = document.getElementById('onboardingModal');
@@ -1096,37 +1096,34 @@
                 </div>
                 
                 <div class="onboarding-content">
+                  <div class="avatar-preview-section">
+                    <div class="avatar-preview" id="avatarPreview"></div>
+                    <div class="avatar-preview-actions">
+                      <button id="chooseInitialAvatar" class="avatar-btn avatar-btn-auto" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="1"/><path d="M12 8v-2"/><path d="M12 16v2"/><path d="M8 12H6"/><path d="M16 12h2"/>
+                        </svg>
+                        Generar
+                      </button>
+                      <input id="avatarFile" type="file" accept="image/*" class="avatar-file-input" />
+                      <label for="avatarFile" class="avatar-btn avatar-btn-upload" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Subir
+                      </label>
+                    </div>
+                  </div>
+
                   <div class="form-group">
                     <label for="onboardUsername">Nombre de usuario</label>
                     <input id="onboardUsername" type="text" placeholder="tuusuario" autocomplete="off" />
                     <div id="usernameError" class="error-message"></div>
                   </div>
-
-                  <div class="form-group">
-                    <label>Avatar (opcional)</label>
-                    <div class="avatar-options">
-                      <button id="chooseInitialAvatar" class="avatar-btn avatar-btn-auto" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                          <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        Automático
-                      </button>
-                      <input id="avatarFile" type="file" accept="image/*" class="avatar-file-input" />
-                      <label for="avatarFile" class="avatar-btn avatar-btn-upload" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="17 8 12 3 7 8"/>
-                          <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                        Subir imagen
-                      </label>
-                    </div>
-                  </div>
                 </div>
 
                 <div class="onboarding-footer">
-                  <button id="onboardSaveBtn" class="btn-primary">Continuar</button>
+                  <button id="onboardSaveBtn" class="btn-primary">Guardar Perfil</button>
                 </div>
               </div>`;
             document.body.appendChild(modal);
@@ -1137,17 +1134,34 @@
           const fileInput = document.getElementById('avatarFile');
           const chooseInitialBtn = document.getElementById('chooseInitialAvatar');
           const saveBtn = document.getElementById('onboardSaveBtn');
+          const avatarPreview = document.getElementById('avatarPreview');
 
           modal.style.display = 'flex';
+
+          let chosenAvatarUrl = photoURL || null;
+          
+          // Display initial avatar preview
+          const updateAvatarPreview = () => {
+            if (chosenAvatarUrl) {
+              avatarPreview.innerHTML = `<img src="${chosenAvatarUrl}" alt="Avatar" class="avatar-img" />`;
+            } else if (photoURL) {
+              avatarPreview.innerHTML = `<img src="${photoURL}" alt="Avatar" class="avatar-img" />`;
+            } else {
+              const initials = email ? email.split('@')[0][0].toUpperCase() : 'U';
+              const colors = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+              const bgColor = colors[Math.floor(Math.random() * colors.length)];
+              avatarPreview.innerHTML = `<div class="avatar-placeholder" style="background-color: ${bgColor}">${initials}</div>`;
+            }
+          };
+
+          updateAvatarPreview();
           usernameInput.focus();
 
-          let chosenAvatarUrl = null;
-
-          // Auto avatar selection
+          // Generate initial avatar
           chooseInitialBtn.onclick = async (e) => {
             e.preventDefault();
             chooseInitialBtn.disabled = true;
-            chooseInitialBtn.textContent = 'Generando...';
+            chooseInitialBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="15" y1="9" x2="15" y2="9.01"/></svg> Generando...';
             
             try {
               const initials = email ? email.split('@')[0][0].toUpperCase() : 'U';
@@ -1158,13 +1172,15 @@
               const uploaded = await cloudinaryUpload(blob, 'avatar.svg');
               if (uploaded) {
                 chosenAvatarUrl = uploaded;
+                updateAvatarPreview();
                 chooseInitialBtn.classList.add('selected');
               }
             } catch (err) {
               console.error('Avatar error:', err);
+              showAuthMessage('Error generando avatar', 'error');
             } finally {
               chooseInitialBtn.disabled = false;
-              chooseInitialBtn.textContent = 'Automático';
+              chooseInitialBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 8v-2"/><path d="M12 16v2"/><path d="M8 12H6"/><path d="M16 12h2"/></svg> Generar';
             }
           };
 
@@ -1172,18 +1188,21 @@
             if (fileInput.files && fileInput.files[0]) {
               const label = fileInput.nextElementSibling;
               label.disabled = true;
-              label.textContent = 'Subiendo...';
+              label.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Subiendo...';
               try {
                 const uploaded = await cloudinaryUpload(fileInput.files[0], fileInput.files[0].name);
                 if (uploaded) {
                   chosenAvatarUrl = uploaded;
+                  updateAvatarPreview();
                   label.classList.add('selected');
+                  showAuthMessage('Avatar subido correctamente', 'success');
                 }
               } catch (err) {
                 console.error('File upload error:', err);
+                showAuthMessage('Error al subir imagen', 'error');
               } finally {
                 label.disabled = false;
-                label.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>\n                Subir imagen';
+                label.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir';
               }
             }
           };
@@ -1213,37 +1232,43 @@
                 usernameError.textContent = 'Este usuario ya está en uso';
                 usernameError.style.display = 'block';
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Continuar';
+                saveBtn.textContent = 'Guardar Perfil';
                 return;
               }
 
               const userRef = doc(db, 'users', uid);
               const userDoc = await getDoc(userRef);
               const existing = userDoc.exists() ? userDoc.data() : {};
-              let providers = existing.provider || [];
-              if (typeof providers === 'string') providers = [providers];
+              let providers = Array.isArray(existing.provider) ? existing.provider : (existing.provider ? [existing.provider] : []);
               if (!providers.includes(provider)) providers.push(provider);
 
               const updated = {
                 ...existing,
+                uid: uid,
                 username: username,
                 email: existing.email || email,
                 displayName: existing.displayName || username,
                 provider: providers,
+                avatar: chosenAvatarUrl || existing.avatar || '',
                 updatedAt: serverTimestamp()
               };
-              if (chosenAvatarUrl) updated.avatar = chosenAvatarUrl;
 
               await setDoc(userRef, updated, { merge: true });
               modal.style.display = 'none';
+              showAuthMessage('Perfil guardado correctamente', 'success');
               resolve(updated);
             } catch (err) {
               console.error('Onboarding save error:', err);
-              usernameError.textContent = 'Error al guardar. Intenta de nuevo.';
+              let errorMsg = 'Error al guardar';
+              if (err.message && err.message.includes('permission')) {
+                errorMsg = 'Error de permisos. Revisa las reglas de Firestore.';
+              }
+              usernameError.textContent = errorMsg;
               usernameError.style.display = 'block';
+              showAuthMessage(errorMsg, 'error');
             } finally {
               saveBtn.disabled = false;
-              saveBtn.textContent = 'Continuar';
+              saveBtn.textContent = 'Guardar Perfil';
             }
           };
         } catch (err) {
@@ -1490,23 +1515,34 @@
     }
 
     function showAuthMessage(message, type = 'error') {
-      let toast = document.getElementById('auth-toast');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'auth-toast';
-        document.body.appendChild(toast);
-      }
+      const toast = document.createElement('div');
+      toast.className = 'auth-toast ' + type;
+      toast.innerHTML = `
+        <div class="toast-content">
+          <span class="toast-icon">${
+            type === 'success' ? '✓' :
+            type === 'info' ? 'ℹ' :
+            '✕'
+          }</span>
+          <span class="toast-message">${message}</span>
+        </div>
+      `;
+      document.body.appendChild(toast);
 
-      toast.classList.remove('show');
-      toast.className = 'auth-toast';
+      // Trigger animation
       void toast.offsetWidth;
+      toast.classList.add('show');
 
-      toast.textContent = message;
-      toast.className = 'auth-toast ' + type + ' show';
-
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
       }, 4000);
+
+      toast.addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      });
     }
 
     // Toggle mostrar formulario de email
@@ -1794,7 +1830,7 @@
 
           // If a new Firestore user was created, run onboarding
           if (result.userData) {
-            await window.showOnboardingModal(user.uid, user.email, 'google');
+            await window.showOnboardingModal(user.uid, user.email, 'google', user.photoURL);
           }
 
           // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
@@ -1844,7 +1880,7 @@
 
           // If a new Firestore user was created, run onboarding
           if (result.userData) {
-            await window.showOnboardingModal(user.uid, user.email, 'github');
+            await window.showOnboardingModal(user.uid, user.email, 'github', user.photoURL);
           }
 
           // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual

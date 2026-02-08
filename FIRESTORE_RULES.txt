@@ -1,0 +1,41 @@
+// Copiar estas reglas a Firebase Console >> Firestore Database >> Rules
+// Reemplaza el contenido actual con esto:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Permite que usuarios autenticados lean/escriban sus propios documentos de usuario
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      allow read: if request.auth != null; // Otros usuarios pueden leer perfil publico
+    }
+    
+    // Proyecto collection - permite lectura/escritura para usuarios autenticados
+    match /proyectos/{userId} {
+      allow read, write, delete: if request.auth.uid == userId;
+      
+      match /projects/{projectId} {
+        allow read, write, delete: if request.auth.uid == userId;
+      }
+    }
+    
+    // Permite a usuarios autenticados crear/leer sus propios documentos
+    match /{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.uid;
+    }
+  }
+}
+
+// Instrucciones:
+// 1. Ve a Firebase Console (https://console.firebase.google.com)
+// 2. Selecciona tu proyecto: "devcenter-agent-48c86"
+// 3. En el menu izquierdo, haz click en "Firestore Database"
+// 4. Ve a la pestaña "Rules"
+// 5. Reemplaza todo el contenido con las reglas de arriba
+// 6. Haz click en "Publish"
+
+// Esto permite:
+// - Los usuarios autenticados leer/escribir en su propio documento /users/{uid}
+// - Los usuarios leer perfiles de otros usuarios
+// - Los usuarios leer/escribir en /proyectos/{uid} y sus subcollections
