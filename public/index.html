@@ -12,20 +12,31 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     (function() {
-      // Si estamos en proceso de logout, no redirigir
-      if (window.isLoggingOut) {
-        console.log('⏳ Logout en progreso, esperando redirección...');
-        return;
+      const user = localStorage.getItem('devcenter_user');
+      const sessionData = localStorage.getItem('devcenter_session');
+      window.isLoggedIn = !!user;
+      window.currentPath = window.location.pathname;
+      
+      // Cargar datos de sesión completa
+      if (window.isLoggedIn && sessionData) {
+        try {
+          window.currentSession = JSON.parse(sessionData);
+        } catch(e) {
+          window.currentSession = {
+            usuario: user,
+            email: localStorage.getItem('devcenter_email'),
+            id: localStorage.getItem('devcenter_user_id')
+          };
+        }
       }
       
-      const sessionActive = localStorage.getItem('devcenter_session_active');
-      window.isLoggedIn = sessionActive === 'true';
-      window.currentPath = window.location.pathname;
       if (!window.isLoggedIn) {
-        console.log('⚠️ Sin sesión activa, redirigiendo a new.html');
         window.location.href = "/new.html";
       } else {
-        console.log('✅ Sesión activa detectada1');
+        console.log('Usuario detectado desde localStorage:', user);
+        if (window.currentSession) {
+          console.log('Sesión completa cargada:', window.currentSession);
+        }
       }
     })();
   </script>
@@ -1316,11 +1327,6 @@
 
   <script type="module" src="script.js?v=4.0"></script>
   <script>
-    // Inicializar bandera de logout
-    if (typeof window.isLoggingOut === 'undefined') {
-      window.isLoggingOut = false;
-    }
-    
     // Configurar funcionalidad del sidebar
     document.addEventListener('DOMContentLoaded', () => {
       const sidebar = document.getElementById('mainSidebar');
@@ -1330,94 +1336,6 @@
       const searchBtn = document.querySelector('.search-btn');
       const optionsBtn = document.getElementById('optionsBtn');
       const optionsMenu = document.getElementById('optionsMenu');
-
-      // Limpieza completa del almacenamiento del cliente
-      async function clearClientStorage() {
-        try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
-        try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
-
-        // Borrar cookies de la ruta actual
-        try {
-          document.cookie.split(';').forEach(function(c) {
-            const name = c.split('=')[0].trim();
-            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
-          });
-        } catch (e) { console.warn('cookie clear failed', e); }
-
-        // Borrar CacheStorage (service worker caches)
-        if (window.caches && caches.keys) {
-          try {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-          } catch (e) { console.warn('caches delete failed', e); }
-        }
-
-        // Intentar borrar IndexedDB databases (cuando está disponible)
-        if (window.indexedDB && indexedDB.databases) {
-          try {
-            const dbs = await indexedDB.databases();
-            await Promise.all((dbs || []).map(d => d.name ? indexedDB.deleteDatabase(d.name) : Promise.resolve()));
-          } catch (e) { console.warn('indexedDB delete failed', e); }
-        }
-      }
-
-      async function performSignOutAndRedirect() {
-        // Determinar si hay sesión activa (Firebase o Supabase)
-        const hasFirebaseUser = !!(window.firebaseAuth && window.firebaseAuth.currentUser);
-        const hasSupabaseSession = !!(window.supabaseClient && window.supabaseClient.auth && (await (window.supabaseClient.auth.getSession ? window.supabaseClient.auth.getSession() : Promise.resolve({ data: { session: null } }))).data.session);
-
-        // Si no hay sesión activa, proceder a limpiar todo y redirigir (usuario nuevo)
-        if (!hasFirebaseUser && !hasSupabaseSession) {
-          console.log('ℹ️ No hay ninguna sesión activa — limpiando almacenamiento y redirigiendo a /');
-          // Activar bandera de logout para bloquear listeners
-          window.isLoggingOut = true;
-          await clearClientStorage();
-          // redirigir exactamente a la raíz
-          window.location.href = '/';
-          return;
-        }
-
-        // Si sí hay sesión, pedir confirmación antes de cerrar sesión
-        if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
-
-        window.isLoggingOut = true;
-        console.log('🚪 Iniciando logout...');
-
-        try {
-          // Cerrar sesión en proveedores
-          if (window.firebaseAuth && window.firebaseSignOut) {
-            await window.firebaseSignOut(window.firebaseAuth);
-            console.log('✅ Sesión de Firebase cerrada');
-          }
-        } catch (err) {
-          console.warn('Error cerrando sesión de Firebase', err);
-        }
-
-        try {
-          if (window.supabaseClient && window.supabaseClient.auth) {
-            if (window.supabaseClient.auth.signOut) {
-              await window.supabaseClient.auth.signOut();
-            } else if (window.supabaseClient.auth.logout) {
-              await window.supabaseClient.auth.logout();
-            }
-            console.log('✅ Sesión de Supabase cerrada');
-          }
-        } catch (err) {
-          console.warn('Error cerrando sesión de Supabase', err);
-        }
-
-        // Limpiar almacenamiento cliente completamente (no dejar flags)
-        await clearClientStorage();
-        console.log('🧹 Almacenamiento cliente limpiado');
-
-        // Redirigir exactamente a la raíz
-        setTimeout(() => { window.location.href = '/'; }, 250);
-      }
-
-      // Exponer globalmente para que otras páginas puedan invocarlo
-      window.performSignOutAndRedirect = performSignOutAndRedirect;
-      window.clearClientStorage = clearClientStorage;
 
       // Función para cerrar el sidebar
       function closeSidebar() {
@@ -1479,7 +1397,36 @@
 
       if (optionsMenuLogout) {
         optionsMenuLogout.addEventListener('click', async () => {
-          await performSignOutAndRedirect();
+          const localUser = localStorage.getItem('devcenter_user');
+          const localUserId = localStorage.getItem('devcenter_user_id');
+          const { data: { session } } = await window.supabaseClient.auth.getSession();
+          
+          if (localUser && localUserId) {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+              localStorage.removeItem('devcenter_user');
+              localStorage.removeItem('devcenter_user_id');
+              localStorage.removeItem('devcenter_email');
+              localStorage.removeItem('devcenter_avatar');
+              localStorage.removeItem('devcenter_datos');
+              localStorage.removeItem('devcenter_login_time');
+              localStorage.removeItem('supabase_nombrepersona');
+              console.log('✅ Sesión de tabla cuentas cerrada');
+              window.location.href = '/';
+            }
+          } else if (session?.user) {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+              try {
+                await window.supabaseClient.auth.signOut();
+                console.log('✅ Sesión de Supabase cerrada');
+                window.location.href = '/';
+              } catch (error) {
+                console.error('Error al cerrar sesión en Supabase:', error);
+                alert('Error al cerrar sesión. Intenta de nuevo.');
+              }
+            }
+          } else {
+            alert('No hay ninguna sesión activa.');
+          }
           optionsMenu.classList.remove('active');
         });
       }
@@ -1746,13 +1693,36 @@
 
   <!-- Router Script -->
   <script>
-      if (menuLogout) {
-        menuLogout.addEventListener('click', async () => {
-          await performSignOutAndRedirect();
-          if (logoMenu) logoMenu.classList.remove('active');
-        });
+    (function() {
+      const sidebar = document.getElementById('mainSidebar');
+      const mainContent = document.querySelector('.main-content');
+      const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
+      const optionsMenu = document.getElementById('optionsMenu');
+      const sidebarOverlay = document.querySelector('.sidebar-overlay');
+      
+      function hideAll() {
+        }
+        }
+        if (sidebar) sidebar.style.display = 'none';
+        if (mainContent) mainContent.style.display = 'none';
+        if (sidebarCollapsedControls) sidebarCollapsedControls.style.display = 'none';
+        if (optionsMenu) optionsMenu.style.display = 'none';
       }
-
+      
+      function showLanding() {
+        hideAll();
+      }
+      
+      function showLogin() {
+        hideAll();
+        }
+      }
+      
+      function showCreate() {
+        hideAll();
+        }
+      }
+      
       function showTerms() {
         const termsPage = document.getElementById('termsPage');
         if (termsPage) {
@@ -1843,9 +1813,31 @@
           }
         }
         
-        // Si no hay sesión, redirigir a new.html
-        console.log('ℹ️ No hay sesión activa de Supabase');
+        if (!window.isLoggedIn) {
         window.location.href = "/new.html";
+      } else {
+          showMainApp();
+          return;
+        }
+        
+        switch(hash) {
+          case '#login':
+            showLogin();
+            break;
+          case '#create':
+            showCreate();
+            break;
+          case '#terms':
+            showTerms();
+            return;
+          case '#privacy':
+            showPrivacy();
+            return;
+          default:
+            hideTerms();
+            hidePrivacy();
+            showLanding();
+        }
       }
       
       window.addEventListener('hashchange', navigate);
@@ -3020,9 +3012,9 @@
         });
       }
       
-  {    // Hacer funcion global
+      // Hacer funcion global
       window.startOnboarding = startOnboarding;
-    }                 ();
+    })();
     
     // ==================== SETTINGS FUNCTIONALITY ====================
     (function initSettings() {

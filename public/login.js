@@ -1,37 +1,37 @@
-// Firebase Login Handler
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-
+// Login system for DevCenter
 document.addEventListener('DOMContentLoaded', () => {
-  // Verificar si el usuario ya está autenticado
-  const auth = getAuth();
-  
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // Usuario está autenticado, guardar datos en localStorage
-      localStorage.setItem('devcenter_user_id', user.uid);
-      localStorage.setItem('devcenter_email', user.email);
-      localStorage.setItem('devcenter_user', user.displayName || user.email.split('@')[0]);
-      localStorage.setItem('devcenter_login_time', new Date().toISOString());
-      localStorage.setItem('devcenter_session_active', 'true');
-      if (user.photoURL) {
-        localStorage.setItem('devcenter_avatar', user.photoURL);
-      }
-      // Redirigir a index si no estamos en formularios de auth
-      if (!window.location.hash.includes('login') && !window.location.hash.includes('create')) {
-        window.location.href = '/index.html';
-      }
-    } else {
-      // No hay usuario autenticado
-      // Evitar escribir flags en localStorage; solo limpiar datos sensibles
-      localStorage.removeItem('devcenter_user_id');
-      localStorage.removeItem('devcenter_user');
-      localStorage.removeItem('devcenter_email');
-      localStorage.removeItem('devcenter_login_time');
-    }
-  });
-
+  const loginForm = document.getElementById('loginForm');
+  const demoBtn = document.getElementById('demoBtn');
   const themeToggle = document.getElementById('themeToggle');
   
+  // Handle login form
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      if (username && password) {
+        // Save user session
+        localStorage.setItem('devcenter_user', username);
+        localStorage.setItem('devcenter_login_time', new Date().toISOString());
+        
+        // Redirect to main page
+        window.location.href = '/';
+        return false;
+      }
+    });
+  }
+
+  // Demo access
+  if (demoBtn) {
+    demoBtn.addEventListener('click', () => {
+      localStorage.setItem('devcenter_user', 'Demo User');
+      localStorage.setItem('devcenter_demo_mode', 'true');
+      window.location.href = '/';
+    });
+  }
+
   // Theme toggle
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -56,24 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Logout handler con Firebase
+// Logout handler
 function handleLogout() {
-  const auth = getAuth();
-  signOut(auth).then(() => {
-    // Clear all client storage to appear as a fresh visitor
-    try { localStorage.clear(); } catch (e) { console.warn('localStorage clear failed', e); }
-    try { sessionStorage.clear(); } catch (e) { console.warn('sessionStorage clear failed', e); }
-    // Attempt to clear cookies for current path
-    try {
-      document.cookie.split(';').forEach(function(c) {
-        const name = c.split('=')[0].trim();
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=' + window.location.hostname;
-      });
-    } catch (e) { console.warn('cookie clear failed', e); }
-    // Redirect to the public login page
-    window.location.href = '/new.html';
-  }).catch((error) => {
-    console.error('Error al cerrar sesión:', error);
-  });
+  localStorage.removeItem('devcenter_user');
+  localStorage.removeItem('devcenter_demo_mode');
+  localStorage.removeItem('devcenter_login_time');
+  window.location.href = '/index.html';
 }
