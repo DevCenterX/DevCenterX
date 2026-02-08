@@ -6,6 +6,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
   <title>DevCenterX - Login & Registro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=1.1">
@@ -1077,11 +1079,10 @@
       }
     }
 
-    // Onboarding modal flow: ask username (unique) and avatar choice/upload
+    // Onboarding modal flow: simple username and optional avatar
     window.showOnboardingModal = async function(uid, email, provider) {
       return new Promise(async (resolve, reject) => {
         try {
-          // Ensure modal exists; if not, create minimal modal
           let modal = document.getElementById('onboardingModal');
           if (!modal) {
             modal = document.createElement('div');
@@ -1089,107 +1090,162 @@
             modal.className = 'onboarding-modal-overlay';
             modal.innerHTML = `
               <div class="onboarding-modal">
-                <h2>Bienvenido - Completa tu perfil</h2>
-                <label>Tu correo</label>
-                <input id="onboardEmail" readonly />
-                <label>Nombre de usuario</label>
-                <input id="onboardUsername" placeholder="ej: justininventor" />
-                <div id="usernameError" style="color:red;display:none;margin-top:6px"></div>
-                <label>Avatar</label>
-                <div style="display:flex;gap:8px;align-items:center;">
-                  <button id="chooseInitialAvatar">Usar inicial</button>
-                  <input id="avatarFile" type="file" accept="image/*" />
+                <div class="onboarding-header">
+                  <h2>Completa tu perfil</h2>
+                  <p class="onboarding-subtitle">Personaliza tu cuenta en segundos</p>
                 </div>
-                <label style="margin-top:8px">Contraseña (opcional)</label>
-                <input id="onboardPassword" type="password" placeholder="Deja vacío si no quieres crear contraseña" />
-                <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
-                  <button id="onboardSaveBtn">Guardar</button>
+                
+                <div class="onboarding-content">
+                  <div class="form-group">
+                    <label for="onboardUsername">Nombre de usuario</label>
+                    <input id="onboardUsername" type="text" placeholder="tuusuario" autocomplete="off" />
+                    <div id="usernameError" class="error-message"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Avatar (opcional)</label>
+                    <div class="avatar-options">
+                      <button id="chooseInitialAvatar" class="avatar-btn avatar-btn-auto" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Automático
+                      </button>
+                      <input id="avatarFile" type="file" accept="image/*" class="avatar-file-input" />
+                      <label for="avatarFile" class="avatar-btn avatar-btn-upload" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Subir imagen
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="onboarding-footer">
+                  <button id="onboardSaveBtn" class="btn-primary">Continuar</button>
                 </div>
               </div>`;
             document.body.appendChild(modal);
           }
 
-          document.getElementById('onboardEmail').value = email || '';
           const usernameInput = document.getElementById('onboardUsername');
           const usernameError = document.getElementById('usernameError');
           const fileInput = document.getElementById('avatarFile');
           const chooseInitialBtn = document.getElementById('chooseInitialAvatar');
+          const saveBtn = document.getElementById('onboardSaveBtn');
 
           modal.style.display = 'flex';
+          usernameInput.focus();
 
-          // Initial avatar selection generates SVG blob
           let chosenAvatarUrl = null;
-          chooseInitialBtn.onclick = async () => {
-            const initials = (email && email.split('@')[0][0]) ? email.split('@')[0][0].toUpperCase() : (email ? email[0].toUpperCase() : 'U');
-            const color = '#'+Math.floor(Math.random()*16777215).toString(16);
-            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${color}'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='96' fill='#fff' font-family='Arial'>${initials}</text></svg>`;
-            const blob = new Blob([svg], { type: 'image/svg+xml' });
-            const uploaded = await cloudinaryUpload(blob, 'avatar.svg');
-            if (uploaded) chosenAvatarUrl = uploaded;
-            alert('Avatar inicial seleccionado');
+
+          // Auto avatar selection
+          chooseInitialBtn.onclick = async (e) => {
+            e.preventDefault();
+            chooseInitialBtn.disabled = true;
+            chooseInitialBtn.textContent = 'Generando...';
+            
+            try {
+              const initials = email ? email.split('@')[0][0].toUpperCase() : 'U';
+              const colors = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+              const color = colors[Math.floor(Math.random() * colors.length)];
+              const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${color}'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='96' font-weight='bold' fill='#fff' font-family='sans-serif'>${initials}</text></svg>`;
+              const blob = new Blob([svg], { type: 'image/svg+xml' });
+              const uploaded = await cloudinaryUpload(blob, 'avatar.svg');
+              if (uploaded) {
+                chosenAvatarUrl = uploaded;
+                chooseInitialBtn.classList.add('selected');
+              }
+            } catch (err) {
+              console.error('Avatar error:', err);
+            } finally {
+              chooseInitialBtn.disabled = false;
+              chooseInitialBtn.textContent = 'Automático';
+            }
           };
 
-          document.getElementById('onboardSaveBtn').onclick = async () => {
+          fileInput.onchange = async () => {
+            if (fileInput.files && fileInput.files[0]) {
+              const label = fileInput.nextElementSibling;
+              label.disabled = true;
+              label.textContent = 'Subiendo...';
+              try {
+                const uploaded = await cloudinaryUpload(fileInput.files[0], fileInput.files[0].name);
+                if (uploaded) {
+                  chosenAvatarUrl = uploaded;
+                  label.classList.add('selected');
+                }
+              } catch (err) {
+                console.error('File upload error:', err);
+              } finally {
+                label.disabled = false;
+                label.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>\n                Subir imagen';
+              }
+            }
+          };
+
+          saveBtn.onclick = async () => {
             usernameError.style.display = 'none';
             const username = usernameInput.value.trim();
-            if (!username) { usernameError.textContent = 'El nombre de usuario es requerido'; usernameError.style.display = 'block'; return; }
-            // check uniqueness
-            const exists = await findUserByUsername(username);
-            if (exists && exists.uid !== uid) { usernameError.textContent = 'Este nombre de usuario ya existe'; usernameError.style.display = 'block'; return; }
-
-            // handle file upload if provided
-            if (fileInput.files && fileInput.files[0]) {
-              const uploaded = await cloudinaryUpload(fileInput.files[0], fileInput.files[0].name);
-              if (uploaded) chosenAvatarUrl = uploaded;
+            
+            if (!username) {
+              usernameError.textContent = 'Por favor ingresa un nombre de usuario';
+              usernameError.style.display = 'block';
+              return;
+            }
+            
+            if (username.length < 3) {
+              usernameError.textContent = 'Mínimo 3 caracteres';
+              usernameError.style.display = 'block';
+              return;
             }
 
-            // update user record
-            const userRef = doc(db, 'users', uid);
-            const userDoc = await getDoc(userRef);
-            const existing = userDoc.exists() ? userDoc.data() : {};
-            let providers = existing.provider || [];
-            if (typeof providers === 'string') providers = [providers];
-            if (!providers.includes(provider)) providers.push(provider);
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Guardando...';
 
-            const updated = {
-              ...existing,
-              username: username,
-              email: existing.email || email,
-              displayName: existing.displayName || username,
-              provider: providers,
-              updatedAt: serverTimestamp()
-            };
-            if (chosenAvatarUrl) updated.avatar = chosenAvatarUrl;
-
-            // If user provided a password, try to link/set it for the signed-in user
             try {
-              const pwInput = document.getElementById('onboardPassword');
-              const pw = pwInput ? (pwInput.value || '').trim() : '';
-              if (pw) {
-                if (auth && auth.currentUser) {
-                  try {
-                    await updatePassword(auth.currentUser, pw);
-                    if (!providers.includes('email')) providers.push('email');
-                  } catch (pwErr) {
-                    console.error('Error actualizando contraseña:', pwErr);
-                    usernameError.textContent = 'No se pudo establecer la contraseña: ' + (pwErr.message || pwErr);
-                    usernameError.style.display = 'block';
-                    return;
-                  }
-                } else {
-                  console.warn('No hay usuario autenticado para asociar contraseña');
-                }
+              const exists = await findUserByUsername(username);
+              if (exists && exists.uid !== uid) {
+                usernameError.textContent = 'Este usuario ya está en uso';
+                usernameError.style.display = 'block';
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Continuar';
+                return;
               }
-            } catch (e) {
-              console.error('Error al procesar la contraseña de onboarding', e);
+
+              const userRef = doc(db, 'users', uid);
+              const userDoc = await getDoc(userRef);
+              const existing = userDoc.exists() ? userDoc.data() : {};
+              let providers = existing.provider || [];
+              if (typeof providers === 'string') providers = [providers];
+              if (!providers.includes(provider)) providers.push(provider);
+
+              const updated = {
+                ...existing,
+                username: username,
+                email: existing.email || email,
+                displayName: existing.displayName || username,
+                provider: providers,
+                updatedAt: serverTimestamp()
+              };
+              if (chosenAvatarUrl) updated.avatar = chosenAvatarUrl;
+
+              await setDoc(userRef, updated, { merge: true });
+              modal.style.display = 'none';
+              resolve(updated);
+            } catch (err) {
+              console.error('Onboarding save error:', err);
+              usernameError.textContent = 'Error al guardar. Intenta de nuevo.';
+              usernameError.style.display = 'block';
+            } finally {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Continuar';
             }
-
-            await setDoc(userRef, updated, { merge: true });
-            modal.style.display = 'none';
-            resolve(updated);
           };
-
-          // Skip removed: users must complete username/avatar to continue (default avatar allowed)
         } catch (err) {
           console.error('Onboarding error', err);
           reject(err);
@@ -1269,36 +1325,42 @@
         return { user: userCred.user, userData };
       },
       signInWithProvider: async (providerName) => {
-        // Use popup for provider sign-in
-        const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
-        const newUser = result.user;
-        
-        // Buscar si el email ya existe en otra cuenta
-        const existingUser = await findUserByEmail(newUser.email);
-        
-        if (existingUser) {
-          // El email ya existe, vincular el nuevo proveedor
-          console.log(`📎 Vinculando ${providerName} a usuario existente`, existingUser.uid);
-          await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
-          // Devolver los datos del usuario existente para mantener continuidad
-          return {
-            user: { ...newUser, uid: existingUser.uid },
-            existingUserId: existingUser.uid,
-            existingUserData: existingUser.data
-          };
-        } else {
-          // Email no existe, crear nuevo usuario
-          console.log(`✨ Creando nuevo usuario con ${providerName}`);
-          const userData = await createOrUpdateUserRecord(newUser, { provider: providerName });
-          // Invoke onboarding modal for the new user
-          if (userData) {
-            try {
-              await window.showOnboardingModal(newUser.uid, newUser.email, providerName);
-            } catch (e) {
-              console.error('Onboarding modal error', e);
+        try {
+          // Use popup for provider sign-in
+          const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
+          const newUser = result.user;
+          
+          // Buscar si el email ya existe en otra cuenta
+          const existingUser = await findUserByEmail(newUser.email);
+          
+          if (existingUser) {
+            // El email ya existe, vincular el nuevo proveedor
+            console.log(`📎 Vinculando ${providerName} a usuario existente`, existingUser.uid);
+            await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
+            // Devolver los datos del usuario existente para mantener continuidad
+            return {
+              user: { ...newUser, uid: existingUser.uid },
+              existingUserId: existingUser.uid,
+              existingUserData: existingUser.data
+            };
+          } else {
+            // Email no existe, crear nuevo usuario
+            console.log(`✨ Creando nuevo usuario con ${providerName}`);
+            const userData = await createOrUpdateUserRecord(newUser, { provider: providerName });
+            // Invoke onboarding modal for the new user
+            if (userData) {
+              try {
+                await window.showOnboardingModal(newUser.uid, newUser.email, providerName);
+              } catch (e) {
+                console.error('Onboarding modal error', e);
+              }
             }
+            return { user: newUser, userData };
           }
-          return { user: newUser, userData };
+        } catch (error) {
+          console.error(`Error en autenticación con ${providerName}:`, error);
+          // Re-throw para que el código que llama a signInWithProvider pueda manejar el error
+          throw error;
         }
       },
       createOrUpdateUserRecord,
@@ -1726,6 +1788,7 @@
 
       async function handleGoogleAuth() {
         try {
+          showAuthMessage('Iniciando sesión con Google...', 'info');
           const result = await authHelpers.signInWithProvider('google');
           const user = result.user;
 
@@ -1753,22 +1816,29 @@
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
 
           const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
-          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
+          showAuthMessage('¡Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
           console.error('Google Auth Error:', err);
           let friendlyMsg = 'Error iniciando sesión con Google';
+          
           if (err.code === 'auth/unauthorized-domain') {
             friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
           } else if (err.code === 'auth/popup-blocked') {
             friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          } else if (err.code === 'auth/network-request-failed' || err.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            friendlyMsg = 'Error de red: Las solicitudes están siendo bloqueadas. Desactiva extensiones de bloqueo de anuncios o VPN para este sitio.';
+          } else if (err.message && err.message.includes('Cross-Origin-Opener-Policy')) {
+            friendlyMsg = 'Error de seguridad COOP. Intenta recargar la página.';
           }
+          
           showAuthMessage(friendlyMsg, 'error');
         }
       }
 
       async function handleGitHubAuth() {
         try {
+          showAuthMessage('Iniciando sesión con GitHub...', 'info');
           const result = await authHelpers.signInWithProvider('github');
           const user = result.user;
 
@@ -1796,16 +1866,22 @@
           localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
 
           const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
-          showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
+          showAuthMessage('¡Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
           setTimeout(() => { window.location.href = '/index.html'; }, 1500);
         } catch (err) {
           console.error('GitHub Auth Error:', err);
           let friendlyMsg = 'Error iniciando sesión con GitHub';
+          
           if (err.code === 'auth/unauthorized-domain') {
             friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
           } else if (err.code === 'auth/popup-blocked') {
             friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          } else if (err.code === 'auth/network-request-failed' || err.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            friendlyMsg = 'Error de red: Las solicitudes están siendo bloqueadas. Desactiva extensiones de bloqueo de anuncios o VPN para este sitio.';
+          } else if (err.message && err.message.includes('Cross-Origin-Opener-Policy')) {
+            friendlyMsg = 'Error de seguridad COOP. Intenta recargar la página.';
           }
+          
           showAuthMessage(friendlyMsg, 'error');
         }
       }

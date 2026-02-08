@@ -14,14 +14,29 @@ export default {
         }),
         {
           status: 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json',
+            'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+            'Cross-Origin-Embedder-Policy': 'require-corp'
+          }
         }
       );
     }
     
     try {
       // Intenta servir el archivo estático desde la carpeta public
-      return await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
+      
+      // Agregar headers COOP a todas las respuestas
+      const headers = new Headers(response.headers);
+      headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+      headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: headers
+      });
     } catch (e) {
       return new Response("Archivo no encontrado", { status: 404 });
     }
