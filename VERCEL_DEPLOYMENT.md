@@ -1,3 +1,4 @@
+
 # DevCenterX - Guía de Despliegue en Vercel
 
 ## Solución de Bugs (Error 404 en `/api/config`)
