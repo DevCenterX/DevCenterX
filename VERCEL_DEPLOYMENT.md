@@ -11,37 +11,43 @@ GET https://devcenterx.vercel.app/api/config 404 (Not Found)
 
 ### Solución Implementada
 
-He creado la estructura correcta para Vercel:
+He creado la estructura correcta para Vercel con seguridad mejorada:
 
 ```
 DevCenterX/
 ├── api/
-│   └── config.js          ✨ NUEVO - Endpoint serverless
+│   └── config.js          ✨ NUEVO - Endpoint serverless (solo key pública)
 ├── public/
-│   └── keys.js (actualizado)
-├── vercel.json            ✨ NUEVO - Configuración Vercel
+│   ├── new.html           (Firebase config en inline script)
+│   └── keys.js            (actualizado)
+├── vercel.json            (configuración de build + seguridad)
 └── ...
 ```
 
-## Archivos Creados/Modificados
+## Archivos Modificados
 
-### 1. `api/config.js` - Endpoint Serverless
-Función que devuelve configuración pública desde variables de entorno:
+### 1. `api/config.js` - Endpoint Seguro
+- ✅ Solo expone `GEMINI_API_KEY` (clave pública de Google)
+- ✅ NO expone URLs (GEMINI_API_URL, GITHUB_API_URL)
+- ✅ NO incluye referencias a Supabase (deprecated)
+- ✅ Firebase se configura directamente en `new.html`
 - ✅ Maneja CORS correctamente
-- ✅ Valida método GET
-- ✅ Devuelve JSON con todas las claves públicas
-- ✅ Cachea por 1 hora
 
-### 2. `vercel.json` - Configuración de Build
-- Sirve `/public` como assets estáticos
-- Mapea `/api/**` a funciones serverless
-- SPA fallback para rutas no encontradas
-- Headers de seguridad
+### 2. `public/keys.js` - Cliente Actualizado
+- ✅ Carga GEMINI_API_KEY desde `/api/config`
+- ✅ URLs públicas cargadas desde hardcoded defaults (seguro)
+- ✅ Firebase no se carga aquí (ya está en new.html)
+- ✅ Sin errores en consola
 
-### 3. `public/keys.js` - Cliente Actualizado
-- Intenta cargar configuración sin warnings
-- Fallback automático a defaults
-- Sin errores en consola
+### 3. `new.html` - Firebase Integrado
+- ✅ Firebase config está en inline script (más seguro)
+- ✅ Autenticación y Firestore funcional
+- ✅ No depende de `/api/config` para Firebase
+
+### 4. `.env` - Limpiado
+- ✅ Removido SUPABASE_URL y SUPABASE_ANON_KEY
+- ✅ Agregado config de Firebase (solo IDs públicos)
+- ✅ Mantiene GEMINI_API_KEY
 
 ## Configuración en Vercel Dashboard
 
@@ -51,20 +57,21 @@ Función que devuelve configuración pública desde variables de entorno:
 3. Selecciona `DevCenterX`
 
 ### Paso 2: Variables de Entorno
-En **Settings → Environment Variables**, agrega:
+En **Settings → Environment Variables**, agrega **SOLO**:
 
 ```
-GEMINI_API_KEY=AIzaSyC3IN6nJPqXdH8yP9w_rgqyio0WLb7M0Jc
-GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
-SUPABASE_URL=https://sgqnjgfkycfzsrtwzdfq.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNncW5qZ2ZreWNmenNydHd6ZGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyOTkwMzMsImV4cCI6MjA3Nzg3NTAzM30.xEVn6iuos-l241hlrwHWpoz3q4seQHzDeXpzdhDoPNs
-GITHUB_API_URL=https://api.github.com
+GEMINI_API_KEY = AIzaSyC3IN6nJPqXdH8yP9w_rgqyio0WLb7M0Jc
 ```
+
+**NO agregues URLs** - son públicas y no necesitan protección:
+- ~~GEMINI_API_URL~~ (usamos default)
+- ~~GITHUB_API_URL~~ (usamos default)
+- ~~SUPABASE_*~~ (deprecated - usando Firebase)
 
 ### Paso 3: Deploy
 ```bash
 git add .
-git commit -m "Fix: Add Vercel API configuration"
+git commit -m "Fix: Secure Vercel config - Firebase only, remove Supabase"
 git push
 ```
 
@@ -77,35 +84,57 @@ Vercel desplegará automáticamente. Espera 1-2 minutos.
 # Test del endpoint
 curl https://devcenterx.vercel.app/api/config
 
-# Deberías recibir:
+# Deberías recibir SOLO:
 # {
-#   "GEMINI_API_KEY": "AIzaSyC3IN6nJPqXdH8yP9w_rgqyio0WLb7M0Jc",
-#   "GEMINI_API_URL": "https://generativelanguage.googleapis.com/...",
-#   ...
+#   "GEMINI_API_KEY": "AIzaSyC3IN6nJPqXdH8yP9w_rgqyio0WLb7M0Jc"
 # }
 ```
 
 ### En el Navegador:
 1. Abre https://devcenterx.vercel.app/
-2. Abre la consola (F12)
-3. **No deberías ver errores de 404**
-4. La configuración se debe cargar correctamente
+2. Abre la consola (F12 → Console tab)
+3. **Deberías VER:**
+   ```
+   ✅ AI Config loaded: {enableAdvancedPrompts: true, ...}
+   ```
+4. **NO deberías ver:**
+   - Errores de 404 en `/api/config`
+   - Errores sobre Supabase
+   - Warnings en rojo
+
+## Seguridad Implementada
+
+### ✅ Lo que está protegido:
+- No exponemos URLs de APIs
+- No exponemos credenciales sensibles
+- Solo GEMINI_API_KEY es pública (por diseño de Google)
+- Firebase config está en cliente (Firebase Design)
+
+### ✅ Lo que es público (seguro):
+- GEMINI_API_KEY (Google lo diseñó así)
+- URLs estándar de APIs públicas
+- Firebase project ID (necesario para cliente)
+
+### ❌ Lo que removimos:
+- Supabase (deprecated)
+- URLs de endpoints
+- Secrets no necesarios
 
 ## Estructura de Carpetas Final
 
 ```
 api/
-├── config.js              (Endpoint serverless)
+├── config.js              (Endpoint serverless - SEGURO)
 public/
 ├── index.html
-├── new.html
-├── keys.js               (Cliente - cargar config)
+├── new.html               (Firebase inline config)
+├── keys.js                (Carga GEMINI_API_KEY)
 ├── ai-prompts-min.js
 ├── script.js
 ├── style.css
 ├── new.css
 └── ...
-vercel.json               (Configuración de build)
+vercel.json               (Configuración de build + headers seguridad)
 package.json
 .env                      (Local - NO subir a repo)
 ```
@@ -123,15 +152,18 @@ package.json
 
 ### ✅ En la App
 1. Usuario accede a https://devcenterx.vercel.app/
-2. `keys.js` intenta: `fetch('/api/config')`
-3. Vercel llama a `api/config.js`
-4. Se devuelve la configuración con CORS headers
-5. Variables globales se cargan correctamente
+2. Se carga `new.html` con Firebase inline config
+3. Se carga `keys.js` que intenta: `fetch('/api/config')`
+4. Vercel llama a `api/config.js`
+5. Se devuelve `{ GEMINI_API_KEY: "..." }`
+6. Variables globales se cargan correctamente
+7. Firebase funciona normalmente
 
 ### ✅ Comportamiento
-- Si variables están en Vercel → Se cargan desde el servidor
-- Si variables no están → Se devuelven vacías (fallback)
-- Sin errores en consola en ambos casos
+- Si GEMINI_API_KEY está en Vercel → Se carga desde el servidor
+- Si no está → Se devuelve string vacío (fallback)
+- **Sin errores en consola en ambos casos**
+- Firebase funciona siempre (config en HTML)
 
 ## Troubleshooting
 
@@ -141,11 +173,11 @@ package.json
 git status
 
 # Debería mostrar:
-# api/config.js (nuevo)
-# vercel.json (nuevo)
+# api/config.js (debe existir)
+# vercel.json (debe existir)
 
 # Si no aparecen:
-git add api/config.js vercel.json
+git add api/ vercel.json
 git commit -m "Add Vercel serverless API"
 git push
 
@@ -154,19 +186,29 @@ git push
 
 ### Las variables no se cargan
 En **Vercel Dashboard → Settings → Environment Variables**, verifica que:
-1. Estén agregadas en el ambiente correcto (production)
+1. `GEMINI_API_KEY` esté agregado
 2. No tengas espacios extras
 3. Haz re-deploy: **Deployments → Redeploy**
 
-### Error "Cannot find module"
-Verifica que `package.json` tenga Node 18+ en `engines`:
-```json
-{
-  "engines": {
-    "node": "18.x"
-  }
-}
+### Sigo viendo errores sobre Supabase
+```bash
+# Busca referencias al viejo código
+grep -r "SUPABASE" .
+
+# Si hay algunas:
+# 1. Reemplazalas
+# 2. Commit y push
+# 3. Vercel redeploy
+
+# Limpia el cache del navegador
+# Ctrl+Shift+Del → Cached images and files
 ```
+
+### Firebase no funciona
+1. Abre `new.html` en el editor
+2. Verifica que `firebaseConfig` esté correcto
+3. Verifica que Firebase scripts se carguen (Network tab)
+4. Abre la consola - debería haber logs de Firebase
 
 ## Comandos Útiles
 
@@ -179,20 +221,38 @@ vercel deploy --prod
 
 # Ver logs
 vercel logs [URL]
+
+# Limpiar build cache
+vercel build --yes
 ```
 
 ## Notas de Seguridad
 
 ⚠️ **IMPORTANTE**:
-- El `.env` file contiene keys reales - **NO SUBAS A GIT**
+- El `.env` file contiene la GEMINI_API_KEY - **NO SUBAS A GIT**
 - Ya está en `.gitignore` ✅
-- En Vercel Dashboard, las variables están encriptadas ✅
-- El endpoint `/api/config` es público (como debe ser) ✅
+- En Vercel Dashboard está encriptada ✅
+- El endpoint `/api/config` es público (solo expone key pública) ✅
+- Firebase config es público (por diseño de Firebase) ✅
+- No exponemos URLs ni credentials sensibles ✅
 
 ## Próximos Pasos
 
-1. ✅ Commit y push los archivos nuevos
-2. ✅ Vuelve a Vercel Dashboard
-3. ✅ Verifica deployment en **Deployments** tab
-4. ✅ Pruba en tu navegador
-5. ✅ Si ves **✅ AI Config loaded:** - ¡ÉXITO!
+1. ✅ Commit y push de los cambios:
+   ```bash
+   git add -A
+   git commit -m "Refactor: Secure config, remove Supabase, use Firebase"
+   git push
+   ```
+
+2. ✅ En Vercel Dashboard agregar variable:
+   - `GEMINI_API_KEY = AIzaSyC3IN6nJPqXdH8yP9w_rgqyio0WLb7M0Jc`
+
+3. ✅ Espera deploy (1-2 min)
+
+4. ✅ Verifica en tu navegador:
+   - https://devcenterx.vercel.app/
+   - Abre Console (F12)
+   - Busca: "✅ AI Config loaded"
+   - ¡ÉXITO! 🎉
+

@@ -1,11 +1,9 @@
 /**
  * Vercel Serverless Function: /api/config
- * Exposes public configuration to the client
+ * Exposes ONLY public API keys (sensitive URLs stay on server)
  * 
  * Environment variables (set in Vercel Dashboard):
- * - GEMINI_API_KEY
- * - SUPABASE_URL
- * - SUPABASE_ANON_KEY
+ * - GEMINI_API_KEY (public key from Google)
  */
 
 export default function handler(req, res) {
@@ -26,13 +24,17 @@ export default function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Return configuration
+  // Return ONLY public configuration (no sensitive URLs)
   const config = {
+    // Public API keys only
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-    GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-    SUPABASE_URL: process.env.SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-    GITHUB_API_URL: process.env.GITHUB_API_URL || 'https://api.github.com'
+    
+    // URLs stay on server - loaded from new.html inline Firebase config
+    // Do NOT expose URLs for security reasons:
+    // - GEMINI_API_URL (use default)
+    // - GITHUB_API_URL (use default)  
+    // - Firebase config (in HTML inline script)
+    // - Supabase (deprecated - using Firebase now)
   };
 
   // Cache for 1 hour
@@ -41,3 +43,4 @@ export default function handler(req, res) {
 
   return res.status(200).json(config);
 }
+

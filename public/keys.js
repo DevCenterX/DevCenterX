@@ -1,6 +1,6 @@
 // ==========================================
 // API KEYS - CARGADAS DESDE EL SERVIDOR
-// NO contiene secretos hardcodeados
+// Firebase config está en new.html (inline script)
 // ==========================================
 
 // Función para cargar configuración desde el servidor
@@ -14,12 +14,15 @@ async function loadConfigFromServer() {
     if (response.ok) {
       const config = await response.json();
       
-      // Asignar variables globales si están disponibles
+      // Asignar GEMINI_API_KEY (la única clave pública)
       window.GEMINI_API_KEY = config.GEMINI_API_KEY || '';
-      window.GEMINI_API_URL = config.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-      window.SUPABASE_URL = config.SUPABASE_URL || '';
-      window.SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY || '';
-      window.GITHUB_API_URL = config.GITHUB_API_URL || 'https://api.github.com';
+      
+      // URLs públicas (no confidenciales)
+      window.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+      window.GITHUB_API_URL = 'https://api.github.com';
+      
+      // Firebase config se carga desde new.html inline script
+      // (ya está en window.firebaseApp, window.firebaseAuth, window.firebaseDB)
       
       window.loadAIPromptsConfig();
       return true;
@@ -31,8 +34,6 @@ async function loadConfigFromServer() {
   // Configuración default (fallback)
   window.GEMINI_API_KEY = '';
   window.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-  window.SUPABASE_URL = '';
-  window.SUPABASE_ANON_KEY = '';
   window.GITHUB_API_URL = 'https://api.github.com';
   
   window.loadAIPromptsConfig();
