@@ -931,8 +931,6 @@
       GoogleAuthProvider,
       GithubAuthProvider,
       signInWithPopup,
-      signInWithRedirect,
-      getRedirectResult,
       updateProfile,
       onAuthStateChanged,
       fetchSignInMethodsForEmail,
@@ -1271,13 +1269,36 @@
         return { user: userCred.user, userData };
       },
       signInWithProvider: async (providerName) => {
-        // Use redirect flow to avoid COOP/COEP popup issues
-        try {
-          await signInWithRedirect(auth, window.firebaseProviders[providerName]);
-          return { redirected: true };
-        } catch (e) {
-          console.error('Error initiating redirect sign-in', e);
-          throw e;
+        // Use popup for provider sign-in
+        const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
+        const newUser = result.user;
+        
+        // Buscar si el email ya existe en otra cuenta
+        const existingUser = await findUserByEmail(newUser.email);
+        
+        if (existingUser) {
+          // El email ya existe, vincular el nuevo proveedor
+          console.log(`📎 Vinculando ${providerName} a usuario existente`, existingUser.uid);
+          await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
+          // Devolver los datos del usuario existente para mantener continuidad
+          return {
+            user: { ...newUser, uid: existingUser.uid },
+            existingUserId: existingUser.uid,
+            existingUserData: existingUser.data
+          };
+        } else {
+          // Email no existe, crear nuevo usuario
+          console.log(`✨ Creando nuevo usuario con ${providerName}`);
+          const userData = await createOrUpdateUserRecord(newUser, { provider: providerName });
+          // Invoke onboarding modal for the new user
+          if (userData) {
+            try {
+              await window.showOnboardingModal(newUser.uid, newUser.email, providerName);
+            } catch (e) {
+              console.error('Onboarding modal error', e);
+            }
+          }
+          return { user: newUser, userData };
         }
       },
       createOrUpdateUserRecord,
@@ -1285,31 +1306,8 @@
       linkProviderToExistingUser
     };
 
-    // Check for redirect sign-in result (for providers using redirect)
-    (async function handleRedirectResult() {
-      try {
-        const res = await getRedirectResult(auth);
-        if (res && res.user) {
-          const newUser = res.user;
-          const providerName = (res.providerId || (res.user && res.user.providerData && res.user.providerData[0] && res.user.providerData[0].providerId)) || 'unknown';
-          const existingUser = await findUserByEmail(newUser.email);
-          if (existingUser) {
-            console.log('📎 Vinculando (redirect) ', providerName, '->', existingUser.uid);
-            await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
-            window.dispatchEvent(new CustomEvent('firebaseRedirectLinked', { detail: { uid: existingUser.uid } }));
-          } else {
-            console.log('✨ Creando nuevo usuario (redirect) with', providerName);
-            await createOrUpdateUserRecord(newUser, { provider: providerName });
-          }
-        }
-      } catch (err) {
-        // ignore absence of redirect result
-        if (err && err.code) console.debug('Redirect handling error', err.code, err.message);
-      } finally {
-        // fire an event for pages waiting for Firebase
-        window.dispatchEvent(new CustomEvent('firebaseReady', { detail: { helpers: window.firebaseAuthHelpers } }));
-      }
-    })();
+    // Fire an event for pages waiting for Firebase
+    window.dispatchEvent(new CustomEvent('firebaseReady', { detail: { helpers: window.firebaseAuthHelpers } }));
   </script>
 
   <!-- ==================== TERMS MODAL (#terms) ==================== -->
