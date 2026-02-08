@@ -5728,34 +5728,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initialized = await window.supabaseIntegration.initialize();
   
   if (initialized) {
-    // Verificar sesión de Supabase Auth (NO localStorage)
-    const { data: { session } } = await window.supabaseIntegration.supabase.auth.getSession();
-    
-    if (session?.user) {
-      try {
-        const userEmail = session.user.email;
-        
-        // Obtener username desde la tabla "cuentas" usando email
-        const { data: cuentaData } = await window.supabaseIntegration.supabase
-          .from('cuentas')
-          .select('usuario')
-          .eq('email', userEmail)
-          .maybeSingle();
-        
-        if (cuentaData?.usuario) {
-          const userName = cuentaData.usuario;
-          await window.supabaseIntegration.updateUserUI(userName);
-        }
-      } catch (e) {
-        console.error('Error al verificar sesión:', e);
-      }
-    } else {
-      // Si no hay sesión activa, intentar cargar nombre de localStorage
-      const cachedName = localStorage.getItem('current_user_name');
-      if (cachedName) {
-        window.supabaseIntegration.setGreetingUsername(cachedName);
-        console.log('✅ Greeting cargado desde caché:', cachedName);
-      }
+    // Intentar cargar usuario desde localStorage (Firebase migrations)
+    const cachedName = localStorage.getItem('current_user_name') || localStorage.getItem('devcenter_user');
+    if (cachedName) {
+      window.supabaseIntegration.setGreetingUsername(cachedName);
+      console.log('✅ Greeting cargado desde localStorage:', cachedName);
     }
   }
 });
