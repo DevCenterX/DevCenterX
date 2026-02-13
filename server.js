@@ -19,11 +19,7 @@ app.use((req, res, next) => {
 // Endpoint para obtener configuración pública
 app.get('/api/config', (req, res) => {
   res.json({
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-    GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-    SUPABASE_URL: process.env.SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-    GITHUB_API_URL: process.env.GITHUB_API_URL || 'https://api.github.com'
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || ''
   });
 });
 
