@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+  <title>DevCenterX - Login & Registro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="new.css?v=1.0">
+  <script>
+    (function() {
+      const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
+      const uid = localStorage.getItem('devcenter_user_id');
+      if (isLoggedIn === 'true' && uid) {
+        window.location.href = '/';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- ==================== LANDING PAGE (/) - Sin sesion ==================== -->
+  <div id="landingPage" class="replit-landing">
+    <!-- Header Navigation -->
+    <header class="landing-header">
+      <div class="landing-header-left">
+        <a href="#" class="landing-logo">
+          <svg class="landing-logo-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+          <span style="margin-left: 8px;">DevCenterX</span>
+        </a>
+        <nav class="landing-nav">
+          <a href="#" class="landing-nav-link">Productos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="#" class="landing-nav-link">Para Empresas <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="#" class="landing-nav-link">Recursos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="#" class="landing-nav-link">Precios</a>
+          <a href="#" class="landing-nav-link">Empleos</a>
+          <a href="#" class="landing-nav-link landing-nav-highlight">Agent <span class="agent-badge">3</span></a>
+        </nav>
+      </div>
+      <div class="landing-header-right">
+        <a href="#" class="landing-contact-link">Contacto</a>
+        <a href="#login" class="landing-login-link">Iniciar sesion</a>
+        <a href="#create" class="landing-signup-btn">Registrarse</a>
+      </div>
+    </header>
+
+    <!-- Main Hero Content -->
+    <main class="landing-main">
+      <h1 class="landing-hero-title">La forma mas facil de convertir tu idea en app.</h1>
+      <p class="landing-hero-subtitle">Simplemente escribe tu idea y mira como tus aplicaciones cobran vida.</p>
+
+      <!-- Prompt Box -->
+      <div class="landing-prompt-container">
+        <div class="landing-prompt-box">
+          <div class="landing-prompt-tabs">
+            <button class="prompt-tab active">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Obtener sugerencias
+            </button>
+            <button class="prompt-tab">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Escribe un prompt
+            </button>
+          </div>
+
+          <div class="landing-prompt-content">
+            <p class="prompt-text">
+              <span class="prompt-label">Hazme</span>
+              <span class="prompt-highlight" id="promptApp">una app</span>
+            </p>
+            <p class="prompt-text">
+              <span class="prompt-label">para</span>
+              <span class="prompt-highlight" id="promptAudience">duenos de mascotas</span>
+            </p>
+            <p class="prompt-text">
+              <span class="prompt-label">que ayude a</span>
+              <span class="prompt-highlight" id="promptFeature">planificar comidas y generar</span>
+            </p>
+            <p class="prompt-text">
+              <span class="prompt-highlight" id="promptFeature2">listas de compras basadas en preferencias</span>
+            </p>
+            <p class="prompt-text">
+              <span class="prompt-highlight" id="promptFeature3">alimenticias</span>
+            </p>
+            <p class="prompt-mobile-first">Hazlo mobile-first y que funcione en cualquier dispositivo</p>
+          </div>
+        </div>
+
+        <!-- Background App Images -->
+        <div class="landing-app-images">
+          <div class="app-image app-image-left-1">
+            <img src="Imagenes/DevCenter.jpg" alt="App Preview" class="app-preview-img">
+          </div>
+          <div class="app-image app-image-left-2">
+            <img src="Imagenes/DevCenterT.jpg" alt="App Preview" class="app-preview-img">
+          </div>
+          <div class="app-image app-image-right-1">
+            <img src="Imagenes/DevCenter.jpg" alt="App Preview" class="app-preview-img">
+          </div>
+          <div class="app-image app-image-right-2">
+            <img src="Imagenes/DevCenterT.jpg" alt="App Preview" class="app-preview-img">
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <a href="#create" class="landing-cta-button" id="landingStartBtn">
+        Comienza a crear con IA
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+      </a>
+
+    </main>
+
+    <!-- Logos de empresas/tecnologias -->
+    <section class="landing-trusted-section">
+      <p class="trusted-text">Tecnologias que impulsan DevCenterX</p>
+      <div class="trusted-logos">
+        <div class="trusted-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 17.07 3.633 16.7 3.633 16.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.627-5.373-12-12-12"/></svg>
+          <span>GitHub</span>
+        </div>
+        <div class="trusted-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
+          <span>Google</span>
+        </div>
+        <div class="trusted-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+          <span>Firebase</span>
+        </div>
+        <div class="trusted-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"/></svg>
+          <span>Tailwind</span>
+        </div>
+        <div class="trusted-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span>AI/ML</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion de Caracteristicas -->
+    <section class="landing-features-section" id="features">
+      <div class="features-header">
+        <span class="features-badge">Caracteristicas</span>
+        <h2 class="features-title">Todo lo que necesitas para crear apps increibles</h2>
+        <p class="features-subtitle">DevCenterX combina el poder de la inteligencia artificial con herramientas de desarrollo modernas para acelerar tu proceso creativo.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card feature-card-highlight">
+          <div class="feature-icon feature-icon-ai">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3>Generacion con IA</h3>
+          <p>Describe tu idea en lenguaje natural y nuestra IA genera codigo funcional HTML, CSS y JavaScript al instante.</p>
+          <div class="feature-tag">Powered by Gemini</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-code">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <h3>Editor en Tiempo Real</h3>
+          <p>Edita HTML, CSS y JavaScript con resaltado de sintaxis y ve los cambios reflejados instantaneamente en la vista previa.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-preview">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h3>Vista Previa Responsiva</h3>
+          <p>Visualiza tu proyecto en diferentes dispositivos: escritorio, tablet y movil con un solo clic.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-cloud">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+            </svg>
+          </div>
+          <h3>Almacenamiento en la Nube</h3>
+          <p>Tus proyectos se guardan automaticamente en la nube con Firebase. Accede desde cualquier lugar.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-export">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <h3>Exportacion Flexible</h3>
+          <p>Descarga archivos individuales o exporta todo tu proyecto en un ZIP listo para subir a cualquier servidor.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-community">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3>Comunidad Activa</h3>
+          <p>Explora proyectos publicos de otros creadores, deja resenas y comparte tus propias creaciones.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion Como Funciona -->
+    <section class="landing-howto-section" id="howto">
+      <div class="howto-header">
+        <span class="howto-badge">Como Funciona</span>
+        <h2 class="howto-title">De idea a aplicacion en 3 simples pasos</h2>
+      </div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
+          <h3>Describe tu idea</h3>
+          <p>Escribe en lenguaje natural lo que quieres crear. Puede ser tan simple como "una calculadora" o tan complejo como "un dashboard de ventas".</p>
+        </div>
+        <div class="howto-connector">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+        <div class="howto-step">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <h3>La IA genera el codigo</h3>
+          <p>Nuestra inteligencia artificial analiza tu descripcion y genera automaticamente HTML, CSS y JavaScript optimizado.</p>
+        </div>
+        <div class="howto-connector">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+        <div class="howto-step">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h3>Personaliza y publica</h3>
+          <p>Edita el codigo generado, ajusta los estilos y cuando estes listo, comparte tu proyecto con el mundo.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion de Estadisticas -->
+    <section class="landing-stats-section">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" data-target="10000">10,000+</div>
+          <div class="stat-label">Proyectos Creados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="5000">5,000+</div>
+          <div class="stat-label">Usuarios Activos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="50000">50,000+</div>
+          <div class="stat-label">Lineas de Codigo Generadas</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="99">99%</div>
+          <div class="stat-label">Satisfaccion de Usuarios</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion de Casos de Uso -->
+    <section class="landing-usecases-section" id="usecases">
+      <div class="usecases-header">
+        <span class="usecases-badge">Casos de Uso</span>
+        <h2 class="usecases-title">Crea cualquier tipo de aplicacion</h2>
+        <p class="usecases-subtitle">Desde paginas web simples hasta aplicaciones complejas, DevCenterX te ayuda a construir lo que imagines.</p>
+      </div>
+      <div class="usecases-grid">
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h3>Landing Pages</h3>
+          <p>Crea paginas de aterrizaje profesionales con formularios de contacto, secciones animadas y diseno responsivo en minutos.</p>
+          <ul class="usecase-features">
+            <li>Formularios de captura</li>
+            <li>Animaciones modernas</li>
+            <li>SEO optimizado</li>
+          </ul>
+        </div>
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
+          <h3>Tiendas Online</h3>
+          <p>Desarrolla e-commerce con carrito de compras, catalogo de productos, pasarelas de pago y gestion de inventario.</p>
+          <ul class="usecase-features">
+            <li>Carrito de compras</li>
+            <li>Catalogo dinamico</li>
+            <li>Checkout integrado</li>
+          </ul>
+        </div>
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+          </div>
+          <h3>Dashboards</h3>
+          <p>Construye paneles de control interactivos con graficas, metricas en tiempo real y visualizacion de datos empresariales.</p>
+          <ul class="usecase-features">
+            <li>Graficas interactivas</li>
+            <li>Datos en tiempo real</li>
+            <li>KPIs personalizados</li>
+          </ul>
+        </div>
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h3>Portafolios</h3>
+          <p>Disena portafolios creativos para mostrar tu trabajo, proyectos y habilidades con galerias interactivas.</p>
+          <ul class="usecase-features">
+            <li>Galerias de proyectos</li>
+            <li>Animaciones suaves</li>
+            <li>Seccion de contacto</li>
+          </ul>
+        </div>
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </div>
+          <h3>Apps Multimedia</h3>
+          <p>Crea reproductores de video, galerias de imagenes, podcasts y plataformas de contenido multimedia.</p>
+          <ul class="usecase-features">
+            <li>Reproductores personalizados</li>
+            <li>Streaming de contenido</li>
+            <li>Playlists dinamicas</li>
+          </ul>
+        </div>
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+          </div>
+          <h3>Herramientas</h3>
+          <p>Desarrolla calculadoras, generadores, convertidores y utilidades que resuelvan problemas especificos.</p>
+          <ul class="usecase-features">
+            <li>Calculadoras avanzadas</li>
+            <li>Generadores de contenido</li>
+            <li>Utilidades practicas</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion de Preguntas Frecuentes -->
+    <section class="landing-faq-section" id="faq">
+      <div class="faq-header">
+        <span class="faq-badge">FAQ</span>
+        <h2 class="faq-title">Preguntas Frecuentes</h2>
+        <p class="faq-subtitle">Todo lo que necesitas saber sobre DevCenterX</p>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Que es DevCenterX Agent?</h3>
+          </div>
+          <p class="faq-answer">DevCenterX Agent es una plataforma de desarrollo web potenciada por inteligencia artificial que te permite crear aplicaciones web completas simplemente describiendo lo que quieres. Genera codigo HTML, CSS y JavaScript optimizado automaticamente.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Necesito saber programar?</h3>
+          </div>
+          <p class="faq-answer">No es necesario. DevCenterX esta disenado para que cualquier persona pueda crear aplicaciones web sin conocimientos de programacion. Sin embargo, si sabes programar, puedes editar el codigo generado para personalizarlo aun mas.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Que tecnologias utiliza la IA?</h3>
+          </div>
+          <p class="faq-answer">Utilizamos Google Gemini, uno de los modelos de IA mas avanzados del mundo, entrenado especificamente para generar codigo web de alta calidad, limpio y bien estructurado.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Puedo exportar mi proyecto?</h3>
+          </div>
+          <p class="faq-answer">Si, puedes descargar archivos individuales (HTML, CSS, JS) o exportar todo tu proyecto en un archivo ZIP listo para subir a cualquier servidor web o plataforma de hosting.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Mis proyectos son privados?</h3>
+          </div>
+          <p class="faq-answer">Por defecto, tus proyectos son privados. Tu decides si quieres hacerlos publicos para que otros usuarios puedan verlos e inspirarse en tu trabajo.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3>Como funciona el almacenamiento?</h3>
+          </div>
+          <p class="faq-answer">Utilizamos Firebase, una plataforma de servicios en la nube de Google, para almacenar y autenticar tus proyectos de forma segura. Puedes acceder a ellos desde cualquier dispositivo en cualquier momento.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion de Comparativa -->
+    <section class="landing-comparison-section" id="comparison">
+      <div class="comparison-header">
+        <span class="comparison-badge">Ventajas</span>
+        <h2 class="comparison-title">Por que elegir DevCenterX?</h2>
+        <p class="comparison-subtitle">Comparado con metodos tradicionales de desarrollo</p>
+      </div>
+      <div class="comparison-table">
+        <div class="comparison-row comparison-header-row">
+          <div class="comparison-cell comparison-feature"></div>
+          <div class="comparison-cell comparison-traditional">Desarrollo Tradicional</div>
+          <div class="comparison-cell comparison-devcenter">DevCenterX Agent</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell comparison-feature">Tiempo de desarrollo</div>
+          <div class="comparison-cell comparison-traditional">Semanas o meses</div>
+          <div class="comparison-cell comparison-devcenter highlight">Minutos u horas</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell comparison-feature">Conocimientos requeridos</div>
+          <div class="comparison-cell comparison-traditional">HTML, CSS, JS, frameworks</div>
+          <div class="comparison-cell comparison-devcenter highlight">Solo describir tu idea</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell comparison-feature">Costo inicial</div>
+          <div class="comparison-cell comparison-traditional">Contratar desarrolladores</div>
+          <div class="comparison-cell comparison-devcenter highlight">Gratis para empezar</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell comparison-feature">Iteraciones</div>
+          <div class="comparison-cell comparison-traditional">Lento y costoso</div>
+          <div class="comparison-cell comparison-devcenter highlight">Instantaneo y gratuito</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell comparison-feature">Curva de aprendizaje</div>
+          <div class="comparison-cell comparison-traditional">Muy pronunciada</div>
+          <div class="comparison-cell comparison-devcenter highlight">Practicamente nula</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seccion CTA Final -->
+    <section class="landing-final-cta">
+      <div class="final-cta-content">
+        <h2>Listo para crear tu proxima app?</h2>
+        <p>Unete a miles de creadores que ya estan construyendo el futuro con DevCenterX</p>
+        <div class="final-cta-buttons">
+          <a href="#create" class="final-cta-primary">
+            Comenzar Gratis
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="final-cta-decoration">
+        <div class="decoration-circle decoration-circle-1"></div>
+        <div class="decoration-circle decoration-circle-2"></div>
+        <div class="decoration-circle decoration-circle-3"></div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+            </svg>
+            <span>DevCenterX</span>
+          </div>
+          <p class="footer-description">La plataforma mas facil para convertir tus ideas en aplicaciones web funcionales usando inteligencia artificial.</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" aria-label="Twitter">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" class="social-link" aria-label="GitHub">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 17.07 3.633 16.7 3.633 16.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+            <a href="#" class="social-link" aria-label="Discord">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+            </a>
+            <a href="#" class="social-link" aria-label="YouTube">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <div class="footer-column">
+            <h4>Producto</h4>
+            <a href="#">Caracteristicas</a>
+            <a href="#">Precios</a>
+            <a href="#">Integraciones</a>
+            <a href="#">Changelog</a>
+          </div>
+          <div class="footer-column">
+            <h4>Recursos</h4>
+            <a href="#">Documentacion</a>
+            <a href="#">Tutoriales</a>
+            <a href="#">Blog</a>
+            <a href="#">Comunidad</a>
+          </div>
+          <div class="footer-column">
+            <h4>Empresa</h4>
+            <a href="#">Sobre Nosotros</a>
+            <a href="#">Empleos</a>
+            <a href="#">Contacto</a>
+            <a href="#">Prensa</a>
+          </div>
+          <div class="footer-column">
+            <h4>Legal</h4>
+            <a href="#">Privacidad</a>
+            <a href="#">Terminos</a>
+            <a href="#">Cookies</a>
+            <a href="#">Licencias</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>2025 DevCenterX. Todos los derechos reservados.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacidad</a>
+          <a href="#">Terminos</a>
+          <a href="#">Seguridad</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+
+    <script>
+      (function() {
+        const promptData = [
+          {
+            app: 'una app',
+            audience: 'duenos de mascotas',
+            feature: 'planificar comidas y generar',
+            feature2: 'listas de compras basadas en preferencias',
+            feature3: 'alimenticias'
+          },
+          {
+            app: 'una plataforma',
+            audience: 'estudiantes universitarios',
+            feature: 'organizar notas y crear',
+            feature2: 'resumenes automaticos con',
+            feature3: 'inteligencia artificial'
+          },
+          {
+            app: 'un dashboard',
+            audience: 'emprendedores',
+            feature: 'gestionar finanzas y visualizar',
+            feature2: 'metricas de negocio en',
+            feature3: 'tiempo real'
+          },
+          {
+            app: 'una aplicacion',
+            audience: 'equipos remotos',
+            feature: 'colaborar en proyectos y',
+            feature2: 'automatizar tareas repetitivas',
+            feature3: 'facilmente'
+          }
+        ];
+
+        let currentIndex = 0;
+
+        function animatePromptText() {
+          const promptApp = document.getElementById('promptApp');
+          const promptAudience = document.getElementById('promptAudience');
+          const promptFeature = document.getElementById('promptFeature');
+          const promptFeature2 = document.getElementById('promptFeature2');
+          const promptFeature3 = document.getElementById('promptFeature3');
+
+          if (!promptApp) return;
+
+          const elements = [promptApp, promptAudience, promptFeature, promptFeature2, promptFeature3];
+          elements.forEach(el => el.classList.add('fade-out'));
+
+          setTimeout(() => {
+            currentIndex = (currentIndex + 1) % promptData.length;
+            const data = promptData[currentIndex];
+
+            promptApp.textContent = data.app;
+            promptAudience.textContent = data.audience;
+            promptFeature.textContent = data.feature;
+            promptFeature2.textContent = data.feature2;
+            promptFeature3.textContent = data.feature3;
+
+            elements.forEach(el => {
+              el.classList.remove('fade-out');
+              el.classList.add('fade-in');
+            });
+
+            setTimeout(() => {
+              elements.forEach(el => el.classList.remove('fade-in'));
+            }, 1500);
+          }, 1200);
+        }
+
+        setInterval(animatePromptText, 8000);
+
+        document.querySelectorAll('.prompt-tab').forEach(tab => {
+          tab.addEventListener('click', function() {
+            document.querySelectorAll('.prompt-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const landingNav = document.querySelector('.landing-nav');
+        if (mobileMenuBtn && landingNav) {
+          mobileMenuBtn.addEventListener('click', () => {
+            landingNav.classList.toggle('mobile-open');
+            mobileMenuBtn.classList.toggle('active');
+          });
+        }
+      })();
+    </script>
+  </div>
+
+  <!-- ==================== LOGIN PAGE (#login) - Split Screen Design ==================== -->
+  <div id="loginPage" class="split-auth-page">
+    <div class="split-auth-left">
+      <div class="split-auth-content">
+        <a href="#" class="split-auth-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Volver
+        </a>
+
+        <div class="split-auth-logo">
+          <svg class="split-auth-logo-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+
+        <h1 class="split-auth-title">Iniciar sesion</h1>
+
+        <div class="split-auth-social-buttons">
+          <button type="button" class="social-auth-btn" id="googleLoginBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continuar con Google
+          </button>
+
+          <button type="button" class="social-auth-btn" id="githubLoginBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            Continuar con GitHub
+          </button>
+        </div>
+
+        <div class="split-auth-divider">
+          <span>O</span>
+        </div>
+
+        <button type="button" class="email-auth-option" id="showEmailLoginBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email y contraseña
+        </button>
+
+        <form id="loginForm" class="split-auth-form" style="display: none;">
+          <div class="split-form-group">
+            <label for="loginEmail">Email o nombre de usuario</label>
+            <input type="text" id="loginEmail" placeholder="tu@email.com o tu_usuario" required autocomplete="username">
+          </div>
+          <div class="split-form-group">
+            <label for="loginPassword">Contraseña</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="loginPassword" placeholder="Tu contraseña" required autocomplete="current-password">
+              <button type="button" class="password-toggle-btn" data-target="loginPassword">
+                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="split-submit-btn">
+            Iniciar sesion
+          </button>
+        </form>
+
+        <p class="split-auth-terms">
+          Al continuar, aceptas los <a href="#terms">Terminos de Servicio</a> y la <a href="#privacy">Politica de Privacidad</a>
+        </p>
+
+        <p class="split-auth-switch">
+          No tienes cuenta? <a href="#create">Crear cuenta</a>
+        </p>
+      </div>
+    </div>
+    <div class="split-auth-right">
+      <div class="split-auth-brand">
+        <div class="brand-icon">
+          <svg class="brand-icon-svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+        <h2 class="brand-tagline">Crea sin limites</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CREATE ACCOUNT PAGE (#create) - Split Screen Design ==================== -->
+  <div id="createPage" class="split-auth-page">
+    <div class="split-auth-left">
+      <div class="split-auth-content">
+        <a href="#" class="split-auth-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Volver
+        </a>
+
+        <div class="split-auth-logo">
+          <svg class="split-auth-logo-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+
+        <h1 class="split-auth-title">Crea una cuenta en DevCenterX</h1>
+
+        <div class="split-auth-social-buttons">
+          <button type="button" class="social-auth-btn" id="googleSignupBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continuar con Google
+          </button>
+
+          <button type="button" class="social-auth-btn" id="githubSignupBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            Continuar con GitHub
+          </button>
+        </div>
+
+        <div class="split-auth-divider">
+          <span>O</span>
+        </div>
+
+        <button type="button" class="email-auth-option" id="showEmailSignupBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email y contraseña
+        </button>
+
+        <form id="createForm" class="split-auth-form" style="display: none;">
+          <div class="split-form-group">
+            <label for="createEmail">Email</label>
+            <input type="email" id="createEmail" placeholder="tu@email.com" required autocomplete="email">
+          </div>
+          <div class="split-form-group">
+            <label for="createPassword">Contraseña</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="createPassword" placeholder="Crea una contraseña segura" required autocomplete="new-password" minlength="6">
+              <button type="button" class="password-toggle-btn" data-target="createPassword">
+                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <div class="password-strength" id="passwordStrength" style="display: none;">
+              <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+              <span class="strength-text" id="strengthText"></span>
+            </div>
+          </div>
+          <button type="submit" class="split-submit-btn">
+            Crear cuenta
+          </button>
+        </form>
+
+        <p class="split-auth-terms">
+          Al continuar, aceptas los <a href="#terms">Terminos de Servicio</a> y la <a href="#privacy">Politica de Privacidad</a>
+        </p>
+
+        <p class="split-auth-switch">
+          Ya tienes cuenta? <a href="#login">Iniciar sesion</a>
+        </p>
+      </div>
+    </div>
+    <div class="split-auth-right">
+      <div class="split-auth-brand">
+        <div class="brand-icon">
+          <svg class="brand-icon-svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+        <h2 class="brand-tagline">Crea sin limites</h2>
+      </div>
+    </div>
+  </div>
+
+  <script src="keys.js?v=4.0"></script>
+  <script src="ai-prompts-min.js?v=1.0"></script>
+
+  <script type="module">
+    // Initialize Firebase and expose simple auth helpers on window
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      GithubAuthProvider,
+      signInWithPopup,
+      updateProfile,
+      onAuthStateChanged,
+      fetchSignInMethodsForEmail,
+      updatePassword
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      serverTimestamp,
+      collection,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+      authDomain: "devcenter-agent-48c86.firebaseapp.com",
+      projectId: "devcenter-agent-48c86",
+      storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+      messagingSenderId: "911929994293",
+      appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+      measurementId: "G-S5GTYBRVK8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseApp = app;
+    window.firebaseAnalytics = analytics;
+    window.firebaseAuth = auth;
+    window.firebaseDB = db;
+    window.firebaseProviders = {
+      google: new GoogleAuthProvider(),
+      github: new GithubAuthProvider()
+    };
+
+    // Firestore helpers based on FIREBASE_SCHEMA.md
+    
+    // Buscar usuario por email
+    async function findUserByEmail(email) {
+      if (!email) return null;
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          return { uid: snapshot.docs[0].id, data: snapshot.docs[0].data() };
+        }
+      } catch (error) {
+        console.error('Error buscando usuario por email:', error);
+      }
+      return null;
+    }
+
+    // Vincular nuevo proveedor a usuario existente
+    async function linkProviderToExistingUser(existingUid, newUser, newProvider) {
+      try {
+        const userRef = doc(db, 'users', existingUid);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) return null;
+        
+        const existing = userDoc.data();
+        let providers = existing.provider || 'email';
+        
+        // Convertir a array si es string
+        if (typeof providers === 'string') {
+          providers = [providers];
+        } else if (!Array.isArray(providers)) {
+          providers = [newProvider];
+        }
+        
+        // Agregar nuevo provider si no existe
+        if (!providers.includes(newProvider)) {
+          providers.push(newProvider);
+        }
+        
+        // Actualizar el documento
+        await setDoc(userRef, {
+          ...existing,
+          provider: providers,
+          displayName: newUser.displayName || existing.displayName,
+          avatar: newUser.photoURL || existing.avatar,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        
+        return { uid: existingUid, providers };
+      } catch (error) {
+        console.error('Error vinculando proveedor:', error);
+        return null;
+      }
+    }
+
+    // Buscar usuario por username
+    async function findUserByUsername(username) {
+      if (!username) return null;
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', username));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          return { uid: snapshot.docs[0].id, data: snapshot.docs[0].data() };
+        }
+      } catch (error) {
+        console.error('Error buscando usuario por username:', error);
+      }
+      return null;
+    }
+
+    // Cloudinary upload (uses provided credentials) - NOTE: embedding API secret client-side is insecure
+    async function cloudinaryUpload(fileBlob, fileName) {
+      try {
+        const cloudName = 'duybqkv24';
+        const apiKey = '445151322255556';
+        const apiSecret = 'zOxNfHhz-K5E4vOPx2-34H_pJgI';
+        const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+        const timestamp = Math.floor(Date.now() / 1000);
+        const toSign = `timestamp=${timestamp}${apiSecret}`;
+
+        const sigBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(toSign));
+        const sigArray = Array.from(new Uint8Array(sigBuffer));
+        const signature = sigArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const form = new FormData();
+        form.append('file', fileBlob, fileName || 'upload.png');
+        form.append('api_key', apiKey);
+        form.append('timestamp', String(timestamp));
+        form.append('signature', signature);
+
+        const res = await fetch(url, { method: 'POST', body: form });
+        const json = await res.json();
+        if (json && json.secure_url) return json.secure_url;
+        console.error('Cloudinary upload failed', json);
+        return null;
+      } catch (err) {
+        console.error('Cloudinary upload error', err);
+        return null;
+      }
+    }
+
+    // Onboarding modal flow: professional profile completion
+    window.showOnboardingModal = async function(uid, email, provider, photoURL) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let modal = document.getElementById('onboardingModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'onboardingModal';
+            modal.className = 'onboarding-modal-overlay';
+            modal.innerHTML = `
+              <div class="onboarding-modal">
+                <div class="onboarding-header">
+                  <h2>Completa tu perfil</h2>
+                  <p class="onboarding-subtitle">Personaliza tu cuenta en segundos</p>
+                </div>
+                
+                <div class="onboarding-content">
+                  <div class="avatar-preview-section">
+                    <div class="avatar-preview" id="avatarPreview"></div>
+                    <div class="avatar-preview-actions">
+                      <input id="avatarFile" type="file" accept="image/*" class="avatar-file-input" />
+                      <label for="avatarFile" class="avatar-btn avatar-btn-upload" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Subir
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="onboardUsername">Nombre de usuario</label>
+                    <input id="onboardUsername" type="text" placeholder="tuusuario" autocomplete="off" />
+                    <div id="usernameError" class="error-message"></div>
+                  </div>
+                </div>
+
+                <div class="onboarding-footer">
+                  <button id="onboardSaveBtn" class="btn-primary">Guardar Perfil</button>
+                </div>
+              </div>`;
+            document.body.appendChild(modal);
+          }
+
+          const usernameInput = document.getElementById('onboardUsername');
+          const usernameError = document.getElementById('usernameError');
+          const fileInput = document.getElementById('avatarFile');
+          const saveBtn = document.getElementById('onboardSaveBtn');
+          const avatarPreview = document.getElementById('avatarPreview');
+
+          modal.style.display = 'flex';
+
+          let chosenAvatarUrl = photoURL || null;
+          
+          // Display initial avatar preview
+          const updateAvatarPreview = () => {
+            if (chosenAvatarUrl) {
+              avatarPreview.innerHTML = `<img src="${chosenAvatarUrl}" alt="Avatar" class="avatar-img" />`;
+            } else if (photoURL) {
+              avatarPreview.innerHTML = `<img src="${photoURL}" alt="Avatar" class="avatar-img" />`;
+            } else {
+              const initials = email ? email.split('@')[0][0].toUpperCase() : 'U';
+              const colors = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+              const bgColor = colors[Math.floor(Math.random() * colors.length)];
+              avatarPreview.innerHTML = `<div class="avatar-placeholder" style="background-color: ${bgColor}">${initials}</div>`;
+            }
+          };
+
+          updateAvatarPreview();
+          usernameInput.focus();
+
+          // Automatic avatar generation removed: only provider photo or upload available.
+
+          fileInput.onchange = async () => {
+            if (fileInput.files && fileInput.files[0]) {
+              const label = fileInput.nextElementSibling;
+              label.disabled = true;
+              label.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Subiendo...';
+              try {
+                const uploaded = await cloudinaryUpload(fileInput.files[0], fileInput.files[0].name);
+                if (uploaded) {
+                  chosenAvatarUrl = uploaded;
+                  updateAvatarPreview();
+                  label.classList.add('selected');
+                  showAuthMessage('Avatar subido correctamente', 'success');
+                }
+              } catch (err) {
+                console.error('File upload error:', err);
+                showAuthMessage('Error al subir imagen', 'error');
+              } finally {
+                label.disabled = false;
+                label.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir';
+              }
+            }
+          };
+
+          saveBtn.onclick = async () => {
+            usernameError.style.display = 'none';
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+              usernameError.textContent = 'Por favor ingresa un nombre de usuario';
+              usernameError.style.display = 'block';
+              return;
+            }
+            
+            if (username.length < 3) {
+              usernameError.textContent = 'Mínimo 3 caracteres';
+              usernameError.style.display = 'block';
+              return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Guardando...';
+
+            try {
+              const exists = await findUserByUsername(username);
+              if (exists && exists.uid !== uid) {
+                usernameError.textContent = 'Este usuario ya está en uso';
+                usernameError.style.display = 'block';
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Guardar Perfil';
+                return;
+              }
+
+              const userRef = doc(db, 'users', uid);
+              const userDoc = await getDoc(userRef);
+              const existing = userDoc.exists() ? userDoc.data() : {};
+              let providers = Array.isArray(existing.provider) ? existing.provider : (existing.provider ? [existing.provider] : []);
+              if (!providers.includes(provider)) providers.push(provider);
+
+              const updated = {
+                ...existing,
+                uid: uid,
+                username: username,
+                email: existing.email || email,
+                displayName: existing.displayName || username,
+                provider: providers,
+                avatar: chosenAvatarUrl || existing.avatar || '',
+                updatedAt: serverTimestamp()
+              };
+
+              await setDoc(userRef, updated, { merge: true });
+              modal.style.display = 'none';
+              showAuthMessage('Perfil guardado correctamente', 'success');
+              resolve(updated);
+            } catch (err) {
+              console.error('Onboarding save error:', err);
+              let errorMsg = 'Error al guardar';
+              if (err.message && err.message.includes('permission')) {
+                errorMsg = 'Error de permisos. Revisa las reglas de Firestore.';
+              }
+              usernameError.textContent = errorMsg;
+              usernameError.style.display = 'block';
+              showAuthMessage(errorMsg, 'error');
+            } finally {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Guardar Perfil';
+            }
+          };
+        } catch (err) {
+          console.error('Onboarding error', err);
+          reject(err);
+        }
+      });
+    };
+
+    // Crear o actualizar usuario
+    async function createOrUpdateUserRecord(user, opts = {}) {
+      if (!user || !user.uid) return null;
+      const uid = user.uid;
+      const userRef = doc(db, 'users', uid);
+      const now = serverTimestamp();
+
+      const existing = await getDoc(userRef);
+      const username = user.displayName ? user.displayName.replace(/\s+/g, '') : (user.email ? user.email.split('@')[0] : uid);
+
+      const data = {
+        uid: uid,
+        email: user.email || '',
+        username: username,
+        displayName: user.displayName || '',
+        avatar: user.photoURL || '',
+        provider: opts.provider || 'email',
+        updatedAt: now,
+        plan: opts.plan || 'free',
+        limit: opts.limit || 0
+      };
+
+      if (!existing.exists()) {
+        data.createdAt = now;
+      }
+
+      await setDoc(userRef, data, { merge: true });
+
+      // ensure proyectos doc exists
+      const proyectosRef = doc(db, 'proyectos', uid);
+      const projExisting = await getDoc(proyectosRef);
+      if (!projExisting.exists()) {
+        await setDoc(proyectosRef, {
+          uid: uid,
+          proyectos: [],
+          createdAt: now
+        });
+      }
+
+      return data;
+    }
+
+    // expose simple helpers used by the non-module script
+    window.firebaseAuthHelpers = {
+      signInEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
+      createEmail: async (email, password, displayName) => {
+        // PASO 1: Verificar si el email ya tiene métodos de inicio en Firebase Auth
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if (methods && methods.length > 0) {
+            const error = new Error(`Este email ya está registrado con: ${methods.join(', ')}. Por favor inicia sesión con el método existente.`);
+            error.code = 'auth/email-already-registered';
+            throw error;
+          }
+        } catch (e) {
+          // Si fetchSignInMethods falla por alguna razón, fail-safe: rethrow
+          console.error('Error verificando métodos de inicio para el email', e);
+          throw e;
+        }
+
+        // PASO 2: Email no existe en Auth, crear nuevo usuario en Firebase Auth
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        if (displayName) {
+          try { await updateProfile(userCred.user, { displayName }); } catch (e) { /* ignore */ }
+        }
+
+        // PASO 3: Crear registros en Firestore y devolver datos creados
+        let userData = null;
+        try { userData = await createOrUpdateUserRecord(userCred.user, { provider: 'email' }); } catch (e) { console.error('firestore user create error', e); }
+        return { user: userCred.user, userData };
+      },
+      signInWithProvider: async (providerName) => {
+        try {
+          // Use popup for provider sign-in
+          const result = await signInWithPopup(auth, window.firebaseProviders[providerName]);
+          const newUser = result.user;
+          
+          // Buscar si el email ya existe en otra cuenta
+          const existingUser = await findUserByEmail(newUser.email);
+          
+          if (existingUser) {
+            // El email ya existe, vincular el nuevo proveedor
+            console.log(`📎 Vinculando ${providerName} a usuario existente`, existingUser.uid);
+            await linkProviderToExistingUser(existingUser.uid, newUser, providerName);
+            // Devolver los datos del usuario existente para mantener continuidad
+            return {
+              user: { ...newUser, uid: existingUser.uid },
+              existingUserId: existingUser.uid,
+              existingUserData: existingUser.data
+            };
+          } else {
+            // Email no existe, crear nuevo usuario
+            console.log(`✨ Creando nuevo usuario con ${providerName}`);
+            const userData = await createOrUpdateUserRecord(newUser, { provider: providerName });
+            // Invoke onboarding modal for the new user
+            if (userData) {
+              try {
+                await window.showOnboardingModal(newUser.uid, newUser.email, providerName);
+              } catch (e) {
+                console.error('Onboarding modal error', e);
+              }
+            }
+            return { user: newUser, userData };
+          }
+        } catch (error) {
+          console.error(`Error en autenticación con ${providerName}:`, error);
+          // Re-throw para que el código que llama a signInWithProvider pueda manejar el error
+          throw error;
+        }
+      },
+      createOrUpdateUserRecord,
+      findUserByEmail,
+      linkProviderToExistingUser
+    };
+
+    // Fire an event for pages waiting for Firebase
+    window.dispatchEvent(new CustomEvent('firebaseReady', { detail: { helpers: window.firebaseAuthHelpers } }));
+  </script>
+
+  <!-- ==================== TERMS MODAL (#terms) ==================== -->
+  <div id="termsPage" class="legal-modal-overlay" style="display: none;">
+    <div class="legal-modal">
+      <div class="legal-modal-header">
+        <div class="legal-modal-title">
+          <div class="legal-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Terminos de Servicio</h1>
+            <span class="legal-date">Actualizado: Diciembre 2024</span>
+          </div>
+        </div>
+        <button class="legal-close-btn" onclick="window.closeLegalModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <div class="legal-section">
+          <div class="legal-section-header">
+            <span class="legal-section-number">01</span>
+            <h2>Aceptacion de los Terminos</h2>
+          </div>
+          <p>Al acceder y utilizar DevCenterX, aceptas estar sujeto a estos Terminos de Servicio. Si no estas de acuerdo con alguna parte de estos terminos, no podras acceder al servicio.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-header">
+            <span class="legal-section-number">02</span>
+            <h2>Descripcion del Servicio</h2>
+          </div>
+          <p>DevCenterX es una plataforma de desarrollo web potenciada por inteligencia artificial.</p>
+        </div>
+      </div>
+      <div class="legal-modal-footer">
+        <button class="legal-accept-btn" onclick="window.closeLegalModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PRIVACY MODAL (#privacy) ==================== -->
+  <div id="privacyPage" class="legal-modal-overlay" style="display: none;">
+    <div class="legal-modal">
+      <div class="legal-modal-header">
+        <div class="legal-modal-title">
+          <div class="legal-icon-wrapper privacy">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Politica de Privacidad</h1>
+            <span class="legal-date">Actualizado: Diciembre 2024</span>
+          </div>
+        </div>
+        <button class="legal-close-btn" onclick="window.closeLegalModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <div class="legal-section">
+          <div class="legal-section-header">
+            <span class="legal-section-number">01</span>
+            <h2>Informacion que Recopilamos</h2>
+          </div>
+          <p>DevCenterX recopila información para proporcionar y mejorar nuestros servicios.</p>
+        </div>
+      </div>
+      <div class="legal-modal-footer">
+        <button class="legal-accept-btn" onclick="window.closeLegalModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function waitForFirebase(callback, maxAttempts = 100) {
+      if (window.firebaseAuthHelpers) {
+        callback(window.firebaseAuthHelpers);
+        return;
+      }
+
+      let resolved = false;
+      const handleEvent = (e) => {
+        if (!resolved) {
+          resolved = true;
+          window.removeEventListener('firebaseReady', handleEvent);
+          callback(e.detail?.helpers || window.firebaseAuthHelpers);
+        }
+      };
+      window.addEventListener('firebaseReady', handleEvent);
+
+      let attempts = 0;
+      const check = () => {
+        if (resolved) return;
+        attempts++;
+        if (window.firebaseAuthHelpers) {
+          resolved = true;
+          window.removeEventListener('firebaseReady', handleEvent);
+          callback(window.firebaseAuthHelpers);
+        } else if (attempts < maxAttempts) {
+          setTimeout(check, 100);
+        } else {
+          console.error('Firebase auth helpers no disponibles');
+        }
+      };
+      setTimeout(check, 100);
+    }
+
+    function showAuthMessage(message, type = 'error') {
+      const toast = document.createElement('div');
+      toast.className = 'auth-toast ' + type;
+      toast.innerHTML = `
+        <div class="toast-content">
+          <span class="toast-icon">${
+            type === 'success' ? '✓' :
+            type === 'info' ? 'ℹ' :
+            '✕'
+          }</span>
+          <span class="toast-message">${message}</span>
+        </div>
+      `;
+      document.body.appendChild(toast);
+
+      // Trigger animation
+      void toast.offsetWidth;
+      toast.classList.add('show');
+
+      const timeout = setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+
+      toast.addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      });
+    }
+
+    // Toggle mostrar formulario de email
+    const showEmailLoginBtn = document.getElementById('showEmailLoginBtn');
+    const loginFormEl = document.getElementById('loginForm');
+    if (showEmailLoginBtn && loginFormEl) {
+      showEmailLoginBtn.addEventListener('click', () => {
+        const isVisible = loginFormEl.style.display !== 'none';
+        loginFormEl.style.display = isVisible ? 'none' : 'block';
+        showEmailLoginBtn.style.display = isVisible ? 'flex' : 'none';
+      });
+    }
+
+    const showEmailSignupBtn = document.getElementById('showEmailSignupBtn');
+    const createFormEl = document.getElementById('createForm');
+    if (showEmailSignupBtn && createFormEl) {
+      showEmailSignupBtn.addEventListener('click', () => {
+        const isVisible = createFormEl.style.display !== 'none';
+        createFormEl.style.display = isVisible ? 'none' : 'block';
+        showEmailSignupBtn.style.display = isVisible ? 'flex' : 'none';
+      });
+    }
+
+    // Password visibility toggle
+    document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const input = document.getElementById(targetId);
+        const eyeOpen = btn.querySelector('.eye-open');
+        const eyeClosed = btn.querySelector('.eye-closed');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          eyeOpen.style.display = 'none';
+          eyeClosed.style.display = 'block';
+        } else {
+          input.type = 'password';
+          eyeOpen.style.display = 'block';
+          eyeClosed.style.display = 'none';
+        }
+      });
+    });
+
+    // Password strength checker
+    const createPasswordInput = document.getElementById('createPassword');
+    const strengthContainer = document.getElementById('passwordStrength');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+
+    if (createPasswordInput && strengthContainer) {
+      createPasswordInput.addEventListener('input', () => {
+        const password = createPasswordInput.value;
+        if (password.length === 0) {
+          strengthContainer.style.display = 'none';
+          return;
+        }
+
+        strengthContainer.style.display = 'flex';
+        let strength = 0;
+        let label = '';
+
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        strengthFill.className = 'strength-fill';
+        strengthText.className = 'strength-text';
+
+        if (strength <= 1) {
+          label = 'Debil';
+          strengthFill.classList.add('weak');
+          strengthText.classList.add('weak');
+        } else if (strength === 2) {
+          label = 'Regular';
+          strengthFill.classList.add('fair');
+          strengthText.classList.add('fair');
+        } else if (strength === 3) {
+          label = 'Buena';
+          strengthFill.classList.add('good');
+          strengthText.classList.add('good');
+        } else {
+          label = 'Fuerte';
+          strengthFill.classList.add('strong');
+          strengthText.classList.add('strong');
+        }
+
+        strengthText.textContent = label;
+      });
+    }
+
+    // Router
+    function navigate() {
+      const hash = window.location.hash;
+      const landingPage = document.getElementById('landingPage');
+      const loginPage = document.getElementById('loginPage');
+      const createPage = document.getElementById('createPage');
+      const termsPage = document.getElementById('termsPage');
+      const privacyPage = document.getElementById('privacyPage');
+
+      function hideAll() {
+        if (landingPage) landingPage.style.display = 'none';
+        if (loginPage) loginPage.style.display = 'none';
+        if (createPage) createPage.style.display = 'none';
+        if (termsPage) termsPage.style.display = 'none';
+        if (privacyPage) privacyPage.style.display = 'none';
+      }
+
+      switch(hash) {
+        case '#login':
+          hideAll();
+          if (loginPage) loginPage.style.display = 'flex';
+          break;
+        case '#create':
+          hideAll();
+          if (createPage) createPage.style.display = 'flex';
+          break;
+        case '#terms':
+          if (termsPage) termsPage.style.display = 'flex';
+          break;
+        case '#privacy':
+          if (privacyPage) privacyPage.style.display = 'flex';
+          break;
+        default:
+          hideAll();
+          if (landingPage) landingPage.style.display = 'flex';
+      }
+    }
+
+    window.addEventListener('hashchange', navigate);
+    window.closeLegalModal = function() {
+      const termsPage = document.getElementById('termsPage');
+      const privacyPage = document.getElementById('privacyPage');
+      if (termsPage) termsPage.style.display = 'none';
+      if (privacyPage) privacyPage.style.display = 'none';
+      window.location.hash = '';
+    };
+    navigate();
+
+    waitForFirebase((authHelpers) => {
+      // Login con email/password (Firebase)
+      if (loginFormEl) {
+        loginFormEl.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const emailOrUser = document.getElementById('loginEmail').value.trim();
+          const password = document.getElementById('loginPassword').value;
+          const submitBtn = loginFormEl.querySelector('.split-submit-btn');
+
+          if (!emailOrUser || !password) {
+            showAuthMessage('Por favor completa todos los campos');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Iniciando sesion...';
+
+          try {
+            const email = emailOrUser; // Firebase auth uses email
+            const userCred = await authHelpers.signInEmail(email, password);
+            const user = userCred.user;
+            try {
+              await authHelpers.createOrUpdateUserRecord(user, { provider: 'email' });
+            } catch (e) { console.error('createOrUpdateUserRecord error', e); }
+
+            const sessionData = {
+              usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+              id: user.uid,
+              email: user.email,
+              loginTime: new Date().toISOString(),
+              avatar: user.photoURL || ''
+            };
+
+            localStorage.setItem('devcenter_user', sessionData.usuario);
+            localStorage.setItem('devcenter_user_id', sessionData.id);
+            localStorage.setItem('devcenter_email', sessionData.email);
+            localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+            if (sessionData.avatar) localStorage.setItem('devcenter_avatar', sessionData.avatar);
+            localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+
+            showAuthMessage('Bienvenido ' + sessionData.usuario + '! Redirigiendo...', 'success');
+            setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+          } catch (error) {
+            showAuthMessage(error.message || 'Error iniciando sesion');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Iniciar sesion';
+          }
+        });
+      }
+
+      // Registro con email/password (Firebase)
+      if (createFormEl) {
+        createFormEl.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('createEmail').value.trim();
+          const password = document.getElementById('createPassword').value;
+          const submitBtn = createFormEl.querySelector('.split-submit-btn');
+
+          if (!email || !password || password.length < 6) {
+            showAuthMessage('Por favor completa todos los campos correctamente');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Creando cuenta...';
+
+          // Check if email has existing sign-in methods to avoid duplicate accounts
+          try {
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            // If there are methods and it's not only password, inform user to sign in with existing provider
+            const otherMethods = methods.filter(m => m !== 'password');
+            if (otherMethods.length > 0) {
+              const providerNames = otherMethods.join(', ');
+              showAuthMessage(`Este correo ya está registrado con: ${providerNames}. Inicia sesión con ese proveedor y luego agrega una contraseña en tu perfil.`, 'error');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Crear cuenta';
+              return;
+            }
+          } catch (err) {
+            console.warn('No se pudo verificar métodos de inicio de sesión:', err);
+            // proceed cautiously
+          }
+
+          try {
+            const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+            const res = await authHelpers.createEmail(email, password, username);
+            const user = res.user;
+            const userData = res.userData;
+
+            // If a new user was created, open onboarding modal to collect username/avatar
+            if (userData) {
+              await window.showOnboardingModal(user.uid, user.email, 'email');
+            }
+
+            const sessionData = {
+              usuario: user.displayName || username,
+              id: user.uid,
+              email: user.email,
+              loginTime: new Date().toISOString(),
+              avatar: user.photoURL || (userData ? userData.avatar : '')
+            };
+
+            localStorage.setItem('devcenter_user', sessionData.usuario);
+            localStorage.setItem('devcenter_user_id', sessionData.id);
+            localStorage.setItem('devcenter_email', sessionData.email);
+            localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+            localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+
+            showAuthMessage('Cuenta creada! Redirigiendo...', 'success');
+            setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+          } catch (error) {
+            // Manejar error específico de email ya registrado
+            if (error.code === 'auth/email-already-registered') {
+              showAuthMessage(error.message + '\n\nRedirigiendo a iniciar sesión...', 'error');
+              setTimeout(() => {
+                window.location.hash = '#login';
+                // Llenar el campo de email en el formulario de login
+                setTimeout(() => {
+                  const loginEmailField = document.getElementById('loginEmail');
+                  if (loginEmailField) loginEmailField.value = email;
+                }, 300);
+              }, 3000);
+            } else {
+              showAuthMessage(error.message || 'Error creando cuenta');
+            }
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Crear cuenta';
+          }
+        });
+      }
+
+      // OAuth (Firebase)
+      const googleLoginBtn = document.getElementById('googleLoginBtn');
+      const googleSignupBtn = document.getElementById('googleSignupBtn');
+      const githubLoginBtn = document.getElementById('githubLoginBtn');
+      const githubSignupBtn = document.getElementById('githubSignupBtn');
+
+      async function handleGoogleAuth() {
+        try {
+          showAuthMessage('Iniciando sesión con Google...', 'info');
+          const result = await authHelpers.signInWithProvider('google');
+          const user = result.user;
+
+          // If a new Firestore user was created, run onboarding
+          if (result.userData) {
+            await window.showOnboardingModal(user.uid, user.email, 'google', user.photoURL);
+          }
+
+          // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
+          const userId = result.existingUserId || user.uid;
+          const userData = result.existingUserData || result.userData;
+
+          const sessionData = {
+            usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+            id: userId,
+            email: user.email,
+            loginTime: new Date().toISOString(),
+            avatar: (userData && userData.avatar) ? userData.avatar : (user.photoURL || '')
+          };
+
+          localStorage.setItem('devcenter_user', sessionData.usuario);
+          localStorage.setItem('devcenter_user_id', sessionData.id);
+          localStorage.setItem('devcenter_email', sessionData.email);
+          localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+          localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+
+          const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
+          showAuthMessage('¡Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
+          setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+        } catch (err) {
+          console.error('Google Auth Error:', err);
+          let friendlyMsg = 'Error iniciando sesión con Google';
+          
+          if (err.code === 'auth/unauthorized-domain') {
+            friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
+          } else if (err.code === 'auth/popup-blocked') {
+            friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          } else if (err.code === 'auth/network-request-failed' || err.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            friendlyMsg = 'Error de red: Las solicitudes están siendo bloqueadas. Desactiva extensiones de bloqueo de anuncios o VPN para este sitio.';
+          } else if (err.message && err.message.includes('Cross-Origin-Opener-Policy')) {
+            friendlyMsg = 'Error de seguridad COOP. Intenta recargar la página.';
+          }
+          
+          showAuthMessage(friendlyMsg, 'error');
+        }
+      }
+
+      async function handleGitHubAuth() {
+        try {
+          showAuthMessage('Iniciando sesión con GitHub...', 'info');
+          const result = await authHelpers.signInWithProvider('github');
+          const user = result.user;
+
+          // If a new Firestore user was created, run onboarding
+          if (result.userData) {
+            await window.showOnboardingModal(user.uid, user.email, 'github', user.photoURL);
+          }
+
+          // Usar uid existente si se vinculó a una cuenta, sino usar el uid del usuario actual
+          const userId = result.existingUserId || user.uid;
+          const userData = result.existingUserData || result.userData;
+
+          const sessionData = {
+            usuario: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+            id: userId,
+            email: user.email,
+            loginTime: new Date().toISOString(),
+            avatar: (userData && userData.avatar) ? userData.avatar : (user.photoURL || '')
+          };
+
+          localStorage.setItem('devcenter_user', sessionData.usuario);
+          localStorage.setItem('devcenter_user_id', sessionData.id);
+          localStorage.setItem('devcenter_email', sessionData.email);
+          localStorage.setItem('devcenter_login_time', sessionData.loginTime);
+          localStorage.setItem('devcenter_session', JSON.stringify(sessionData));
+
+          const isLinked = result.existingUserId ? ' (vinculado a cuenta existente)' : '';
+          showAuthMessage('¡Bienvenido ' + sessionData.usuario + '! Redirigiendo...' + isLinked, 'success');
+          setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+        } catch (err) {
+          console.error('GitHub Auth Error:', err);
+          let friendlyMsg = 'Error iniciando sesión con GitHub';
+          
+          if (err.code === 'auth/unauthorized-domain') {
+            friendlyMsg = 'DOMINIO NO AUTORIZADO: Tu dominio necesita ser agregado en Firebase Console › Authentication › Authorized domains. Tu dominio actual: ' + window.location.hostname;
+          } else if (err.code === 'auth/popup-blocked') {
+            friendlyMsg = 'El popup fue bloqueado. Por favor habilita popups para este sitio.';
+          } else if (err.code === 'auth/network-request-failed' || err.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            friendlyMsg = 'Error de red: Las solicitudes están siendo bloqueadas. Desactiva extensiones de bloqueo de anuncios o VPN para este sitio.';
+          } else if (err.message && err.message.includes('Cross-Origin-Opener-Policy')) {
+            friendlyMsg = 'Error de seguridad COOP. Intenta recargar la página.';
+          }
+          
+          showAuthMessage(friendlyMsg, 'error');
+        }
+      }
+
+      if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleAuth);
+      if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleAuth);
+      if (githubLoginBtn) githubLoginBtn.addEventListener('click', handleGitHubAuth);
+      if (githubSignupBtn) githubSignupBtn.addEventListener('click', handleGitHubAuth);
+
+      // Animated Stats (unchanged)
+      const animateStats = () => {
+        const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+
+        const animateNumber = (el) => {
+          const target = parseInt(el.getAttribute('data-target'));
+          const duration = 2000;
+          const step = target / (duration / 16);
+          let current = 0;
+
+          const updateNumber = () => {
+            current += step;
+            if (current < target) {
+              if (target >= 1000) {
+                el.textContent = Math.floor(current).toLocaleString() + '+';
+              } else {
+                el.textContent = Math.floor(current) + '%';
+              }
+              requestAnimationFrame(updateNumber);
+            } else {
+              if (target >= 1000) {
+                el.textContent = target.toLocaleString() + '+';
+              } else {
+                el.textContent = target + '%';
+              }
+            }
+          };
+          updateNumber();
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              animateNumber(entry.target);
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.5 });
+
+        statNumbers.forEach(stat => {
+          stat.textContent = '0';
+          observer.observe(stat);
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', animateStats);
+      } else {
+        animateStats();
+      }
+    });
+  </script>
+</body>
+</html>
