@@ -259,6 +259,6 @@ if (githubBtn) {
 if (backBtn) {
   backBtn.addEventListener('click', function(e) {
     e.preventDefault();
-    window.location.href = '/';
+    window.location.href = '/agent.html';
   });
 }

@@ -37,30 +37,37 @@ firestore (devcenter-agent-48c86)
 │       ├── likes: number
 │       ├── visitas: number
 │       └── createdAt: timestamp
-│
 
 
 
 
+ ---------------------- Cuenta nueva  ----------------------
 
 
+/**
+ * Save user data in Firestore
+ */
+async function saveUserData(user, provider) {
+  if (!user) return;
+  
+  const userRef = doc(db, 'users', user.uid);
+  
+  await setDoc(userRef, {
+    uid: user.uid,
+    email: user.email || '',
+    username: user.displayName || user.email?.split('@')[0] || 'user_' + user.uid.substring(0, 8),
+    avatar: user.photoURL || '',
+    provider: provider,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    plan: 'Normal',
+    limit: '0'
+  });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // Guardar SOLO 2 claves en localStorage
+  localStorage.setItem('devcenter_user_id', user.uid);
+  localStorage.setItem('devcenter_isLoggedIn', 'true');
+}
 
 
 

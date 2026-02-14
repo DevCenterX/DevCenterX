@@ -233,8 +233,27 @@
         </div>
     </div>
 
-    <script src="/keys.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+            authDomain: "devcenter-agent-48c86.firebaseapp.com",
+            projectId: "devcenter-agent-48c86",
+            storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+            messagingSenderId: "911929994293",
+            appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+            measurementId: "G-S5GTYBRVK8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>

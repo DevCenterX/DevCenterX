@@ -14,37 +14,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         'color-8': 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
     };
 
-    const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    // Get Firebase instances
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
     async function init() {
-        const localUser = localStorage.getItem('devcenter_user');
-        const localUserId = localStorage.getItem('devcenter_user_id');
-
-        if (!localUser || !localUserId) {
-            showNotLoggedIn();
-            return;
-        }
-
         try {
-            const { data: cuenta, error } = await supabase
-                .from('cuentas')
-                .select('*')
-                .eq('id', localUserId)
-                .single();
+            // Configurar listener para cambios de autenticación
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    showNotLoggedIn();
+                    return;
+                }
 
-            if (error || !cuenta) {
-                throw new Error('No se encontro la cuenta');
-            }
+                try {
+                    // Cargar datos del usuario desde Firestore
+                    const userDocSnap = await db.collection('users').doc(user.uid).get();
 
-            currentUser = cuenta;
-            displayProfile(cuenta);
-            await loadUserStats();
+                    if (!userDocSnap.exists) {
+                        throw new Error('Usuario no encontrado en la base de datos');
+                    }
+
+                    currentUser = {
+                        uid: user.uid,
+                        email: user.email,
+                        ...userDocSnap.data()
+                    };
+
+                    displayProfile(currentUser);
+                    await loadUserStats(user.uid);
+
+                } catch (error) {
+                    console.error('Error cargando perfil:', error);
+                    showMessage('Error al cargar el perfil: ' + error.message, 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('profileContent').style.display = 'block';
+                }
+            });
 
         } catch (error) {
-            console.error('Error cargando perfil:', error);
-            showMessage('Error al cargar el perfil: ' + error.message, 'error');
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('profileContent').style.display = 'block';
+            console.error('Error en inicialización:', error);
+            showNotLoggedIn();
         }
     }
 
@@ -53,55 +63,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('notLoggedIn').style.display = 'block';
     }
 
-    function displayProfile(cuenta) {
+    function displayProfile(userData) {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('profileContent').style.display = 'block';
 
-        const username = cuenta.usuario || 'Usuario';
-        const email = cuenta.email || '';
+        const username = userData.username || 'Usuario';
+        const email = userData.email || '';
+        const avatar = userData.avatar || 'color-1';
         const initial = username[0].toUpperCase();
 
+        // Actualizar campos del formulario
         document.getElementById('usuario').value = username;
         document.getElementById('email').value = email;
-        document.getElementById('accountId').textContent = cuenta.id || '-';
+        document.getElementById('accountId').textContent = userData.uid || '-';
         document.getElementById('usernameDisplay').textContent = username;
         document.getElementById('emailDisplay').textContent = email;
 
-        if (cuenta.creado_en) {
-            const date = new Date(cuenta.creado_en);
-            document.getElementById('createdAt').textContent = date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+        // Mostrar fecha de creación
+        if (userData.createdAt) {
+            try {
+                let timestamp = userData.createdAt;
+                // Si es un timestamp de Firestore
+                if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+                    timestamp = timestamp.toDate();
+                } else if (typeof timestamp === 'string') {
+                    timestamp = new Date(timestamp);
+                }
+                
+                document.getElementById('createdAt').textContent = timestamp.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                document.getElementById('createdAt').textContent = '-';
+            }
         }
 
-        if (cuenta.custom_avatar && cuenta.custom_avatar.trim() !== '') {
-            customAvatarUrl = cuenta.custom_avatar;
+        // Manejar visualización del avatar
+        if (userData.avatar === 'custom' && userData.avatarUrl && userData.avatarUrl.trim() !== '') {
+            customAvatarUrl = userData.avatarUrl;
             showCustomAvatar(customAvatarUrl, initial);
-            
-            if (cuenta.avatar === 'custom') {
-                selectedAvatar = 'custom';
-                document.getElementById('avatarInitial').style.display = 'none';
-                document.getElementById('customAvatarImg').style.display = 'block';
-                document.getElementById('customAvatarImg').src = customAvatarUrl;
-            } else if (cuenta.avatar && avatarGradients[cuenta.avatar]) {
-                selectedAvatar = cuenta.avatar;
-                document.getElementById('userAvatar').style.background = avatarGradients[cuenta.avatar];
-                document.getElementById('avatarInitial').textContent = initial;
-            } else {
-                document.getElementById('avatarInitial').textContent = initial;
-            }
-        } else if (cuenta.avatar && avatarGradients[cuenta.avatar]) {
-            selectedAvatar = cuenta.avatar;
-            document.getElementById('userAvatar').style.background = avatarGradients[cuenta.avatar];
+            document.getElementById('customAvatarImg').style.display = 'block';
+            document.getElementById('customAvatarImg').src = customAvatarUrl;
+            document.getElementById('avatarInitial').style.display = 'none';
+            selectedAvatar = 'custom';
+        } else if (avatarGradients[avatar]) {
+            selectedAvatar = avatar;
+            document.getElementById('userAvatar').style.background = avatarGradients[avatar];
             document.getElementById('avatarInitial').textContent = initial;
+            document.getElementById('customAvatarImg').style.display = 'none';
+            document.getElementById('avatarInitial').style.display = 'block';
         } else {
             document.getElementById('avatarInitial').textContent = initial;
+            document.getElementById('customAvatarImg').style.display = 'none';
+            document.getElementById('avatarInitial').style.display = 'block';
         }
 
+        // Actualizar opciones de avatar
         document.querySelectorAll('.avatar-option:not(.custom-avatar-option)').forEach(opt => {
             opt.textContent = initial;
+            opt.classList.remove('selected');
             if (opt.classList.contains(selectedAvatar)) {
                 opt.classList.add('selected');
             }
@@ -109,6 +131,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (selectedAvatar === 'custom') {
             document.getElementById('customAvatarOption').classList.add('selected');
+        }
+
+        // Mostrar plan del usuario
+        const planDisplay = userData.plan || 'Normal';
+        const planElements = document.querySelectorAll('.stat-value');
+        if (planElements.length > 1) {
+            planElements[1].textContent = planDisplay;
         }
     }
 
@@ -122,20 +151,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function loadUserStats() {
+    async function loadUserStats(uid) {
         try {
-            const { data: proyectos, error } = await supabase
-                .from('personas')
-                .select('proyectos')
-                .eq('nombrepersona', currentUser.usuario)
-                .single();
+            // Cargar cantidad de proyectos desde la colección 'proyectos'
+            const userProjectsSnap = await db.collection('proyectos').doc(uid).get();
 
-            if (!error && proyectos && proyectos.proyectos) {
-                const projectsArray = Array.isArray(proyectos.proyectos) ? proyectos.proyectos : [];
+            if (userProjectsSnap.exists) {
+                const proyectosData = userProjectsSnap.data();
+                const projectsArray = Array.isArray(proyectosData.proyectos) ? proyectosData.proyectos : [];
                 document.getElementById('projectsCount').textContent = projectsArray.length;
+            } else {
+                document.getElementById('projectsCount').textContent = '0';
             }
         } catch (e) {
-            console.log('No se pudieron cargar estadisticas');
+            console.log('No se pudieron cargar estadísticas:', e);
+            document.getElementById('projectsCount').textContent = '0';
         }
     }
 
@@ -206,62 +236,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.redeemCode = async function() {
-        const codeInput = document.getElementById('redeemCode');
-        const btn = document.getElementById('redeemBtn');
-        const code = codeInput.value.trim().toUpperCase();
-
-        if (!code) {
-            showRedeemMessage('Por favor ingresa un codigo', 'error');
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-
-        try {
-            const { data: codeData, error } = await supabase
-                .from('codigos')
-                .select('*')
-                .eq('codigo', code)
-                .single();
-
-            if (error || !codeData) {
-                throw new Error('Codigo invalido o no encontrado');
-            }
-
-            if (codeData.usado) {
-                throw new Error('Este codigo ya ha sido utilizado');
-            }
-
-            if (codeData.expira && new Date(codeData.expira) < new Date()) {
-                throw new Error('Este codigo ha expirado');
-            }
-
-            const { error: updateError } = await supabase
-                .from('codigos')
-                .update({ 
-                    usado: true, 
-                    usado_por: currentUser.id,
-                    usado_en: new Date().toISOString()
-                })
-                .eq('id', codeData.id);
-
-            if (updateError) throw updateError;
-
-            if (codeData.beneficio) {
-                showRedeemMessage(`Codigo canjeado: ${codeData.beneficio}`, 'success');
-            } else {
-                showRedeemMessage('Codigo canjeado exitosamente', 'success');
-            }
-            
-            codeInput.value = '';
-
-        } catch (error) {
-            showRedeemMessage(error.message, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Canjear';
-        }
+        // Funcionalidad de canjeo en desarrollo
+        showRedeemMessage('Funcionalidad de canjeo en desarrollo', 'error');
     };
 
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -274,25 +250,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
         try {
-            const updateData = {
-                avatar: selectedAvatar
-            };
-
-            if (newPassword && newPassword.length >= 6) {
-                updateData.contrasena = newPassword;
-            } else if (newPassword && newPassword.length < 6) {
-                throw new Error('La contrasena debe tener al menos 6 caracteres');
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    throw new Error('La contraseña debe tener al menos 6 caracteres');
+                }
+                // Actualizar contraseña en Firebase Auth
+                await auth.currentUser.updatePassword(newPassword);
             }
 
-            const { error } = await supabase
-                .from('cuentas')
-                .update(updateData)
-                .eq('id', currentUser.id);
-
-            if (error) throw error;
-
-            localStorage.setItem('devcenter_avatar', selectedAvatar);
-            
             showMessage('Cambios guardados correctamente', 'success');
             document.getElementById('contrasena').value = '';
 
@@ -305,15 +270,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.handleLogout = function() {
-        if (confirm('¿Estas seguro de que quieres cerrar sesion?')) {
-            localStorage.removeItem('devcenter_user');
-            localStorage.removeItem('devcenter_user_id');
-            localStorage.removeItem('devcenter_email');
-            localStorage.removeItem('devcenter_avatar');
-            localStorage.removeItem('devcenter_datos');
-            localStorage.removeItem('devcenter_login_time');
-            localStorage.removeItem('supabase_nombrepersona');
-            window.location.href = '/';
+        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+            auth.signOut().then(() => {
+                localStorage.removeItem('devcenter_user_id');
+                localStorage.removeItem('devcenter_isLoggedIn');
+                window.location.href = '/';
+            }).catch((error) => {
+                console.error('Error al cerrar sesión:', error);
+                showMessage('Error al cerrar sesión', 'error');
+            });
         }
     };
 

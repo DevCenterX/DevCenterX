@@ -68,8 +68,8 @@ async function saveUserData(user, provider) {
     provider: provider,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    plan: 'free',
-    limit: 'default'
+    plan: 'Normal',
+    limit: '0'
   });
 
   // Guardar SOLO 2 claves en localStorage
@@ -260,6 +260,6 @@ if (githubBtn) {
 if (backBtn) {
   backBtn.addEventListener('click', function(e) {
     e.preventDefault();
-    window.location.href = '/';
+    window.location.href = '/agent.html';
   });
 }
