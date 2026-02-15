@@ -1,7 +1,7 @@
-// Script de la sección de Usage
+// Script de la sección Home
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Helpers para almacenamiento de datos de uso
+  // Helpers para almacenamiento de datos
   function saveSetting(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (theme === 'dark') document.body.classList.add('dark-theme');
     if (theme === 'light') document.body.classList.add('light-theme');
     saveSetting('devcenter_theme', theme);
-    // marcar el botón seleccionado visualmente
     setSelectedThemeButton(theme);
   }
 
@@ -51,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Cargar datos de uso desde almacenamiento
-  async function initUsageData() {
+  // Cargar datos del usuario desde Firestore
+  async function initHomeData() {
     try {
       // Verificar si está logueado
       const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
@@ -106,17 +105,26 @@ document.addEventListener('DOMContentLoaded', () => {
         ? userData.plan 
         : 'Gratis';
 
-      // Cargar proyectos para contar apps creadas
+      // Cargar proyectos para contar apps
       try {
         const proyectosRef = doc(db, 'proyectos', uid);
         const proyectosSnap = await getDoc(proyectosRef);
-        let createdCount = 0;
+        let totalCount = 0;
+        let publishedCount = 0;
+
         if (proyectosSnap.exists()) {
           const pData = proyectosSnap.data();
-          if (Array.isArray(pData.proyectos)) createdCount = pData.proyectos.length;
+          if (Array.isArray(pData.proyectos)) {
+            totalCount = pData.proyectos.length;
+            pData.proyectos.forEach(app => {
+              if (app.published || app.status === 'published') {
+                publishedCount++;
+              }
+            });
+          }
         }
 
-        // Normalizar nombre de plan y límites
+        // Normalizar nombre de plan
         function normalizePlan(p) {
           const s = (p || '').toString().toLowerCase();
           if (s.includes('pro')) return 'Pro';
@@ -128,17 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const limits = { 'Normal': 10, 'Premium': 15, 'Pro': 30 };
         const planLimits = limits[planKey] || 10;
 
-        // Actualizar datos de uso en DOM
-        const appsCountEl = document.getElementById('appsCreatedCount');
-        const appsLimitEl = document.getElementById('appsCreatedLimit');
-        const currentPlanEl = document.getElementById('currentPlanName');
-        const planLimitsEl = document.getElementById('planLimits');
+        // Actualizar datos en DOM (Home)
+        const homeAppsEl = document.getElementById('homeAppsCount');
+        const homePublishedEl = document.getElementById('homePublishedCount');
+        const homePlanEl = document.getElementById('homePlanName');
         const userPlanTitleEl = document.getElementById('userPlanTitle');
 
-        if (appsCountEl) appsCountEl.textContent = createdCount;
-        if (appsLimitEl) appsLimitEl.textContent = `de ${planLimits}`;
-        if (currentPlanEl) currentPlanEl.textContent = plan;
-        if (planLimitsEl) planLimitsEl.textContent = `${planLimits} apps / ilimitados`;
+        if (homeAppsEl) homeAppsEl.textContent = totalCount;
+        if (homePublishedEl) homePublishedEl.textContent = publishedCount;
+        if (homePlanEl) homePlanEl.textContent = plan;
 
         // Actualizar sidebar
         if (userPlanTitleEl) {
@@ -156,13 +162,23 @@ document.addEventListener('DOMContentLoaded', () => {
           // ignore
         }
 
-        // Calcular porcentaje de uso
+        // Actualizar contadores en sidebar
+        const appsCountEl = document.getElementById('userAppsCount');
         const usageEl = document.getElementById('userAgentUsage');
+        
+        if (appsCountEl) {
+          appsCountEl.textContent = `${totalCount}/${planLimits} created`;
+        }
+
         if (usageEl) {
           let percent = 0;
-          if (planLimits > 0) percent = Math.round((createdCount / planLimits) * 100);
+          if (planLimits > 0) percent = Math.round((totalCount / planLimits) * 100);
           if (percent > 100) percent = 100;
           usageEl.textContent = `${percent}% used`;
+          
+          // Actualizar en home también
+          const homeUsageEl = document.getElementById('homeAgentUsage');
+          if (homeUsageEl) homeUsageEl.textContent = `${percent}%`;
         }
 
         // Actualizar botón de upgrade
@@ -180,20 +196,28 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('No se pudo cargar datos de proyectos:', e);
       }
 
-      console.log('✅ Datos de uso cargados');
+      console.log('✅ Datos de home cargados');
 
     } catch (e) {
-      console.error('❌ Error cargando datos de uso:', e.message);
+      console.error('❌ Error cargando datos de home:', e.message);
     }
   }
 
-  initUsageData();
+  initHomeData();
+
+  // Event listeners para botones
+  const startProjectBtn = document.getElementById('startProjectBtn');
+  if (startProjectBtn) {
+    startProjectBtn.addEventListener('click', () => {
+      window.location.href = 'Apps/';
+    });
+  }
 
   // Menu logout: navegar a agent.html al hacer clic
   const menuLogout = document.getElementById('menuLogout');
   if (menuLogout) {
     menuLogout.addEventListener('click', () => {
-      window.location.href = '../agent.html';
+      window.location.href = 'agent.html';
     });
   }
 });

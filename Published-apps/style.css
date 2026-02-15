@@ -1,0 +1,363 @@
+/* Estilos específicos para la sección de Published Apps */
+
+/* Ajustar main-content para Published Apps */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#published-apps-section {
+  width: 100%;
+  max-width: 850px;
+  padding: 0 var(--spacing-md);
+}
+
+.published-greeting {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.published-greeting h1 {
+  font-size: clamp(1.75rem, 4vw, 2.3rem);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.published-greeting-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.published-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.published-card {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.published-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.published-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.published-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 10px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.published-card-title {
+  flex: 1;
+  min-width: 200px;
+}
+
+.published-card-title h3 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.published-card-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.published-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.published-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: rgba(37, 99, 235, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.published-stat-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.published-stat-value {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+.app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.app-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: rgba(37, 99, 235, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.app-item:hover {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: var(--accent);
+}
+
+.app-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.app-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.app-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.app-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.app-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.app-btn-secondary {
+  background: var(--btn-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.app-btn-secondary:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.analytics-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(37, 99, 235, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.analytics-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.analytics-value {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+  #published-apps-section {
+    max-width: 100%;
+    padding: 0 var(--spacing-md);
+  }
+  
+  .published-greeting h1 {
+    font-size: 1.75rem;
+  }
+  
+  .published-card {
+    padding: 1.25rem;
+  }
+  
+  .published-card-header {
+    gap: 1rem;
+  }
+  
+  .published-card-title {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  #published-apps-section {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .published-greeting {
+    margin-bottom: 1.5rem;
+  }
+  
+  .published-greeting h1 {
+    font-size: 1.5rem;
+  }
+  
+  .published-greeting-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .published-container {
+    gap: 1.25rem;
+  }
+  
+  .published-card {
+    padding: 1rem;
+  }
+  
+  .published-card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .published-card-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .published-card-title {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  .published-card-title h3 {
+    font-size: 1rem;
+  }
+
+  .published-stat {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .app-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-actions {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.75rem;
+  }
+
+  .app-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .analytics-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Upgrade button styles inside sidebar footer */
+.upgrade-btn {
+  background: var(--btn-primary);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.upgrade-btn.small {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+}
+
+.upgrade-btn.hidden {
+  display: none !important;
+}
+
+/* Plan-specific UI changes */
+body.plan-pro .sidebar-footer .user-section {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.06));
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+body.plan-pro .plan-title {
+  font-weight: 700;
+  color: var(--btn-primary);
+}
+
+body.plan-pro .published-card-icon {
+  background: rgba(0, 166, 255, 0.1);
+}
+
+body.plan-premium .sidebar-footer .user-section {
+  background: rgba(37,99,235,0.02);
+  padding: 0.6rem;
+  border-radius: 8px;
+}
+
+body.plan-premium .plan-title {
+  font-weight: 700;
+  color: #00a6ff;
+  font-size: 0.98rem;
+}
+
+/* keep normal as default, no extra visual changes */

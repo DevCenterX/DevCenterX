@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usage - DevCenterX</title>
+<link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Controles colapsados (mostrados cuando el sidebar está cerrado) -->
+  <div class="sidebar-collapsed-controls" id="sidebarCollapsedControls" style="display:none;">
+    <button class="sidebar-toggle-open" id="sidebarOpenBtn" title="Abrir panel">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <line x1="9" y1="3" x2="9" y2="21"/>
+      </svg>
+    </button>
+    <button class="options-btn" id="optionsBtn" title="Opciones">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-header">
+      <button class="logo logo-btn" id="logoBtn">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+        </svg>
+        <svg class="logo-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <button class="search-btn" title="Cerrar panel">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="15" y1="9" x2="9" y2="9"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Menú desplegable del logo (moved here so positioning matches main index) -->
+    <div class="logo-menu" id="logoMenu">
+      <div class="logo-menu-item" id="menuAccount">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span id="accountText">Account</span>
+      </div>
+      <div class="logo-menu-item logo-menu-theme" id="menuTheme">
+        <div class="menu-theme-inner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <span>Theme</span>
+        </div>
+        <div class="theme-icons">
+          <button class="theme-icon" data-theme="dark" title="Modo oscuro">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <button class="theme-icon" data-theme="light" title="Modo claro">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="logo-menu-item" id="menuHelp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        Help
+        <svg class="menu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+      <div class="logo-menu-divider"></div>
+      <div class="logo-menu-item" id="menuLogout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log out
+      </div>
+    </div>
+
+    <button class="create-btn" id="mainCreateBtn">
+      <span>+</span> Create App
+    </button>
+    <nav class="nav-menu">
+      <a href="../index.html" class="nav-item" data-tooltip="Home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Home
+      </a>
+      <a href="../Apps/" class="nav-item" data-tooltip="Apps">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Apps
+      </a>
+      <a href="../Published-apps/" class="nav-item" data-tooltip="Published apps">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Published apps
+      </a>
+      <a href="../Usage/" class="nav-item active" data-tooltip="Usage">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Usage
+      </a>
+      <a href="../Ajustes/" class="nav-item" data-tooltip="Ajustes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Ajustes
+      </a>
+    </nav>
+      <div class="sidebar-footer">
+        <div class="user-section">
+          <div class="plan-info">
+            <div class="plan-title" id="userPlanTitle">Starter Plan</div>
+            <div class="plan-stats">
+              <div class="stat">
+                <span class="stat-label">Free Apps</span>
+                <span class="stat-value" id="userAppsCount">0/10 created</span>
+              </div>
+              
+              <div class="stat">
+                <span class="stat-label">Agent Usage</span>
+                <span class="stat-value" id="userAgentUsage">0% used</span>
+              </div>
+            </div>
+          </div>
+          <button class="upgrade-btn" id="upgradeAgentBtn">
+            <span>+</span> Upgrade Agent
+          </button>
+        </div>
+      </div>
+  </aside>
+  <main class="main-content">
+    <section id="usage-section" class="content-section active">
+      <div class="greeting usage-greeting">
+        <h1>Usage</h1>
+        <p class="usage-greeting-subtitle">Monitorea el uso de tu cuenta en DevCenterX</p>
+      </div>
+      <div class="usage-container">
+        <!-- Resumen de Uso -->
+        <div class="usage-card">
+          <div class="usage-card-header">
+            <div class="usage-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="usage-card-title">
+              <h3>Resumen de Uso</h3>
+              <p>Información general del consumo de recursos</p>
+            </div>
+          </div>
+          <div class="usage-card-content">
+            <div class="usage-stat">
+              <span class="usage-stat-label">Aplicaciones Creadas</span>
+              <span class="usage-stat-value" id="appsCreatedCount">0</span>
+              <span class="usage-stat-limit" id="appsCreatedLimit">de 10</span>
+            </div>
+            <div class="usage-stat">
+              <span class="usage-stat-label">Solicitudes API</span>
+              <span class="usage-stat-value" id="apiRequestsCount">0</span>
+              <span class="usage-stat-limit" id="apiRequestsLimit">de ilimitadas</span>
+            </div>
+            <div class="usage-stat">
+              <span class="usage-stat-label">Almacenamiento Usado</span>
+              <span class="usage-stat-value" id="storageUsed">0 MB</span>
+              <span class="usage-stat-limit" id="storageLimit">de 5 GB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de Uso -->
+        <div class="usage-card">
+          <div class="usage-card-header">
+            <div class="usage-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+            </div>
+            <div class="usage-card-title">
+              <h3>Historial</h3>
+              <p>Actividad reciente de tu cuenta</p>
+            </div>
+          </div>
+          <div class="usage-card-content">
+            <div class="history-item">
+              <span class="history-date">Febrero 14, 2026</span>
+              <span class="history-action">Se creó una nueva aplicación</span>
+            </div>
+            <div class="history-item">
+              <span class="history-date">Febrero 13, 2026</span>
+              <span class="history-action">Se exportaron datos</span>
+            </div>
+            <div class="history-item">
+              <span class="history-date">Febrero 12, 2026</span>
+              <span class="history-action">Se actualizó el perfil</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planes Disponibles -->
+        <div class="usage-card">
+          <div class="usage-card-header">
+            <div class="usage-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="usage-card-title">
+              <h3>Tu Plan Actual</h3>
+              <p>Información sobre tu suscripción</p>
+            </div>
+          </div>
+          <div class="usage-card-content">
+            <div id="planDetailsBox" class="plan-details-box">
+              <div class="plan-detail-item">
+                <span class="plan-detail-label">Plan Activo</span>
+                <span class="plan-detail-value" id="currentPlanName">Starter</span>
+              </div>
+              <div class="plan-detail-item">
+                <span class="plan-detail-label">Próxima Renovación</span>
+                <span class="plan-detail-value" id="renewalDate">—</span>
+              </div>
+              <div class="plan-detail-item">
+                <span class="plan-detail-label">Límites Incluidos</span>
+                <span class="plan-detail-value" id="planLimits">10 apps / ilimitados</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../script.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
