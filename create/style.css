@@ -12038,3 +12038,42 @@ html.light-theme .split-auth-switch a { color: var(--accent) !important; font-we
 html.light-theme .split-auth-content {
   max-width: 420px; width: 100%; padding: 24px !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(11,18,32,0.04) !important;
 }
+
+/* Button Loading States */
+.split-submit-btn:disabled,
+.social-auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed !important;
+}
+
+.split-submit-btn.loading,
+.social-auth-btn.loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.split-submit-btn.loading::after,
+.social-auth-btn.loading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: rgba(255, 255, 255, 0.9);
+  animation: spin 0.6s linear infinite;
+}
+
+html.light-theme .split-submit-btn.loading::after {
+  border-color: rgba(3, 102, 214, 0.2);
+  border-top-color: rgba(3, 102, 214, 0.9);
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
