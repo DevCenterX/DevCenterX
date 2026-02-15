@@ -11642,23 +11642,48 @@ html.light-theme .social-auth-btn {
 html.light-theme .social-auth-btn svg { width: 20px !important; height: 20px !important; fill: unset !important; stroke: unset !important; color: unset !important; opacity: 1 !important; }
 
 html.light-theme .email-auth-option {
-  background: #fff !important; color: var(--text-primary) !important; border: 1px solid var(--border) !important;
-  display: flex; align-items: center; gap: 12px; padding: 12px 14px !important; border-radius: 10px !important; font-size: 16px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  font-size: 0.9375rem !important;
+  color: var(--text-primary) !important;
 }
 
 html.light-theme .email-auth-option svg {
-  width: 20px !important; height: 20px !important;
-  background: var(--accent) !important; padding: 6px !important; border-radius: 8px !important;
-  color: #fff !important; fill: #fff !important; stroke: #fff !important; box-shadow: 0 6px 18px rgba(3,102,214,0.12) !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: var(--muted) !important;
+  stroke: var(--muted) !important;
+  fill: none !important;
+  opacity: 0.95 !important;
 }
 
 /* Divider */
 html.light-theme .split-auth-divider {
-  display: flex; align-items: center; justify-content: center; margin: 18px 0; color: var(--muted) !important;
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: var(--muted) !important;
 }
+
+html.light-theme .split-auth-divider::before,
+html.light-theme .split-auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
 html.light-theme .split-auth-divider span {
-  display: inline-block; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; text-align: center;
-  background: #fff !important; color: var(--muted) !important; border: 1px solid var(--border) !important;
+  padding: 0 1rem;
+  color: var(--muted) !important;
+  font-size: 0.875rem;
 }
 
 /* Form Inputs */
@@ -11669,14 +11694,39 @@ html.light-theme .split-form-group input {
 
 html.light-theme input::placeholder { color: rgba(11,18,32,0.45) !important; }
 
-html.light-theme .password-input-wrapper { background: transparent !important; display: flex; align-items: center; gap: 8px; }
-
-html.light-theme .password-toggle-btn {
-  background: var(--accent) !important; border: none !important; padding: 6px !important; border-radius: 8px !important;
-  display: inline-flex !important; align-items: center; justify-content: center;
+html.light-theme .password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: transparent !important;
 }
 
-html.light-theme .password-toggle-btn svg { width: 18px !important; height: 18px !important; color: #fff !important; fill: #fff !important; stroke: #fff !important; }
+html.light-theme .password-input-wrapper input {
+  padding-right: 48px;
+  width: 100%;
+}
+
+html.light-theme .password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none !important;
+  border: none !important;
+  cursor: pointer;
+  padding: 4px !important;
+  color: var(--muted) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: color 0.2s;
+}
+
+html.light-theme .password-toggle-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: var(--muted) !important;
+  fill: none !important;
+  stroke: var(--muted) !important;
+}
 
 /* Terms */
 html.light-theme .split-auth-terms { font-size: 13px; color: var(--text-secondary) !important; margin-top: 12px; }

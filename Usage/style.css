@@ -304,7 +304,7 @@
 /* Upgrade button styles inside sidebar footer */
 .upgrade-btn {
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
   border: none;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;

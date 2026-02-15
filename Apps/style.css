@@ -206,7 +206,7 @@
 .template-btn {
   padding: 0.5rem 1rem;
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -241,7 +241,7 @@
 
 .apps-btn-primary {
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
 }
 
 .apps-btn-primary:hover {
@@ -344,7 +344,7 @@
 /* Upgrade button styles inside sidebar footer */
 .upgrade-btn {
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
   border: none;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;

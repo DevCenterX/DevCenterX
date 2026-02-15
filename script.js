@@ -359,10 +359,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+          // Guardar el tema actual antes de agregar clases de plan
+          const currentTheme = loadTheme() || 'dark';
+          
           document.body.classList.remove('plan-normal', 'plan-premium', 'plan-pro');
           if (planKey === 'Pro') document.body.classList.add('plan-pro');
           else if (planKey === 'Premium') document.body.classList.add('plan-premium');
           else document.body.classList.add('plan-normal');
+          
+          // Re-aplicar el tema después de agregar las clases de plan para asegurar que se mantiene
+          applyTheme(currentTheme);
         } catch (e) {
           // ignore
         }

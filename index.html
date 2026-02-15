@@ -13,6 +13,21 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <script>
+    (function(){
+      try {
+        var id = localStorage.getItem('devcenter_user_id');
+        var isLogged = localStorage.getItem('devcenter_isLoggedIn');
+        var name = localStorage.getItem('devcenter_user_name');
+        if (!(isLogged === 'true' && id && name)) {
+          window.location.replace('agent.html');
+        }
+      } catch (e) {
+        console.error('Storage check failed', e);
+        window.location.replace('agent.html');
+      }
+    })();
+  </script>
   <!-- LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen" style="display: none;">
     <div class="loading-content">

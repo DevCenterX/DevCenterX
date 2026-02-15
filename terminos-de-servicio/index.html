@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Términos de Servicio - DevCenterX</title>
+  <link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function(){
+      try{
+        const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        const applyTheme = (isLight) => {
+          const root = document.documentElement;
+          if (isLight) { root.classList.add('light-theme'); root.classList.remove('dark-theme'); }
+          else { root.classList.remove('light-theme'); root.classList.add('dark-theme'); }
+        };
+        if (mq) { applyTheme(mq.matches); if (mq.addEventListener) mq.addEventListener('change', e => applyTheme(e.matches)); }
+      } catch (err) { console.error('theme detect error', err); }
+    })();
+  </script>
+</head>
+<body>
+  <div class="legal-page">
+    <div class="legal-container">
+      <a href="/" class="legal-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+      </a>
+
+      <h1 class="legal-title">Términos de Servicio</h1>
+      <p class="legal-updated">Última actualización: 15 de febrero de 2026</p>
+
+      <section class="legal-section">
+        <h2>1. Aceptación de Términos</h2>
+        <p>Al acceder y utilizar DevCenterX, aceptas estos Términos de Servicio en su totalidad. Si no estás de acuerdo con alguno de estos términos, te rogamos que no utilices nuestros servicios.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>2. Descripción del Servicio</h2>
+        <p>DevCenterX es una plataforma de desarrollo y gestión de aplicaciones. Proporcionamos herramientas y servicios para ayudarte a crear, publicar y mantener aplicaciones web y móviles.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>3. Uso Permitido</h2>
+        <p>Te comprometemos a utilizar DevCenterX solo para fines legales y de conformidad con todas las leyes aplicables. No debes:</p>
+        <ul>
+          <li>Usar el servicio para actividades ilegales o fraudulentas</li>
+          <li>Infringir derechos de propiedad intelectual de terceros</li>
+          <li>Acceder no autorizadamente a sistemas o datos</li>
+          <li>Interferir con el funcionamiento del servicio</li>
+          <li>Distribuir malware o código malicioso</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>4. Cuenta de Usuario</h2>
+        <p>Eres responsable de mantener la confidencialidad de tus credenciales de acceso. Acepta que eres responsable de toda actividad realizada bajo tu cuenta. Debes notificarnos inmediatamente de cualquier uso no autorizado de tu cuenta.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>5. Contenido del Usuario</h2>
+        <p>Retienes todos los derechos sobre el contenido que cargues en DevCenterX. Al subir contenido, nos otorgas una licencia para utilizarlo con el fin de proporcionar y mejorar nuestros servicios.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>6. Limitación de Responsabilidad</h2>
+        <p>DevCenterX se proporciona "tal cual" sin garantías de ningún tipo. No somos responsables por daños indirectos, incidentales, especiales o consecuentes derivados del uso de nuestro servicio.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Cambios en los Términos</h2>
+        <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigencia inmediatamente después de la publicación. Tu uso continuado del servicio implica aceptación de los términos revisados.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>8. Contacto</h2>
+        <p>Si tienes preguntas sobre estos Términos de Servicio, contáctanos en <a href="mailto:legal@devcenterx.com">legal@devcenterx.com</a></p>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

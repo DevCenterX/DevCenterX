@@ -198,12 +198,12 @@
 }
 .theme-option:hover {
   background: var(--accent-hover);
-  color: #fff;
+  color: white;
 }
 .theme-option.selected {
   background: linear-gradient(90deg,var(--btn-primary),#00a6ff);
   box-shadow: 0 6px 18px rgba(0,102,255,0.15);
-  color: #fff;
+  color: white;
 }
 .settings-switch {
   position: relative;
@@ -234,7 +234,7 @@
   width: 18px;
   left: 2px;
   bottom: 2px;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 50%;
   transition: .4s;
 }
@@ -258,7 +258,7 @@
 }
 .settings-btn-primary {
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
 }
 .settings-btn-secondary {
   background: var(--btn-secondary);
@@ -267,7 +267,7 @@
 }
 .settings-btn-danger {
   background: var(--btn-danger);
-  color: #fff;
+  color: white;
 }
 .settings-btn:hover {
   transform: translateY(-1px);
@@ -277,12 +277,13 @@
   border: 1px solid var(--btn-danger);
 }
 .settings-icon-danger svg {
-  stroke: #000 !important;
-  color: #000 !important;
+  stroke: var(--accent) !important;
+  color: var(--accent) !important;
   fill: none !important;
 }
 .settings-icon-danger {
-  color: #000 !important;
+  color: var(--accent) !important;
+  background: rgba(229, 57, 53, 0.1) !important;
 }
 /* Spinner animation */
 @keyframes spin {
@@ -411,7 +412,7 @@
 /* Upgrade button styles inside sidebar footer */
 .upgrade-btn {
   background: var(--btn-primary);
-  color: #fff;
+  color: white;
   border: none;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;

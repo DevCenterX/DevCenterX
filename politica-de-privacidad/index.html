@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidad - DevCenterX</title>
+  <link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function(){
+      try{
+        const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        const applyTheme = (isLight) => {
+          const root = document.documentElement;
+          if (isLight) { root.classList.add('light-theme'); root.classList.remove('dark-theme'); }
+          else { root.classList.remove('light-theme'); root.classList.add('dark-theme'); }
+        };
+        if (mq) { applyTheme(mq.matches); if (mq.addEventListener) mq.addEventListener('change', e => applyTheme(e.matches)); }
+      } catch (err) { console.error('theme detect error', err); }
+    })();
+  </script>
+</head>
+<body>
+  <div class="legal-page">
+    <div class="legal-container">
+      <a href="/" class="legal-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Volver
+      </a>
+
+      <h1 class="legal-title">Política de Privacidad</h1>
+      <p class="legal-updated">Última actualización: 15 de febrero de 2026</p>
+
+      <section class="legal-section">
+        <h2>1. Introducción</h2>
+        <p>En DevCenterX, nos tomamos en serio la privacidad de nuestros usuarios. Esta Política de Privacidad explica cómo recopilamos, usamos, compartimos y protegemos tu información personal.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>2. Información que Recopilamos</h2>
+        <p>Recopilamos información que nos proporcionas directamente, como:</p>
+        <ul>
+          <li>Información de cuenta (nombre, correo electrónico, contraseña)</li>
+          <li>Información de perfil (foto, biografía, ubicación)</li>
+          <li>Contenido que creas o subes a la plataforma</li>
+          <li>Información de pago y facturación</li>
+          <li>Comunicaciones con nuestro equipo de soporte</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>3. Información Automáticamente Recopilada</h2>
+        <p>También recopilamos información automáticamente cuando utilizas DevCenterX:</p>
+        <ul>
+          <li>Datos de registro (dirección IP, tipo de navegador, sistema operativo)</li>
+          <li>Datos de uso (páginas visitadas, tiempo de sesión, acciones realizadas)</li>
+          <li>Datos de dispositivo (identificadores únicos, modelo de dispositivo)</li>
+          <li>Cookies y tecnologías similares</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>4. Cómo Usamos Tu Información</h2>
+        <p>Utilizamos tu información para:</p>
+        <ul>
+          <li>Proporcionar y mejorar nuestros servicios</li>
+          <li>Personalizar tu experiencia</li>
+          <li>Procesar transacciones</li>
+          <li>Enviarte comunicaciones (si consientes)</li>
+          <li>Cumplir con obligaciones legales</li>
+          <li>Prevenir fraude y asegurar la seguridad</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>5. Compartición de Información</h2>
+        <p>No vendemos tu información personal. Solo compartimos tu información cuando es necesario para proporcionarte servicios o cuando lo requiere la ley, con:</p>
+        <ul>
+          <li>Proveedores de servicios que nos ayudan a operar</li>
+          <li>Autoridades legales cuando es requerido por ley</li>
+          <li>Otros usuarios (solo la información que elijas compartir públicamente)</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>6. Seguridad de Datos</h2>
+        <p>Implementamos medidas de seguridad técnicas, administrativas y físicas para proteger tu información. Sin embargo, ningún método de transmisión por internet es 100% seguro. Usamos cifrado SSL/TLS para proteger datos en tránsito.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Retención de Datos</h2>
+        <p>Retenemos tu información personal solo mientras sea necesario para proporcionar servicios, a menos que la ley requiera que la conservemos durante más tiempo.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>8. Tus Derechos</h2>
+        <p>Depende de tu ubicación, puedes tener derecho a:</p>
+        <ul>
+          <li>Acceder a tu información personal</li>
+          <li>Corregir información inexacta</li>
+          <li>Solicitar la eliminación de tu información</li>
+          <li>Oponerme al procesamiento de tus datos</li>
+          <li>Portabilidad de datos</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>9. Cookies</h2>
+        <p>Utilizamos cookies para mejorar tu experiencia. Puedes controlar las cookies a través de la configuración de tu navegador. Ten en cuenta que desactivar las cookies puede afectar la funcionalidad del sitio.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>10. Cambios en esta Política</h2>
+        <p>Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos de cambios significativos publicando la nueva Política de Privacidad en esta página.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>11. Contacto</h2>
+        <p>Si tienes preguntas sobre esta Política de Privacidad o nuestras prácticas de privacidad, contáctanos en <a href="mailto:privacy@devcenterx.com">privacy@devcenterx.com</a></p>
+      </section>
+    </div>
+  </div>
+</body>
+</html>
