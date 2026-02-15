@@ -103,11 +103,27 @@ html.light-theme, html.light-theme body {
   color: var(--text-primary) !important;
 }
 
-html.light-theme * {
-  background-color: transparent !important;
-  color: inherit !important;
-  box-shadow: none !important;
+/* Avoid blanket resets — apply safe, targeted overrides for light mode */
+html.light-theme .card,
+html.light-theme .panel,
+html.light-theme .split-auth-left .split-auth-content,
+html.light-theme .split-auth-right,
+html.light-theme .split-auth-page,
+html.light-theme .split-auth-content {
+  background: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow) !important;
   border-color: var(--border) !important;
+}
+
+/* Ensure form controls are readable and not affected by broad resets */
+html.light-theme input,
+html.light-theme textarea,
+html.light-theme select,
+html.light-theme button {
+  background: #fff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
 }
 
 html.light-theme .split-auth-left .split-auth-content,
@@ -130,6 +146,134 @@ html.light-theme svg, html.light-theme svg * {
   fill: currentColor !important;
   stroke: currentColor !important;
 }
+
+/* Icon and logo polish for light mode */
+html.light-theme .split-auth-logo-svg,
+html.light-theme .brand-icon-svg {
+  width: 56px; height: 56px; display: block; color: var(--accent) !important; stroke: var(--accent) !important; fill: none !important;
+}
+html.light-theme .brand-icon-svg circle { fill: none !important; stroke: var(--accent) !important; }
+
+/* Email / password icon colors - use fill for filled icons and stroke for line icons */
+html.light-theme .email-auth-option svg,
+html.light-theme .password-input-wrapper svg {
+  color: var(--muted) !important; stroke: var(--muted) !important; fill: var(--muted) !important; opacity: 0.95;
+}
+
+/* Make eye toggle clearly visible and interactive */
+html.light-theme .password-toggle-btn {
+  background: transparent; border: 1px solid transparent; padding: 6px; border-radius: 8px;
+}
+html.light-theme .password-toggle-btn svg { width:18px; height:18px; color: var(--muted); }
+html.light-theme .password-toggle-btn:hover svg { color: var(--text-primary); }
+
+/* Placeholder/text input contrast */
+html.light-theme input::placeholder { color: rgba(11,18,32,0.45) !important; }
+
+/* Slight card elevation for left panel */
+html.light-theme .split-auth-left .split-auth-content { box-shadow: 0 10px 30px rgba(11,18,32,0.06) !important; }
+
+/* Subtle rounded brand icon background */
+html.light-theme .brand-icon { background: linear-gradient(180deg,#f4f8ff, #ffffff); padding: 14px; border-radius: 12px; display:inline-block; }
+
+/* Ensure social icons align */
+html.light-theme .social-auth-btn { display:flex; align-items:center; gap:10px; }
+
+/* Preserve original multi-color social logos (Google/GitHub) */
+html.light-theme .social-auth-btn svg, html.light-theme .social-auth-btn svg * {
+  fill: unset !important; stroke: unset !important; color: unset !important; opacity: 1 !important;
+}
+
+/* Ensure svgs don't get forced block backgrounds or odd sizing */
+html.light-theme svg { background: transparent !important; width: auto !important; height: auto !important; }
+
+/* Fix remaining dark elements that use hard-coded dark gradients or colors */
+html.light-theme .sidebar {
+  background: linear-gradient(180deg,#ffffff 0%, #f6f7fb 100%) !important;
+  border-right: 1px solid rgba(11,18,32,0.04) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+html.light-theme .sidebar-toggle-btn {
+  background: rgba(3,102,214,0.06) !important;
+  border: 1px solid rgba(11,18,32,0.04) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme .brand-icon {
+  background: linear-gradient(180deg,#f4f8ff, #ffffff) !important;
+}
+
+html.light-theme .split-auth-right {
+  background: linear-gradient(180deg,#fbfdff 0%, #f4f7fb 100%) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme .split-auth-left .split-auth-content {
+  border: 1px solid var(--border) !important;
+}
+
+/* Prevent mixing dark gradients with light backgrounds: remove any background-image
+   and set explicit light background colors where needed. This stops 'black patches' from appearing. */
+html.light-theme .split-auth-page,
+html.light-theme .split-auth-right,
+html.light-theme .split-auth-left,
+html.light-theme .split-auth-content,
+html.light-theme .sidebar,
+html.light-theme .brand-icon,
+html.light-theme .split-auth-brand,
+html.light-theme .split-auth-logo,
+html.light-theme .split-auth-social-buttons,
+html.light-theme .split-auth-divider,
+html.light-theme .split-auth-terms,
+html.light-theme .split-auth-switch {
+  background-image: none !important;
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme .split-auth-page { background-color: var(--bg-secondary) !important; }
+html.light-theme .split-auth-left .split-auth-content { background-color: var(--panel-bg) !important; }
+html.light-theme .split-auth-right { background-color: var(--bg-secondary) !important; }
+
+html.light-theme .split-submit-btn,
+html.light-theme .social-auth-btn,
+html.light-theme .email-auth-option { background-color: #fff !important; color: var(--text-primary) !important; }
+
+/* Normalize icon sizing and button layout in auth pages */
+html.light-theme .split-auth-content svg,
+html.light-theme .split-auth-content .social-auth-btn svg,
+html.light-theme .split-auth-content .password-toggle-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+}
+
+html.light-theme .social-auth-btn {
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  display: inline-flex !important;
+}
+
+html.light-theme .password-toggle-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  border-radius: 8px !important;
+}
+
+/* Ensure multi-color social logos remain intact */
+html.light-theme .social-auth-btn svg, html.light-theme .social-auth-btn svg * {
+  fill: unset !important;
+  stroke: unset !important;
+  color: unset !important;
+  opacity: 1 !important;
+}
+
 
 
 
@@ -6825,6 +6969,89 @@ html.theme-light .panel-edit-btn:hover {
   border: 1px solid #bbf7d0;
 }
 
+/* Reduce heavy dark vignette on right panel in light theme */
+html.light-theme .split-auth-right {
+  background: linear-gradient(180deg,#fbfdff 0%, #f4f7fb 100%) !important;
+  background-image: none !important;
+}
+
+html.light-theme .split-auth-right::after { background: none !important; }
+html.light-theme .split-auth-right::before { background: none !important; }
+
+/* Light brand icon styling */
+html.light-theme .brand-icon svg,
+html.light-theme .brand-icon-svg { filter: none !important; color: var(--accent) !important; stroke: var(--accent) !important; }
+html.light-theme .brand-tagline { color: var(--text-primary) !important; }
+
+/* Improve 'Volver' back arrow visibility and style */
+html.light-theme .split-auth-back { color: var(--text-secondary) !important; display: inline-flex; align-items: center; gap:8px; }
+html.light-theme .split-auth-back svg { width:18px; height:18px; stroke: var(--text-secondary) !important; }
+
+/* Tweak heading contrast and spacing */
+html.light-theme .split-auth-title { color: var(--text-primary) !important; font-weight:700; margin-top:8px; margin-bottom:1rem; }
+
+/* Button icon spacing fix for left panel */
+html.light-theme .split-auth-social-buttons { display:flex; flex-direction:column; gap:12px; }
+
+/* Make left panel look like the dark layout but with light colors */
+html.light-theme .split-auth-content {
+  max-width: 420px;
+  width: 100%;
+  padding: 24px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(11,18,32,0.04) !important;
+}
+
+html.light-theme .split-auth-back { font-size: 14px; color: var(--text-secondary) !important; }
+html.light-theme .split-auth-back svg { width: 18px; height: 18px; margin-right: 6px; stroke: var(--text-secondary) !important; }
+
+html.light-theme .split-auth-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary) !important; margin: 8px 0 18px 0; }
+
+html.light-theme .social-auth-btn, html.light-theme .email-auth-option {
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  text-align: left !important;
+}
+
+html.light-theme .social-auth-btn svg, html.light-theme .email-auth-option svg { width:20px !important; height:20px !important; margin-right:12px !important; }
+
+html.light-theme .split-auth-divider { display:flex; align-items:center; justify-content:center; margin:18px 0; }
+html.light-theme .split-auth-divider span { display:inline-block; width:34px; height:34px; line-height:34px; border-radius:50%; text-align:center; background:#fff; color:var(--muted); border:1px solid var(--border); }
+
+html.light-theme .split-auth-terms { font-size:13px; color:var(--text-secondary) !important; margin-top:12px; }
+html.light-theme .split-auth-terms a { color: var(--accent) !important; }
+
+html.light-theme .split-auth-switch { text-align:center; margin-top:14px; }
+html.light-theme .split-auth-switch a { color: var(--accent) !important; font-weight:600; }
+
+/* Ensure email/password form inputs match button sizing */
+html.light-theme .split-form-group input { padding: 12px !important; font-size: 15px !important; }
+
+/* Style email icon like dark mode but with white icon on accent background */
+html.light-theme .email-auth-option {
+  display: flex; align-items: center; gap: 12px; padding: 0.6rem 0.8rem; border-radius: 10px;
+}
+html.light-theme .email-auth-option svg {
+  width: 20px !important; height: 20px !important;
+  background: var(--accent) !important;
+  padding: 6px !important; border-radius: 8px !important;
+  color: #fff !important; fill: #fff !important; stroke: #fff !important;
+  box-shadow: 0 6px 18px rgba(3,102,214,0.12) !important;
+}
+
+/* Password eye toggle: small accent pill with white icon (matches dark style but light colors) */
+html.light-theme .password-toggle-btn {
+  background: var(--accent) !important; border: none !important; padding: 6px !important; border-radius: 8px !important;
+  display: inline-flex !important; align-items: center; justify-content: center;
+}
+html.light-theme .password-toggle-btn svg { width:18px !important; height:18px !important; color:#fff !important; fill:#fff !important; stroke:#fff !important; }
+
+/* Ensure the password wrapper doesn't get hidden or colored incorrectly */
+html.light-theme .password-input-wrapper { background: transparent !important; display:flex; align-items:center; gap:8px; }
+
+
+
 @media (max-width: 1024px) {
   .split-auth-right {
     display: none;
@@ -11343,4 +11570,122 @@ html:not(.theme-light) .auth-message.success {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* ============================================
+   COMPLETE LIGHT THEME OVERRIDES (copy of dark but with light colors)
+   ============================================ */
+
+html.light-theme {
+  /* Override :root variables for light theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f7fb;
+  --text-primary: #0b1220;
+  --text-secondary: #55606a;
+  --accent: #0366d6;
+  --accent-hover: #024ea8;
+  --border: rgba(11,18,32,0.06);
+  --panel-bg: #ffffff;
+  --card-bg: #ffffff;
+  --muted: #6b7280;
+  --shadow: 0 6px 18px rgba(11,18,32,0.06);
+}
+
+html.light-theme body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Split Auth Page - Light Mode */
+html.light-theme .split-auth-page { background: var(--bg-secondary) !important; }
+html.light-theme .split-auth-left { background: var(--bg-primary) !important; }
+
+html.light-theme .split-auth-left .split-auth-content {
+  background: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+html.light-theme .split-auth-right {
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme .split-auth-right::before, html.light-theme .split-auth-right::after { background: none !important; }
+
+html.light-theme .split-auth-brand { color: var(--text-primary) !important; }
+html.light-theme .brand-icon svg, html.light-theme .brand-icon-svg { color: var(--accent) !important; filter: none !important; }
+html.light-theme .brand-tagline { color: var(--text-primary) !important; }
+
+/* Typography */
+html.light-theme h1, html.light-theme h2, html.light-theme h3 { color: var(--text-primary) !important; }
+html.light-theme p, html.light-theme label, html.light-theme .split-auth-terms { color: var(--text-secondary) !important; }
+html.light-theme a { color: var(--accent) !important; text-decoration: none; }
+html.light-theme a:hover { text-decoration: underline; }
+
+/* Back Button */
+html.light-theme .split-auth-back { color: var(--text-secondary) !important; display: inline-flex; align-items: center; gap: 8px; }
+html.light-theme .split-auth-back svg { width: 18px; height: 18px; stroke: var(--text-secondary) !important; }
+
+/* Title */
+html.light-theme .split-auth-title { color: var(--text-primary) !important; font-weight: 700; margin: 8px 0 18px 0; }
+
+/* Buttons */
+html.light-theme .split-submit-btn { background: var(--accent) !important; color: #fff !important; border: 1px solid transparent !important; box-shadow: 0 6px 18px rgba(3,102,214,0.12) !important; }
+html.light-theme .split-submit-btn:hover { background: var(--accent-hover) !important; }
+
+html.light-theme .social-auth-btn {
+  background: #fff !important; color: var(--text-primary) !important; border: 1px solid var(--border) !important;
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px !important; border-radius: 10px !important; font-size: 16px !important;
+}
+html.light-theme .social-auth-btn svg { width: 20px !important; height: 20px !important; fill: unset !important; stroke: unset !important; color: unset !important; opacity: 1 !important; }
+
+html.light-theme .email-auth-option {
+  background: #fff !important; color: var(--text-primary) !important; border: 1px solid var(--border) !important;
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px !important; border-radius: 10px !important; font-size: 16px !important;
+}
+
+html.light-theme .email-auth-option svg {
+  width: 20px !important; height: 20px !important;
+  background: var(--accent) !important; padding: 6px !important; border-radius: 8px !important;
+  color: #fff !important; fill: #fff !important; stroke: #fff !important; box-shadow: 0 6px 18px rgba(3,102,214,0.12) !important;
+}
+
+/* Divider */
+html.light-theme .split-auth-divider {
+  display: flex; align-items: center; justify-content: center; margin: 18px 0; color: var(--muted) !important;
+}
+html.light-theme .split-auth-divider span {
+  display: inline-block; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; text-align: center;
+  background: #fff !important; color: var(--muted) !important; border: 1px solid var(--border) !important;
+}
+
+/* Form Inputs */
+html.light-theme input[type="text"], html.light-theme input[type="email"], html.light-theme input[type="password"],
+html.light-theme .split-form-group input {
+  background: #fff !important; color: var(--text-primary) !important; border: 1px solid var(--border) !important; padding: 12px !important; border-radius: 8px !important; font-size: 15px !important;
+}
+
+html.light-theme input::placeholder { color: rgba(11,18,32,0.45) !important; }
+
+html.light-theme .password-input-wrapper { background: transparent !important; display: flex; align-items: center; gap: 8px; }
+
+html.light-theme .password-toggle-btn {
+  background: var(--accent) !important; border: none !important; padding: 6px !important; border-radius: 8px !important;
+  display: inline-flex !important; align-items: center; justify-content: center;
+}
+
+html.light-theme .password-toggle-btn svg { width: 18px !important; height: 18px !important; color: #fff !important; fill: #fff !important; stroke: #fff !important; }
+
+/* Terms */
+html.light-theme .split-auth-terms { font-size: 13px; color: var(--text-secondary) !important; margin-top: 12px; }
+html.light-theme .split-auth-terms a { color: var(--accent) !important; }
+
+html.light-theme .split-auth-switch { text-align: center; margin-top: 14px; }
+html.light-theme .split-auth-switch a { color: var(--accent) !important; font-weight: 600; }
+
+/* Content Box */
+html.light-theme .split-auth-content {
+  max-width: 420px; width: 100%; padding: 24px !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(11,18,32,0.04) !important;
 }
