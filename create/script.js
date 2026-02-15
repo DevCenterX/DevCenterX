@@ -75,6 +75,7 @@ async function saveUserData(user, provider) {
   // Guardar SOLO 2 claves en localStorage
   localStorage.setItem('devcenter_user_id', user.uid);
   localStorage.setItem('devcenter_isLoggedIn', 'true');
+  localStorage.setItem('devcenter_user_name', user.displayName || user.email?.split('@')[0] || 'Usuario');
 }
 
 /**

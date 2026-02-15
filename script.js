@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.removeItem('devcenter_session');
           localStorage.removeItem('supabase_nombrepersona');
           console.log('✅ Sesión cerrada');
-          window.location.href = '/new.html';
+          window.location.href = '/agent.html';
         }
       } else {
         alert('No hay ninguna sesión activa.');
@@ -306,15 +306,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ? userData.plan 
         : 'Gratis';
 
+      // Guardar nombre del usuario en localStorage
+      localStorage.setItem('devcenter_user_name', username);
+
       // Actualizar greeting con el nombre del usuario
       const greetingText = document.getElementById('greetingText');
       if (greetingText) {
         const greetings = [
-          '¿qué quieres crear hoy?',
-          '¿qué construimos hoy?',
-          '¿en qué proyecto trabajamos hoy?',
-          '¿qué idea hacemos realidad?',
-          '¿qué desarrollamos hoy?'
+          `${username}, ¿creamos algo hoy?`,
+          `¿Listo ${username}? Vamos a crear`,
+          `${username}, ¿qué haremos?`,
+          `¡Bienvenido ${username}! ¿Qué construimos?`,
+          `${username}, es hora de crear`,
+          `¿Qué le parece ${username}? Empecemos`,
+          `${username}, ¡creemos juntos!`
         ];
         
         const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -322,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (usernameSpan) {
           usernameSpan.textContent = username;
         }
-        greetingText.innerHTML = `Hola <span class="username">${username}</span>, ${randomGreeting}`;
+        greetingText.textContent = randomGreeting;
       }
 
       // Cargar proyectos para actualizar sidebar con datos
@@ -367,11 +372,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (upgradeBtn) {
+          // Normalizar estado
           upgradeBtn.classList.remove('small', 'hidden');
+          upgradeBtn.style.display = '';
+
           if (planKey === 'Pro') {
+            // Ocultar completamente para usuarios Pro
             upgradeBtn.classList.add('hidden');
+            upgradeBtn.style.display = 'none';
           } else if (planKey === 'Premium') {
+            // Mostrar versión compacta para Premium
             upgradeBtn.classList.add('small');
+            upgradeBtn.style.display = '';
+            upgradeBtn.innerHTML = '<span>+</span> Mejorar';
+          } else {
+            // Normal/Starter
+            upgradeBtn.classList.remove('small', 'hidden');
+            upgradeBtn.style.display = '';
+            upgradeBtn.innerHTML = '<span>+</span> Mejorar Agente';
           }
         }
 
