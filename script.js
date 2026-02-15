@@ -250,27 +250,147 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Actualizar greeting
-  const greetingText = document.getElementById('greetingText');
-  if (greetingText) {
-    const greetings = [
-      '¿qué quieres crear hoy?',
-      '¿qué construimos hoy?',
-      '¿en qué proyecto trabajamos hoy?',
-      '¿qué idea hacemos realidad?',
-      '¿qué desarrollamos hoy?'
-    ];
-    
-    const currentUser = localStorage.getItem('devcenter_user');
-    if (currentUser) {
-      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-      const usernameSpan = document.getElementById('usernameSpan');
-      if (usernameSpan) {
-        usernameSpan.textContent = currentUser;
+  // Cargar nombre de usuario desde Firestore y actualizar greeting
+  async function loadUserAndUpdateGreeting() {
+    try {
+      const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
+      const uid = localStorage.getItem('devcenter_user_id');
+      
+      if (isLoggedIn !== 'true' || !uid) {
+        console.log('⚠️ No hay sesión activa');
+        return;
       }
-      greetingText.innerHTML = `Hi <span class="username" id="usernameSpan">${currentUser}</span>, ${randomGreeting}`;
+
+      // Import Firebase modules
+      const appMod = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js');
+      const firestoreMod = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js');
+      const { initializeApp } = appMod;
+      const { getFirestore, doc, getDoc } = firestoreMod;
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+        authDomain: "devcenter-agent-48c86.firebaseapp.com",
+        projectId: "devcenter-agent-48c86",
+        storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+        messagingSenderId: "911929994293",
+        appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+        measurementId: "G-S5GTYBRVK8"
+      };
+
+      // Initialize app
+      if (!window.__DEVCENTER_FIREBASE_APP) {
+        window.__DEVCENTER_FIREBASE_APP = initializeApp(firebaseConfig);
+        window.__DEVCENTER_FIRESTORE = getFirestore(window.__DEVCENTER_FIREBASE_APP);
+      }
+
+      const db = window.__DEVCENTER_FIRESTORE;
+      const userRef = doc(db, 'users', uid);
+      const snap = await getDoc(userRef);
+      
+      if (!snap.exists()) {
+        console.warn('❌ Usuario no encontrado en Firestore');
+        return;
+      }
+      
+      const userData = snap.data();
+      const username = (userData.username && userData.username.trim().length > 0) 
+        ? userData.username 
+        : (userData.email && userData.email.trim().length > 0 ? userData.email : 'Usuario');
+      
+      const plan = (userData.plan && userData.plan.trim().length > 0) 
+        ? userData.plan 
+        : 'Gratis';
+
+      // Actualizar greeting con el nombre del usuario
+      const greetingText = document.getElementById('greetingText');
+      if (greetingText) {
+        const greetings = [
+          '¿qué quieres crear hoy?',
+          '¿qué construimos hoy?',
+          '¿en qué proyecto trabajamos hoy?',
+          '¿qué idea hacemos realidad?',
+          '¿qué desarrollamos hoy?'
+        ];
+        
+        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+        const usernameSpan = document.getElementById('usernameSpan');
+        if (usernameSpan) {
+          usernameSpan.textContent = username;
+        }
+        greetingText.innerHTML = `Hola <span class="username">${username}</span>, ${randomGreeting}`;
+      }
+
+      // Cargar proyectos para actualizar sidebar con datos
+      try {
+        const proyectosRef = doc(db, 'proyectos', uid);
+        const proyectosSnap = await getDoc(proyectosRef);
+        let createdCount = 0;
+        if (proyectosSnap.exists()) {
+          const pData = proyectosSnap.data();
+          if (Array.isArray(pData.proyectos)) createdCount = pData.proyectos.length;
+        }
+
+        function normalizePlan(p) {
+          const s = (p || '').toString().toLowerCase();
+          if (s.includes('pro')) return 'Pro';
+          if (s.includes('premium')) return 'Premium';
+          return 'Normal';
+        }
+
+        const planKey = normalizePlan(plan);
+        const limits = { 'Normal': 10, 'Premium': 15, 'Pro': 30 };
+        const planLimits = limits[planKey] || 10;
+
+        // Actualizar sidebar
+        const planTitleEl = document.getElementById('userPlanTitle');
+        const appsCountEl = document.getElementById('userAppsCount');
+        const usageEl = document.getElementById('userAgentUsage');
+        const upgradeBtn = document.getElementById('upgradeAgentBtn');
+
+        if (planTitleEl) {
+          if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Starter Plan' : (plan + ' Plan' || 'Starter Plan');
+          else planTitleEl.textContent = plan + ' Plan';
+        }
+
+        if (appsCountEl) appsCountEl.textContent = `${createdCount}/${planLimits} creadas`;
+
+        if (usageEl) {
+          let percent = 0;
+          if (planLimits > 0) percent = Math.round((createdCount / planLimits) * 100);
+          if (percent > 100) percent = 100;
+          usageEl.textContent = `${percent}% usado`;
+        }
+
+        if (upgradeBtn) {
+          upgradeBtn.classList.remove('small', 'hidden');
+          if (planKey === 'Pro') {
+            upgradeBtn.classList.add('hidden');
+          } else if (planKey === 'Premium') {
+            upgradeBtn.classList.add('small');
+          }
+        }
+
+        try {
+          document.body.classList.remove('plan-normal', 'plan-premium', 'plan-pro');
+          if (planKey === 'Pro') document.body.classList.add('plan-pro');
+          else if (planKey === 'Premium') document.body.classList.add('plan-premium');
+          else document.body.classList.add('plan-normal');
+        } catch (e) {
+          // ignore
+        }
+
+      } catch (e) {
+        console.warn('No se pudo cargar datos de proyectos:', e);
+      }
+
+      console.log('✅ Usuario y proyectos cargados');
+
+    } catch (e) {
+      console.error('❌ Error cargando usuario:', e.message);
     }
   }
+
+  loadUserAndUpdateGreeting();
 });
 
 // ==================== RESPONSIVE RESIZE ====================

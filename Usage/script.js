@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
           let percent = 0;
           if (planLimits > 0) percent = Math.round((createdCount / planLimits) * 100);
           if (percent > 100) percent = 100;
-          usageEl.textContent = `${percent}% used`;
+          usageEl.textContent = `${percent}% usado`;
         }
 
         // Actualizar botón de upgrade

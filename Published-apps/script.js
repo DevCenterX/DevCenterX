@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appsCountEl) {
           const limits = { 'Normal': 10, 'Premium': 15, 'Pro': 30 };
           const planLimits = limits[planKey] || 10;
-          appsCountEl.textContent = `0/${planLimits} created`;
+          appsCountEl.textContent = `0/${planLimits} creadas`;
         }
 
         // Actualizar botón de upgrade

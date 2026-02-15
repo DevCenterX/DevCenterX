@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Actualizar contadores en sidebar
         const appsCountEl = document.getElementById('userAppsCount');
         if (appsCountEl) {
-          appsCountEl.textContent = `${totalCount}/${planLimits} created`;
+          appsCountEl.textContent = `${totalCount}/${planLimits} creadas`;
         }
 
         // Actualizar botón de upgrade
