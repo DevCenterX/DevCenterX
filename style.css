@@ -120,6 +120,45 @@ body.dark-theme {
 }
 
 /* ============================================
+   THEME COLOR INHERITANCE - Asegura que todos los elementos heredan colores correctamente
+   ============================================ */
+/* Asegurar que elementos dinámicos heredan colores correctos */
+body.dark-theme,
+body.light-theme {
+  /* Forzar que cualquier elemento sin color específico herede del body */
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+/* Asegurar que los elementos dentro de secciones heredan correctamente */
+body.dark-theme section,
+body.light-theme section,
+body.dark-theme main,
+body.light-theme main {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+/* Asegurar que elementos de tarjetas heredan correctamente */
+body.dark-theme .card,
+body.dark-theme [class*="card"],
+body.light-theme .card,
+body.light-theme [class*="card"] {
+  color: var(--text-primary);
+  background: var(--card-bg);
+}
+
+/* Asegurar que spans, divs y párrafos heredan color de texto */
+body.dark-theme span:not([class*="btn"]),
+body.light-theme span:not([class*="btn"]),
+body.dark-theme div:not([class*="btn"]),
+body.light-theme div:not([class*="btn"]),
+body.dark-theme p,
+body.light-theme p {
+  color: inherit;
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 html {

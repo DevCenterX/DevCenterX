@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (theme === 'light') document.body.classList.add('light-theme');
     saveSetting('devcenter_theme', theme);
     setSelectedThemeButton(theme);
-  }
+  
 
   function setSelectedThemeButton(theme) {
     const darkBtn = document.querySelector('[data-theme="dark"]');

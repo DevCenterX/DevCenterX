@@ -7,6 +7,19 @@
 <link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('devcenter_theme');
+        if (theme === 'light') {
+          document.documentElement.style.colorScheme = 'light';
+          var style = document.createElement('style');
+          style.textContent = 'body{background:#f6f8fb!important;color:#0b1220!important;}';
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <!-- Controles colapsados (mostrados cuando el sidebar está cerrado) -->
@@ -301,6 +314,25 @@
       </div>
     </section>
   </main>
+  <script>
+    // Aplicar tema guardado inmediatamente al cargar
+    (function() {
+      try {
+        const theme = localStorage.getItem('devcenter_theme');
+        if (theme) {
+          const t = JSON.parse(theme);
+          document.body.classList.remove('dark-theme', 'light-theme');
+          if (t === 'dark') document.body.classList.add('dark-theme');
+          if (t === 'light') document.body.classList.add('light-theme');
+        } else {
+          // Default a dark theme
+          document.body.classList.add('dark-theme');
+        }
+      } catch(e) {
+        document.body.classList.add('dark-theme');
+      }
+    })();
+  </script>
   <script src="../script.js"></script>
   <script src="script.js"></script>
 </body>

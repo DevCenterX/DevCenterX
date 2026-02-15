@@ -366,14 +366,14 @@
 
 /* Plan-specific UI changes */
 body.plan-pro .sidebar-footer .user-section {
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.06));
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(37, 99, 235, 0.02));
   padding: 1rem;
   border-radius: 10px;
 }
 
 body.plan-pro .plan-title {
   font-weight: 700;
-  color: var(--btn-primary);
+  color: var(--accent);
 }
 
 body.plan-pro .apps-card-icon {
@@ -381,14 +381,14 @@ body.plan-pro .apps-card-icon {
 }
 
 body.plan-premium .sidebar-footer .user-section {
-  background: rgba(37,99,235,0.02);
+  background: rgba(37,99,235,0.08);
   padding: 0.6rem;
   border-radius: 8px;
 }
 
 body.plan-premium .plan-title {
   font-weight: 700;
-  color: #00a6ff;
+  color: var(--accent);
   font-size: 0.98rem;
 }
 
