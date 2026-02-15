@@ -263,8 +263,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Import Firebase modules
       const appMod = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js');
+      const authMod = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js');
       const firestoreMod = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js');
       const { initializeApp } = appMod;
+      const { getAuth, setPersistence, browserLocalPersistence } = authMod;
       const { getFirestore, doc, getDoc } = firestoreMod;
 
       const firebaseConfig = {
@@ -281,6 +283,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!window.__DEVCENTER_FIREBASE_APP) {
         window.__DEVCENTER_FIREBASE_APP = initializeApp(firebaseConfig);
         window.__DEVCENTER_FIRESTORE = getFirestore(window.__DEVCENTER_FIREBASE_APP);
+        window.__DEVCENTER_AUTH = getAuth(window.__DEVCENTER_FIREBASE_APP);
+        // Set persistence to local to validate session
+        await setPersistence(window.__DEVCENTER_AUTH, browserLocalPersistence);
       }
 
       const db = window.__DEVCENTER_FIRESTORE;

@@ -11,10 +11,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
 </head>
 <body>
-  <!-- ==================== LOADING SCREEN ==================== -->
+  <!-- LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen" style="display: none;">
     <div class="loading-content">
       <div class="loading-animation-elegant">
@@ -28,13 +27,10 @@
         </div>
       </div>
       <p class="loading-text">Preparando tu espacio de trabajo...</p>
-      <div class="loading-progress">
-        <div class="loading-progress-bar"></div>
-      </div>
     </div>
   </div>
 
-  <!-- ==================== TERMS MODAL (#terms) ==================== -->
+  <!-- LEGAL MODALS -->
   <div id="termsPage" class="legal-modal-overlay" style="display: none;">
     <div class="legal-modal">
       <div class="legal-modal-header">
@@ -45,10 +41,7 @@
               <polyline points="14 2 14 8 20 8"/>
             </svg>
           </div>
-          <div>
-            <h1>Terminos de Servicio</h1>
-            <span class="legal-date">Actualizado: Diciembre 2024</span>
-          </div>
+          <h1>Terminos de Servicio</h1>
         </div>
         <button class="legal-close-btn" onclick="window.closeLegalModal()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -58,76 +51,22 @@
         </button>
       </div>
       <div class="legal-modal-body">
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">01</span>
-            <h2>Aceptacion de los Terminos</h2>
-          </div>
-          <p>Al acceder y utilizar DevCenterX, aceptas estar sujeto a estos Terminos de Servicio. Si no estas de acuerdo con alguna parte de estos terminos, no podras acceder al servicio.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">02</span>
-            <h2>Descripcion del Servicio</h2>
-          </div>
-          <p>DevCenterX es una plataforma de desarrollo web potenciada por inteligencia artificial.</p>
-          <div class="legal-features">
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Generacion automatica de codigo</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Editor en tiempo real</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vista previa responsiva</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Almacenamiento en la nube</div>
-          </div>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">03</span>
-            <h2>Registro y Cuenta</h2>
-          </div>
-          <p>Para utilizar ciertas funcionalidades, deberas crear una cuenta y seras responsable de mantener la seguridad de tu contrasena y todas las actividades bajo tu cuenta.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">04</span>
-            <h2>Uso Aceptable</h2>
-          </div>
-          <p>Te comprometes a no utilizar DevCenterX para violar leyes, infringir derechos de propiedad intelectual, distribuir malware o realizar actividades fraudulentas.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">05</span>
-            <h2>Propiedad Intelectual</h2>
-          </div>
-          <p>El codigo generado para tus proyectos es de tu propiedad. La plataforma y su tecnologia son propiedad de DevCenterX.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">06</span>
-            <h2>Contacto</h2>
-          </div>
-          <p>Si tienes preguntas, puedes contactarnos a traves de la seccion de contacto en nuestra plataforma.</p>
-        </div>
-      </div>
-      <div class="legal-modal-footer">
-        <button class="legal-accept-btn" onclick="window.closeLegalModal()">Entendido</button>
+        <p>Términos y condiciones de uso de DevCenterX...</p>
       </div>
     </div>
   </div>
 
-  <!-- ==================== PRIVACY MODAL (#privacy) ==================== -->
   <div id="privacyPage" class="legal-modal-overlay" style="display: none;">
     <div class="legal-modal">
       <div class="legal-modal-header">
         <div class="legal-modal-title">
-          <div class="legal-icon-wrapper privacy">
+          <div class="legal-icon-wrapper">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>
-          <div>
-            <h1>Politica de Privacidad</h1>
-            <span class="legal-date">Actualizado: Diciembre 2024</span>
-          </div>
+          <h1>Politica de Privacidad</h1>
         </div>
         <button class="legal-close-btn" onclick="window.closeLegalModal()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -137,72 +76,12 @@
         </button>
       </div>
       <div class="legal-modal-body">
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">01</span>
-            <h2>Informacion que Recopilamos</h2>
-          </div>
-          <div class="legal-info-grid">
-            <div class="legal-info-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <div><strong>Cuenta</strong><span>Email y usuario</span></div>
-            </div>
-            <div class="legal-info-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-              <div><strong>Proyectos</strong><span>Tu codigo</span></div>
-            </div>
-            <div class="legal-info-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              <div><strong>Uso</strong><span>Interacciones</span></div>
-            </div>
-            <div class="legal-info-item">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              <div><strong>Dispositivo</strong><span>Navegador, OS</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">02</span>
-            <h2>Como Usamos tu Informacion</h2>
-          </div>
-          <p>Utilizamos la informacion para proporcionar el servicio, mejorar tu experiencia, comunicarnos contigo y detectar fraudes.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">03</span>
-            <h2>Seguridad</h2>
-          </div>
-          <p>Tus datos se almacenan de forma segura con encriptacion. Implementamos medidas tecnicas y organizativas para proteger tu informacion.</p>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">04</span>
-            <h2>Tus Derechos</h2>
-          </div>
-          <div class="legal-features">
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Acceder a tus datos</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Corregir informacion</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Solicitar eliminacion</div>
-            <div class="legal-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Exportar proyectos</div>
-          </div>
-        </div>
-        <div class="legal-section">
-          <div class="legal-section-header">
-            <span class="legal-section-number">05</span>
-            <h2>Cookies</h2>
-          </div>
-          <p>Utilizamos cookies para mejorar tu experiencia y recordar tus preferencias.</p>
-        </div>
-      </div>
-      <div class="legal-modal-footer">
-        <button class="legal-accept-btn" onclick="window.closeLegalModal()">Entendido</button>
+        <p>Política de privacidad de DevCenterX...</p>
       </div>
     </div>
   </div>
 
-  <!-- ==================== MAIN APP ==================== -->
-  <!-- Botones cuando el sidebar está cerrado -->
+  <!-- SIDEBAR COLLAPSED CONTROLS -->
   <div class="sidebar-collapsed-controls" id="sidebarCollapsedControls">
     <button class="sidebar-toggle-open" id="sidebarOpenBtn" title="Abrir panel">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -218,52 +97,21 @@
     </button>
   </div>
 
-  <!-- Menú de opciones (cuando sidebar está cerrado) -->
+  <!-- OPTIONS MENU -->
   <div class="options-menu" id="optionsMenu">
     <div class="logo-menu-item" id="optionsMenuAccount">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
       </svg>
-      <span>Account</span>
-    </div>
-    <div class="logo-menu-item logo-menu-theme" id="optionsMenuTheme">
-      <div class="logo-menu-theme-inner">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <span>Theme</span>
-      </div>
-      <div class="theme-icons">
-        <button class="theme-icon" data-theme="dark" title="Modo oscuro">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
-        <button class="theme-icon" data-theme="light" title="Modo claro">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
-      </div>
+      <span>Cuenta</span>
     </div>
     <div class="logo-menu-item" id="optionsMenuHelp">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
       </svg>
-      Help
-      <svg class="menu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
+      Ayuda
     </div>
     <div class="logo-menu-divider"></div>
     <div class="logo-menu-item" id="optionsMenuLogout">
@@ -272,11 +120,11 @@
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
       </svg>
-      Log out
+      Cerrar sesión
     </div>
   </div>
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="mainSidebar">
     <div class="sidebar-header">
       <button class="logo logo-btn" id="logoBtn">
@@ -296,7 +144,7 @@
       </button>
     </div>
 
-    <!-- Menú desplegable del logo -->
+    <!-- LOGO MENU -->
     <div class="logo-menu" id="logoMenu">
       <div class="logo-menu-item" id="menuAccount">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -339,9 +187,6 @@
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
         </svg>
         Ayuda
-        <svg class="menu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
       </div>
       <div class="logo-menu-divider"></div>
       <div class="logo-menu-item" id="menuLogout">
@@ -358,6 +203,7 @@
       <span>+</span> Crear App
     </button>
 
+    <!-- NAVIGATION MENU -->
     <nav class="nav-menu">
       <a href="#" class="nav-item active" data-section="home" data-tooltip="Inicio">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -366,7 +212,7 @@
         </svg>
         Inicio
       </a>
-      <a href="#" class="nav-item" data-section="apps" data-tooltip="Aplicaciones">
+      <a href="#" class="nav-item" data-section="apps" data-tooltip="Apps">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7"/>
           <rect x="14" y="3" width="7" height="7"/>
@@ -375,7 +221,7 @@
         </svg>
         Apps
       </a>
-      <a href="#" class="nav-item" data-section="published" data-tooltip="Aplicaciones publicadas">
+      <a href="#" class="nav-item" data-section="published" data-tooltip="Publicadas">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
@@ -398,6 +244,7 @@
       </a>
     </nav>
 
+    <!-- SIDEBAR FOOTER -->
     <div class="sidebar-footer">
       <div class="user-section">
         <div class="plan-info">
@@ -420,9 +267,9 @@
     </div>
   </aside>
 
-  <!-- Main Content -->
+  <!-- MAIN CONTENT -->
   <main class="main-content">
-    <!-- Home Section -->
+    <!-- HOME SECTION -->
     <section id="home-section" class="content-section active">
       <div class="home-hero">
         <div class="greeting greeting-centered">
@@ -448,55 +295,14 @@
             </button>
           </div>
           
-          <!-- Botones de tipo de app dentro del input -->
           <div class="home-search__chips">
-            <button class="app-type-compact">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <circle cx="12" cy="12" r="6"/>
-                <circle cx="12" cy="12" r="2"/>
-              </svg>
-              Aplicación Web
-            </button>
-            <button class="app-type-compact">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 3v18h18"/>
-                <path d="M18 17V9"/>
-                <path d="M13 17V5"/>
-                <path d="M8 17v-3"/>
-              </svg>
-              Aplicación de Datos
-            </button>
-            <button class="app-type-compact">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-                <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-              </svg>
-              Juego 3D
-            </button>
-            <button class="app-type-compact">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              General
-            </button>
-            <button class="app-type-compact">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              Agents & Automations 
-              <span class="beta-badge-compact">Beta</span>
-            </button>
+            <button class="app-type-compact">Aplicación Web</button>
+            <button class="app-type-compact">Aplicación de Datos</button>
+            <button class="app-type-compact">Juego 3D</button>
+            <button class="app-type-compact">General</button>
           </div>
         </div>
       </div>
-
-      <!-- Sección Promocional (se inserta dinámicamente) -->
-      <div id="promotedSection"></div>
 
       <div class="projects-section projects-section-premium">
         <div class="section-header-premium">
@@ -520,1573 +326,55 @@
           </button>
         </div>
         
-        <!-- Proyectos del usuario -->
-        <div id="userProjectsSection">
-          <div id="userProjectsGrid" class="projects-grid projects-grid-premium"></div>
-          
-          <!-- Estado vacío cuando no hay proyectos -->
-          <div id="userProjectsEmpty" class="empty-state empty-state-premium">
-            <div class="empty-state-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="9" y1="9" x2="15" y2="9"/>
-                <line x1="9" y1="15" x2="15" y2="15"/>
-              </svg>
-            </div>
-            <div class="empty-state-content">
-              <h3 id="emptyStateTitle">No tienes apps todavía</h3>
-              <p id="emptyStateDescription">Crea tu primera app para empezar</p>
-            </div>
-            <button id="createFirstAppBtn" class="create-app-btn-premium create-app-btn-large">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
-              <span id="createFirstAppBtnText">Crear App</span>
-            </button>
-          </div>
-        </div>
+        <div id="userProjectsGrid" class="projects-grid projects-grid-premium"></div>
         
-        <div id="projectsGrid" class="projects-grid">
-          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text-secondary);">
-            <div class="loading-spinner" style="margin-bottom: 20px;">
-              <div class="dot"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
-            </div>
-            <p style="font-size: 16px; font-weight: 500;">Cargando tus proyectos...</p>
+        <div id="userProjectsEmpty" class="empty-state empty-state-premium">
+          <div class="empty-state-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="9" x2="15" y2="9"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
           </div>
-        </div>
-
-        <!-- Estado vacío -->
-        <div id="emptyState" class="empty-state">
-          <p>No se encontraron proyectos</p>
-        </div>
-
-        <!-- Paginación -->
-        <div id="paginationControls" class="pagination-controls">
-          <button id="prevPageBtn" class="pagination-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"/>
+          <h3 id="emptyStateTitle">No tienes apps todavía</h3>
+          <p id="emptyStateDescription">Crea tu primera app para empezar</p>
+          <button id="createFirstAppBtn" class="create-app-btn-premium create-app-btn-large">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
             </svg>
-            Anterior
-          </button>
-          <span id="pageIndicator" class="page-indicator">Página 1</span>
-          <button id="nextPageBtn" class="pagination-btn">
-            Siguiente
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+            <span id="createFirstAppBtnText">Crear App</span>
           </button>
         </div>
-      </div>
-
-      <!-- Sección de Favoritos (oculta, ahora los favoritos se muestran arriba del grid principal) -->
-      <div id="favoritesSection">
-        <div id="favoritesGrid" class="projects-grid"></div>
       </div>
     </section>
 
-    <!-- Apps Section -->
+    <!-- APPS SECTION -->
     <section id="apps-section" class="content-section">
       <div class="greeting">
         <h1>Proyectos de la Comunidad</h1>
-        <!-- Buscador de proyectos -->
-        <div class="apps-search-container">
-          <svg class="apps-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input type="text" id="appsSearchInput" placeholder="Buscar proyectos...">
-        </div>
       </div>
-      <div id="appsGrid" class="projects-grid">
-        <!-- Proyectos se cargarán aquí -->
-      </div>
+      <div id="appsGrid" class="projects-grid"></div>
     </section>
 
-    <!-- Published Apps Section -->
+    <!-- PUBLISHED SECTION -->
     <section id="published-section" class="content-section">
       <div class="greeting published-greeting">
         <h1>Tus Aplicaciones Publicadas</h1>
       </div>
-      
-      <!-- Mensaje de login requerido -->
-      <div id="publishedLoginRequired">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        <h2 class="published-login-title">Inicia sesión para ver tus aplicaciones</h2>
-        <p class="published-login-desc">Necesitas iniciar sesión para ver y gestionar tus aplicaciones publicadas.</p>
-        <button onclick="window.location.href='/Creator/index.html'" class="published-login-btn">Iniciar Sesión</button>
-      </div>
-      
-      <!-- Contenido principal (solo visible cuando está logueado) -->
-      <div id="publishedContent">
-        <!-- Estadísticas Globales -->
-        <div class="stats-overview" id="statsOverview">
-          <!-- Estadísticas se cargarán aquí -->
-        </div>
-        
-        <!-- Proyectos Publicados -->
-        <div class="published-projects-wrapper">
-          <h2 class="published-projects-header">Tus Proyectos</h2>
-          <div id="publishedGrid" class="projects-grid">
-            <!-- Proyectos publicados se cargarán aquí -->
-          </div>
-        </div>
-        
-        <!-- Gráficas -->
-        <div class="charts-container">
-          <div class="chart-card chart-card-main">
-            <div class="chart-header">
-              <h3 class="chart-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 3v18h18"/>
-                  <path d="M18 17V9"/>
-                  <path d="M13 17V5"/>
-                  <path d="M8 17v-3"/>
-                </svg>
-                Rendimiento de tus Proyectos
-              </h3>
-            </div>
-            <canvas id="projectsChart"></canvas>
-          </div>
-          
-          <div class="charts-grid">
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3 class="chart-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-                    <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-                  </svg>
-                  Distribución
-                </h3>
-              </div>
-              <canvas id="statsDonutChart"></canvas>
-            </div>
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3 class="chart-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                  Engagement
-                </h3>
-              </div>
-              <canvas id="engagementChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="publishedContent"></div>
     </section>
 
-    <!-- Usage Section -->
+    <!-- USAGE SECTION -->
     <section id="usage-section" class="content-section">
       <div class="greeting usage-greeting">
         <h1>Uso del Agente</h1>
-        <p class="usage-greeting-subtitle">Monitorea el uso de tus recursos y límites</p>
       </div>
-      
-      <!-- Mensaje de login requerido -->
-      <div id="usageLoginRequired" class="usage-login-required">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        <h2 class="usage-login-title">Inicia sesión para ver tu uso</h2>
-        <p class="usage-login-desc">Necesitas iniciar sesión para ver tus estadísticas de uso.</p>
-        <button onclick="window.location.href='/Creator/index.html'" class="usage-login-btn">Iniciar Sesión</button>
-      </div>
-      
-      <!-- Contenido principal (solo visible cuando está logueado) -->
-      <div id="usageContent">
-        <!-- Estadísticas de Uso -->
-        <div class="usage-stats-grid">
-          <!-- Tarjeta de Uso del Agente -->
-          <div class="usage-card usage-card-agent">
-            <div class="usage-card-inner">
-              <div class="usage-card-header">
-                <div class="usage-card-icon usage-card-icon-agent">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                  </svg>
-                </div>
-                <div class="usage-card-info">
-                  <div class="usage-card-label">Uso del Agente</div>
-                  <div class="usage-card-value" id="usageAgentPercent">0%</div>
-                </div>
-              </div>
-              <div class="usage-progress-container">
-                <div class="usage-progress-bar">
-                  <div id="usageAgentBar" class="usage-progress-fill usage-progress-fill-agent"></div>
-                </div>
-                <div class="usage-progress-text" id="usageAgentText">Sin uso registrado</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tarjeta de Apps Creadas -->
-          <div class="usage-card usage-card-apps">
-            <div class="usage-card-inner">
-              <div class="usage-card-header">
-                <div class="usage-card-icon usage-card-icon-apps">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                  </svg>
-                </div>
-                <div class="usage-card-info">
-                  <div class="usage-card-label">Apps Creadas</div>
-                  <div class="usage-card-value">
-                    <span id="usageAppsCount">0</span><span class="usage-card-value-small">/10</span>
-                  </div>
-                </div>
-              </div>
-              <div class="usage-progress-container">
-                <div class="usage-progress-bar usage-progress-bar-apps">
-                  <div id="usageAppsBar" class="usage-progress-fill usage-progress-fill-apps"></div>
-                </div>
-                <div class="usage-progress-text">Límite del plan Starter</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tarjeta de Plan Actual (Clickeable) -->
-          <div class="usage-card usage-card-plan usage-card-clickable" id="planCard" onclick="togglePlanBenefits()">
-            <div class="usage-card-inner">
-              <div class="usage-card-header">
-                <div class="usage-card-icon usage-card-icon-plan" id="planIconContainer">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <circle cx="12" cy="8" r="7"/>
-                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-                  </svg>
-                </div>
-                <div class="usage-card-info">
-                  <div class="usage-card-label">Plan Actual</div>
-                  <div class="usage-card-value" id="usagePlanName">Normal</div>
-                </div>
-                <div class="usage-card-expand-icon" id="planExpandIcon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </div>
-              </div>
-              <p class="usage-card-hint">Toca para ver tus beneficios</p>
-            </div>
-            <!-- Panel de beneficios expandible -->
-            <div class="plan-benefits-panel" id="planBenefitsPanel">
-              <div class="plan-benefits-header">
-                <span class="plan-benefits-title">Beneficios de tu plan</span>
-              </div>
-              <ul class="plan-benefits-list" id="planBenefitsList">
-                <!-- Se llenará dinámicamente -->
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Información del Plan -->
-        <div class="usage-plan-details">
-          <h2 class="usage-plan-details-title">Detalles de tu Plan</h2>
-          <div class="usage-plan-grid" id="usagePlanGrid">
-            <!-- Se llenará dinámicamente con los detalles del plan -->
-          </div>
-        </div>
-      </div>
+      <div id="usageContent"></div>
     </section>
-
-    <!-- Settings Section -->
-    <!-- Sección de ajustes movida a Ajustes/index.html -->
   </main>
 
-  <!-- Panel de Información del Proyecto -->
-  <div id="projectPanel" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="panel-card" role="document">
-      <button id="panelClose" class="panel-close" aria-label="Cerrar panel">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-      <div class="panel-top">
-        <div class="panel-initials" id="panelInitials">--</div>
-        <div class="panel-title">
-          <h2 id="panelTitle">
-            <span id="panelTitleText">Nombre del Proyecto</span>
-            <button id="panelFavBtn" class="panel-fav-btn" title="Añadir a Favoritos">
-              <svg id="panelFavIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </button>
-          </h2>
-          <div class="panel-meta">
-            <span id="panelDate">hace poco</span>
-          </div>
-          <a id="panelVisit" class="btn-visit" href="#" target="_blank" rel="noopener">
-            <span>Visitar web</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div id="panelDescription" class="panel-description">Descripción del proyecto...</div>
-        <div class="panel-divider" aria-hidden="true"></div>
-        <div id="panelTags" class="panel-tags" aria-hidden="true"></div>
-        <button id="panelEditBtn" class="panel-edit-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          <span>Editar Proyecto</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script src="keys.js?v=4.0"></script>
-  <!-- Modal de Planes de Suscripcion -->
-  <div id="plansModal" class="plans-modal">
-    <div class="plans-modal-overlay"></div>
-    <div class="plans-modal-content">
-      <button class="plans-modal-close" id="plansModalClose">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-      
-      <div class="plans-modal-header">
-        <h2 class="plans-modal-title">Elige tu Plan</h2>
-        <p class="plans-modal-subtitle">Selecciona el plan que mejor se adapte a tus necesidades</p>
-      </div>
-      
-      <div class="plans-grid">
-        <!-- Plan Normal (Gratis) -->
-        <div class="plan-card plan-normal" data-plan="0">
-          <div class="plan-badge plan-badge-free">Gratis</div>
-          <h3 class="plan-name">Normal</h3>
-          <div class="plan-price">
-            <span class="plan-price-amount">$0</span>
-            <span class="plan-price-currency">MXN</span>
-          </div>
-          
-          <ul class="plan-features">
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              <span><strong>10</strong> Apps</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span>Agent <strong>Flash</strong></span>
-            </li>
-            <li class="plan-feature plan-feature-disabled">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <span>Sin generacion de imagenes</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Instrucciones <strong>Largo</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              <span>Programacion <strong>Uno por uno</strong></span>
-            </li>
-            <li class="plan-feature plan-feature-disabled">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Sin equipos</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>Soporte <strong>Limitado IA</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span><strong>2</strong> Copias de seguridad</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span><strong>3</strong> Publicaciones</span>
-            </li>
-          </ul>
-          
-          <button id="planBtnNormal" class="plan-btn plan-btn-current" disabled>Plan Actual</button>
-        </div>
-        
-        <!-- Plan Plus -->
-        <div class="plan-card plan-plus" data-plan="1">
-          <div class="plan-badge plan-badge-popular">Popular</div>
-          <h3 class="plan-name">Plus</h3>
-          <div class="plan-price">
-            <span class="plan-price-amount">$126</span>
-            <span class="plan-price-currency">MXN</span>
-            <span class="plan-price-period">/mes</span>
-          </div>
-          
-          <ul class="plan-features">
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              <span><strong>15</strong> Apps</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span>Agent <strong>Pro</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <span><strong>5</strong> Generacion de imagenes</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Instrucciones <strong>Largo Especifico</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              <span>Programacion <strong>All (Todo)</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Equipos <strong>2 Personas</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>Soporte <strong>24/7</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span><strong>10</strong> Copias de seguridad</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span><strong>7</strong> Publicaciones</span>
-            </li>
-          </ul>
-          
-          <button id="planBtnPlus" class="plan-btn plan-btn-upgrade">Mejorar a Plus</button>
-        </div>
-        
-        <!-- Plan Ultimate -->
-        <div class="plan-card plan-ultimate" data-plan="3">
-          <div class="plan-badge plan-badge-ultimate">Premium</div>
-          <h3 class="plan-name">Ultimate</h3>
-          <div class="plan-price">
-            <span class="plan-price-amount">$450</span>
-            <span class="plan-price-currency">MXN</span>
-            <span class="plan-price-period">/mes</span>
-          </div>
-          
-          <ul class="plan-features">
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              <span><strong>30</strong> Apps</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span>Agent <strong>Pro</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <span><strong>15</strong> Generacion de imagenes</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Instrucciones <strong>Ultra Largo</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              <span>Programacion <strong>All (Todo)</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Equipos <strong>10 Personas</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>Soporte <strong>24/7 Code Assistance</strong></span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span><strong>20</strong> Copias de seguridad</span>
-            </li>
-            <li class="plan-feature">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span><strong>25</strong> Publicaciones</span>
-            </li>
-          </ul>
-          
-          <button id="planBtnUltimate" class="plan-btn plan-btn-premium">Mejorar a Ultimate</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script type="module" src="script.js?v=4.0"></script>
-  <script>
-    // Configurar funcionalidad del sidebar
-    document.addEventListener('DOMContentLoaded', () => {
-      const sidebar = document.getElementById('mainSidebar');
-      const mainContent = document.querySelector('.main-content');
-      const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
-      const sidebarOpenBtn = document.getElementById('sidebarOpenBtn');
-      const searchBtn = document.querySelector('.search-btn');
-      const optionsBtn = document.getElementById('optionsBtn');
-      const optionsMenu = document.getElementById('optionsMenu');
-
-      // Función para cerrar el sidebar
-      function closeSidebar() {
-        sidebar.classList.add('sidebar-hidden');
-        mainContent.classList.add('sidebar-hidden');
-        sidebarCollapsedControls.style.display = 'flex';
-      }
-
-      // Función para abrir el sidebar
-      function openSidebar() {
-        sidebar.classList.remove('sidebar-hidden');
-        mainContent.classList.remove('sidebar-hidden');
-        sidebarCollapsedControls.style.display = 'none';
-        optionsMenu.classList.remove('active');
-      }
-
-      // Cerrar sidebar por defecto en móvil
-      if (window.innerWidth <= 768) {
-        closeSidebar();
-      }
-
-      // Botón de búsqueda (ahora cierra el sidebar)
-      if (searchBtn) {
-        searchBtn.addEventListener('click', closeSidebar);
-      }
-
-      // Botón para abrir el sidebar
-      if (sidebarOpenBtn) {
-        sidebarOpenBtn.addEventListener('click', openSidebar);
-      }
-
-      // Botón de opciones - redirige a account
-      if (optionsBtn) {
-        optionsBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.location.href = '/account';
-        });
-      }
-
-      // Funcionalidad del menú de opciones
-      const optionsMenuAccount = document.getElementById('optionsMenuAccount');
-      const optionsMenuHelp = document.getElementById('optionsMenuHelp');
-      const optionsMenuLogout = document.getElementById('optionsMenuLogout');
-      const optionsThemeIcons = document.querySelectorAll('#optionsMenu .theme-icon');
-
-      if (optionsMenuAccount) {
-        optionsMenuAccount.addEventListener('click', () => {
-          window.location.href = '/account';
-          optionsMenu.classList.remove('active');
-        });
-      }
-
-      if (optionsMenuHelp) {
-        optionsMenuHelp.addEventListener('click', () => {
-          window.open('https://github.com/DevCenterX-Agent/docs', '_blank');
-          optionsMenu.classList.remove('active');
-        });
-      }
-
-      if (optionsMenuLogout) {
-        optionsMenuLogout.addEventListener('click', () => {
-          const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
-          const uid = localStorage.getItem('devcenter_user_id');
-          
-          if (isLoggedIn === 'true' && uid) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              localStorage.removeItem('devcenter_user_id');
-              localStorage.removeItem('devcenter_isLoggedIn');
-              console.log('✅ Sesión cerrada');
-              window.location.href = '/agent.html';
-            }
-          } else {
-            alert('No hay ninguna sesión activa.');
-          }
-          if (optionsMenu) optionsMenu.classList.remove('active');
-        });
-      }
-
-      // Cambiar tema (menú de opciones)
-      optionsThemeIcons.forEach(icon => {
-        icon.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const theme = icon.dataset.theme;
-          alert(`Cambio de tema a ${theme} - Próximamente disponible`);
-        });
-      });
-
-      // Configurar el menú del logo
-      const logoBtn = document.getElementById('logoBtn');
-      const logoMenu = document.getElementById('logoMenu');
-      
-      if (logoBtn && logoMenu) {
-        logoBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          logoMenu.classList.toggle('active');
-        });
-
-        // Cerrar menú al hacer clic fuera
-        document.addEventListener('click', (e) => {
-          if (!logoMenu.contains(e.target) && e.target !== logoBtn && !logoBtn.contains(e.target)) {
-            logoMenu.classList.remove('active');
-          }
-        });
-      }
-
-      // Funcionalidad de los items del menú
-      const menuAccount = document.getElementById('menuAccount');
-      const menuHelp = document.getElementById('menuHelp');
-      const menuLogout = document.getElementById('menuLogout');
-      const themeIcons = document.querySelectorAll('.theme-icon');
-
-      if (menuAccount) {
-        menuAccount.addEventListener('click', () => {
-          window.location.href = '/account';
-          logoMenu.classList.remove('active');
-        });
-        
-        // Actualizar el texto del botón Account si el usuario está logueado
-        if (window.auth && window.auth.isLoggedIn()) {
-          const currentUser = window.auth.getCurrentUser();
-          const accountTextElement = document.getElementById('accountText');
-          if (accountTextElement && currentUser) {
-            accountTextElement.textContent = currentUser.username || currentUser.email || 'Account';
-          }
-        }
-      }
-
-      if (menuHelp) {
-        menuHelp.addEventListener('click', () => {
-          window.open('https://github.com/DevCenterX-Agent/docs', '_blank');
-          logoMenu.classList.remove('active');
-        });
-      }
-
-      if (menuLogout) {
-        menuLogout.addEventListener('click', () => {
-          const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
-          const uid = localStorage.getItem('devcenter_user_id');
-          
-          if (isLoggedIn === 'true' && uid) {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-              localStorage.removeItem('devcenter_user_id');
-              localStorage.removeItem('devcenter_isLoggedIn');
-              console.log('✅ Sesión cerrada');
-              window.location.href = '/agent.html';
-            }
-          } else {
-            alert('No hay ninguna sesión activa.');
-          }
-          logoMenu.classList.remove('active');
-        });
-      }
-
-      // Cambiar tema
-      themeIcons.forEach(icon => {
-        icon.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const theme = icon.dataset.theme;
-          alert(`Cambio de tema a ${theme} - Próximamente disponible`);
-        });
-      });
-    });
-
-    // Navegación entre secciones (estilo Replit)
-    document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const section = item.dataset.section;
-        
-        // Actualizar estado activo
-        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-        item.classList.add('active');
-        
-        // Mostrar sección correspondiente
-        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-        const targetSection = document.getElementById(`${section}-section`);
-        if (targetSection) {
-          targetSection.classList.add('active');
-        }
-        
-        // Cerrar sidebar automáticamente en móvil al cambiar de sección
-        if (window.innerWidth <= 768) {
-          const sidebar = document.getElementById('mainSidebar');
-          const mainContent = document.querySelector('.main-content');
-          const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
-          if (sidebar && mainContent && sidebarCollapsedControls) {
-            sidebar.classList.add('sidebar-hidden');
-            mainContent.classList.add('sidebar-hidden');
-            sidebarCollapsedControls.style.display = 'flex';
-          }
-        }
-        
-        // Cargar contenido específico de cada sección
-        setTimeout(() => {
-          if (section === 'apps' && typeof window.renderAllProjectsInAppsSection === 'function') {
-            // Solo cargar si el grid está vacío o no se ha cargado aún
-            const appsGrid = document.getElementById('appsGrid');
-            
-            // Verificar si ya hay proyectos cargados
-            const hasContent = appsGrid && appsGrid.children.length > 0;
-            
-            if (!hasContent) {
-              window.renderAllProjectsInAppsSection();
-            } else {
-              console.log('[Apps Cache] Sección Apps ya tiene contenido cargado, usando caché');
-            }
-          } else if (section === 'published' && typeof window.renderPublishedProjects === 'function') {
-            window.renderPublishedProjects();
-          }
-        }, 50);
-      });
-    });
-
-    // Funcionalidad de los botones principales
-    document.addEventListener('DOMContentLoaded', () => {
-      // Botón principal "Create App" del sidebar
-      const mainCreateBtn = document.getElementById('mainCreateBtn');
-      if (mainCreateBtn) {
-        mainCreateBtn.addEventListener('click', () => {
-          // Ir directamente a la página de crear app
-          window.location.href = '/Programar/crear-app/index.html';
-        });
-      }
-
-      // Actualizar saludo según si el usuario está registrado
-      const greetingText = document.getElementById('greetingText');
-      if (greetingText && window.auth) {
-        // Diferentes mensajes de bienvenida
-        const greetingsLoggedOut = [
-          '¿Qué quieres crear hoy?',
-          '¿Qué construimos hoy?',
-          '¿En qué proyecto trabajamos hoy?',
-          '¿Qué idea vamos a hacer realidad?',
-          '¿Qué te gustaría desarrollar hoy?'
-        ];
-        
-        const greetingsLoggedIn = [
-          '¿qué quieres crear hoy?',
-          '¿qué construimos hoy?',
-          '¿en qué proyecto trabajamos hoy?',
-          '¿qué idea hacemos realidad?',
-          '¿qué desarrollamos hoy?'
-        ];
-        
-        if (window.auth.isLoggedIn()) {
-          const currentUser = window.auth.getCurrentUser();
-          if (currentUser && currentUser.username) {
-            // Seleccionar saludo aleatorio
-            const randomGreeting = greetingsLoggedIn[Math.floor(Math.random() * greetingsLoggedIn.length)];
-            greetingText.innerHTML = 'Hola <span class="username">' + currentUser.username + '</span>, ' + randomGreeting;
-          }
-        } else {
-          // Seleccionar saludo aleatorio para usuarios no logueados
-          const randomGreeting = greetingsLoggedOut[Math.floor(Math.random() * greetingsLoggedOut.length)];
-          greetingText.textContent = randomGreeting;
-        }
-      }
-
-      // Configurar el botón Start chat para redirigir a la IA
-      const startChatBtn = document.getElementById('startChatBtn');
-      const searchBox = document.getElementById('searchBox');
-      
-      if (startChatBtn && searchBox) {
-        startChatBtn.addEventListener('click', () => {
-          const message = searchBox.value.trim();
-          // Redirigir a la página de crear app con el mensaje
-          if (message) {
-            window.location.href = '/Programar/crear-app/index.html?message=' + encodeURIComponent(message);
-          } else {
-            window.location.href = '/Programar/crear-app/index.html';
-          }
-        });
-
-        // También permitir enviar con Enter
-        searchBox.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            startChatBtn.click();
-          }
-        });
-      }
-
-      // Configurar el botón "Create First App" del estado vacío
-      const createFirstAppBtn = document.getElementById('createFirstAppBtn');
-      const emptyStateTitle = document.getElementById('emptyStateTitle');
-      const emptyStateDescription = document.getElementById('emptyStateDescription');
-      const createFirstAppBtnText = document.getElementById('createFirstAppBtnText');
-      
-      // Actualizar el estado vacío según si el usuario está logueado
-      function updateEmptyState() {
-        if (window.auth && window.auth.isLoggedIn()) {
-          // Usuario logueado: mostrar mensaje normal
-          if (emptyStateTitle) emptyStateTitle.textContent = 'No tienes apps todavía';
-          if (emptyStateDescription) emptyStateDescription.textContent = 'Crea tu primera app para empezar';
-          if (createFirstAppBtnText) createFirstAppBtnText.textContent = 'Create App';
-        } else {
-          // Usuario NO logueado: mostrar mensaje de login
-          if (emptyStateTitle) emptyStateTitle.textContent = 'Inicia sesión para empezar a crear';
-          if (emptyStateDescription) emptyStateDescription.textContent = 'Accede a tu cuenta para crear y gestionar tus apps';
-          if (createFirstAppBtnText) createFirstAppBtnText.textContent = 'Iniciar Sesión';
-        }
-      }
-      
-      if (createFirstAppBtn) {
-        // Actualizar el estado vacío al cargar la página
-        updateEmptyState();
-        
-        createFirstAppBtn.addEventListener('click', () => {
-          // Verificar si el usuario está logueado
-          if (window.auth && window.auth.isLoggedIn()) {
-            // Si está logueado, ir a la página de crear app
-            window.location.href = '/Programar/crear-app/index.html';
-          } else {
-            // Si no está logueado, ir al login (DevCenterX Account)
-            window.location.href = '/Creator/index.html';
-          }
-        });
-      }
-    });
-  </script>
-
-  <!-- Router Script -->
-  <script>
-    (function() {
-      const sidebar = document.getElementById('mainSidebar');
-      const mainContent = document.querySelector('.main-content');
-      const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
-      const optionsMenu = document.getElementById('optionsMenu');
-      const sidebarOverlay = document.querySelector('.sidebar-overlay');
-      
-      function hideAll() {
-        if (sidebar) sidebar.style.display = 'none';
-        if (mainContent) mainContent.style.display = 'none';
-        if (sidebarCollapsedControls) sidebarCollapsedControls.style.display = 'none';
-        if (optionsMenu) optionsMenu.style.display = 'none';
-      }
-      
-      function showLanding() {
-        hideAll();
-      }
-      
-      function showLogin() {
-        hideAll();
-      }
-      
-      function showCreate() {
-        hideAll();
-      }
-      
-      function showTerms() {
-        const termsPage = document.getElementById('termsPage');
-        if (termsPage) {
-          termsPage.style.display = 'flex';
-          setTimeout(() => termsPage.classList.add('active'), 10);
-        }
-      }
-      
-      function showPrivacy() {
-        const privacyPage = document.getElementById('privacyPage');
-        if (privacyPage) {
-          privacyPage.style.display = 'flex';
-          setTimeout(() => privacyPage.classList.add('active'), 10);
-        }
-      }
-      
-      function hideTerms() {
-        const termsPage = document.getElementById('termsPage');
-        if (termsPage) {
-          termsPage.classList.remove('active');
-          setTimeout(() => { termsPage.style.display = 'none'; }, 300);
-        }
-      }
-      
-      function hidePrivacy() {
-        const privacyPage = document.getElementById('privacyPage');
-        if (privacyPage) {
-          privacyPage.classList.remove('active');
-          setTimeout(() => { privacyPage.style.display = 'none'; }, 300);
-        }
-      }
-      
-      window.closeLegalModal = function() {
-        hideTerms();
-        hidePrivacy();
-        history.back();
-      };
-      
-      function showMainApp() {
-        hideAll();
-        if (sidebar) sidebar.style.display = 'flex';
-        if (mainContent) mainContent.style.display = 'block';
-        if (sidebarOverlay) sidebarOverlay.style.display = '';
-      }
-      
-      async function navigate() {
-        // Verificar si está logueado con las 2 claves
-        const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
-        const uid = localStorage.getItem('devcenter_user_id');
-        
-        if (isLoggedIn === 'true' && uid) {
-          console.log('✅ Usuario logueado con uid:', uid);
-          window.isLoggedIn = true;
-          showMainApp();
-          return;
-        }
-        
-        // Si no está logueado, redirigir a agent.html (landing page)
-        console.log('❌ Sin sesión activa, redirigiendo a /agent.html');
-        window.location.href = '/agent.html';
-      }
-      
-      window.addEventListener('hashchange', navigate);
-      navigate();
-      
-      // ==========================================
-      // NOTA: Firebase Authentication & Firestore
-      // Ya está manejado en new.html
-      // El usuario está autenticado si existe en localStorage
-      // ==========================================
-      console.log('✅ index.html cargó correctamente con usuario:', localStorage.getItem('devcenter_user'));
-      // ==========================================
-      // Auth form handlers (removed - not used in index.html)
-      // All auth is handled in new.html with Firebase
-      // ==========================================
-      console.log('✅ Auth section initialized');
-      
-      const landingDemoBtn = document.getElementById('landingDemoBtn');
-      if (landingDemoBtn) {
-        landingDemoBtn.addEventListener('click', () => {
-          localStorage.setItem('devcenter_user', 'Demo User');
-          localStorage.setItem('devcenter_demo_mode', 'true');
-          window.location.href = '/';
-        });
-      }
-      
-      document.querySelectorAll('.welcome-theme-toggle').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const currentTheme = localStorage.getItem('theme') || 'dark';
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          localStorage.setItem('theme', newTheme);
-          document.documentElement.setAttribute('data-theme', newTheme);
-          if (newTheme === 'light') {
-            document.documentElement.classList.add('theme-light');
-          } else {
-            document.documentElement.classList.remove('theme-light');
-          }
-        });
-      });
-      
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      if (savedTheme === 'light') {
-        document.documentElement.classList.add('theme-light');
-      }
-      
-      // Animated Stats Counter
-      const animateStats = () => {
-        const statNumbers = document.querySelectorAll('.stat-number[data-target]');
-        
-        const animateNumber = (el) => {
-          const target = parseInt(el.getAttribute('data-target'));
-          const duration = 2000;
-          const step = target / (duration / 16);
-          let current = 0;
-          
-          const updateNumber = () => {
-            current += step;
-            if (current < target) {
-              if (target >= 1000) {
-                el.textContent = Math.floor(current).toLocaleString() + '+';
-              } else {
-                el.textContent = Math.floor(current) + '%';
-              }
-              requestAnimationFrame(updateNumber);
-            } else {
-              if (target >= 1000) {
-                el.textContent = target.toLocaleString() + '+';
-              } else {
-                el.textContent = target + '%';
-              }
-            }
-          };
-          updateNumber();
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              animateNumber(entry.target);
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.5 });
-        
-        statNumbers.forEach(stat => {
-          stat.textContent = '0';
-          observer.observe(stat);
-        });
-      };
-      
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', animateStats);
-      } else {
-        animateStats();
-      }
-      
-      // ==================== MODAL DE PLANES ====================
-      const plansModal = document.getElementById('plansModal');
-      const plansModalClose = document.getElementById('plansModalClose');
-      const plansModalOverlay = plansModal ? plansModal.querySelector('.plans-modal-overlay') : null;
-      
-      // Mapeo de status a plan: 0=Normal, 1=Plus, 3=Ultimate
-      const planStatusMap = {
-        0: 'normal',
-        1: 'plus',
-        3: 'ultimate'
-      };
-      
-      function updatePlanButtons() {
-        const planBtnNormal = document.getElementById('planBtnNormal');
-        const planBtnPlus = document.getElementById('planBtnPlus');
-        const planBtnUltimate = document.getElementById('planBtnUltimate');
-        
-        // Obtener el status del usuario desde currentSupabaseUser
-        let userStatus = 0; // Default: plan Normal
-        if (typeof currentSupabaseUser !== 'undefined' && currentSupabaseUser && currentSupabaseUser.status !== undefined) {
-          userStatus = currentSupabaseUser.status;
-        }
-        
-        const currentPlan = planStatusMap[userStatus] || 'normal';
-        
-        // Resetear todos los botones
-        if (planBtnNormal) {
-          planBtnNormal.className = 'plan-btn plan-btn-upgrade';
-          planBtnNormal.disabled = false;
-          planBtnNormal.textContent = 'Seleccionar';
-        }
-        if (planBtnPlus) {
-          planBtnPlus.className = 'plan-btn plan-btn-upgrade';
-          planBtnPlus.disabled = false;
-          planBtnPlus.textContent = 'Mejorar a Plus';
-        }
-        if (planBtnUltimate) {
-          planBtnUltimate.className = 'plan-btn plan-btn-premium';
-          planBtnUltimate.disabled = false;
-          planBtnUltimate.textContent = 'Mejorar a Ultimate';
-        }
-        
-        // Marcar el plan actual
-        if (currentPlan === 'normal' && planBtnNormal) {
-          planBtnNormal.className = 'plan-btn plan-btn-current';
-          planBtnNormal.disabled = true;
-          planBtnNormal.textContent = 'Plan Actual';
-        } else if (currentPlan === 'plus' && planBtnPlus) {
-          planBtnPlus.className = 'plan-btn plan-btn-current';
-          planBtnPlus.disabled = true;
-          planBtnPlus.textContent = 'Plan Actual';
-          // Si tiene Plus, puede bajar a Normal o subir a Ultimate
-          if (planBtnNormal) {
-            planBtnNormal.className = 'plan-btn plan-btn-upgrade';
-            planBtnNormal.disabled = false;
-            planBtnNormal.textContent = 'Cambiar a Normal';
-          }
-        } else if (currentPlan === 'ultimate' && planBtnUltimate) {
-          planBtnUltimate.className = 'plan-btn plan-btn-current';
-          planBtnUltimate.disabled = true;
-          planBtnUltimate.textContent = 'Plan Actual';
-          // Si tiene Ultimate, puede bajar a Plus o Normal
-          if (planBtnPlus) {
-            planBtnPlus.className = 'plan-btn plan-btn-upgrade';
-            planBtnPlus.disabled = false;
-            planBtnPlus.textContent = 'Cambiar a Plus';
-          }
-          if (planBtnNormal) {
-            planBtnNormal.className = 'plan-btn plan-btn-upgrade';
-            planBtnNormal.disabled = false;
-            planBtnNormal.textContent = 'Cambiar a Normal';
-          }
-        }
-      }
-      
-      function openPlansModal() {
-        if (plansModal) {
-          updatePlanButtons();
-          plansModal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-        }
-      }
-      
-      function closePlansModal() {
-        if (plansModal) {
-          plansModal.classList.remove('active');
-          document.body.style.overflow = '';
-        }
-      }
-      
-      // Cerrar modal con boton X
-      if (plansModalClose) {
-        plansModalClose.addEventListener('click', closePlansModal);
-      }
-      
-      // Cerrar modal al hacer clic en el overlay
-      if (plansModalOverlay) {
-        plansModalOverlay.addEventListener('click', closePlansModal);
-      }
-      
-      // Cerrar modal con tecla Escape
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && plansModal && plansModal.classList.contains('active')) {
-          closePlansModal();
-        }
-      });
-      
-      // Conectar botones de Upgrade al modal
-      document.querySelectorAll('.upgrade-btn, .usage-upgrade-btn').forEach(btn => {
-        btn.addEventListener('click', openPlansModal);
-      });
-      
-      // Hacer la funcion accesible globalmente
-      window.openPlansModal = openPlansModal;
-      window.updatePlanButtons = updatePlanButtons;
-      
-      // ==================== ONBOARDING SYSTEM ====================
-      let onboardingData = {
-        username: '',
-        avatar: 'color-1',
-        avatarImage: null,
-        currentStep: 1
-      };
-      
-      const avatarGradients = {
-        'color-1': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-        'color-2': 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-        'color-3': 'linear-gradient(135deg, #22c55e, #16a34a)',
-        'color-4': 'linear-gradient(135deg, #f59e0b, #d97706)',
-        'color-5': 'linear-gradient(135deg, #ef4444, #dc2626)',
-        'color-6': 'linear-gradient(135deg, #ec4899, #db2777)',
-        'color-7': 'linear-gradient(135deg, #14b8a6, #0d9488)',
-        'color-8': 'linear-gradient(135deg, #6366f1, #4f46e5)'
-      };
-      
-      // Guardar progreso del onboarding en localStorage
-      function saveOnboardingProgress() {
-        localStorage.setItem('onboarding_progress', JSON.stringify(onboardingData));
-      }
-      
-      // Cargar progreso del onboarding desde localStorage
-      function loadOnboardingProgress() {
-        const saved = localStorage.getItem('onboarding_progress');
-        if (saved) {
-          try {
-            const data = JSON.parse(saved);
-            onboardingData = { ...onboardingData, ...data };
-            return true;
-          } catch (e) {
-            console.error('Error cargando progreso de onboarding:', e);
-          }
-        }
-        return false;
-      }
-      
-      // Limpiar progreso del onboarding
-      function clearOnboardingProgress() {
-        localStorage.removeItem('onboarding_progress');
-      }
-      
-      // Restaurar UI del onboarding segun el paso guardado
-      function restoreOnboardingUI() {
-        const initial = onboardingData.username ? onboardingData.username.charAt(0).toUpperCase() : 'U';
-        
-        // Configurar username input
-        const usernameInput = document.getElementById('onboardingUsername');
-        if (usernameInput && onboardingData.username) {
-          usernameInput.value = onboardingData.username;
-        }
-        
-        // Configurar iniciales en avatars
-        document.querySelectorAll('.option-initial').forEach(el => {
-          el.textContent = initial;
-        });
-        
-        const avatarPreviewInitial = document.getElementById('avatarPreviewInitial');
-        const avatarPreviewName = document.getElementById('avatarPreviewName');
-        if (avatarPreviewInitial) avatarPreviewInitial.textContent = initial;
-        if (avatarPreviewName) avatarPreviewName.textContent = '@' + (onboardingData.username || 'username');
-        
-        // Restaurar avatar seleccionado
-        if (onboardingData.avatar && onboardingData.avatar !== 'custom') {
-          document.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
-          const selectedCard = document.querySelector(`.avatar-option-card[data-color="${onboardingData.avatar}"]`);
-          if (selectedCard) {
-            selectedCard.classList.add('selected');
-            const preview = document.getElementById('avatarPreview');
-            if (preview) {
-              preview.style.background = avatarGradients[onboardingData.avatar];
-              preview.innerHTML = '<span id="avatarPreviewInitial">' + initial + '</span>';
-            }
-          }
-        }
-        
-        // Restaurar al paso correcto
-        if (onboardingData.currentStep === 2) {
-          document.getElementById('onboardingStep1').style.display = 'none';
-          document.getElementById('onboardingStep2').style.display = 'block';
-          
-          // Actualizar indicador de progreso
-          document.querySelector('.progress-step[data-step="1"]').classList.remove('active');
-          document.querySelector('.progress-step[data-step="1"]').classList.add('completed');
-          document.querySelector('.progress-step[data-step="2"]').classList.add('active');
-          document.querySelector('.progress-line').classList.add('active');
-        }
-      }
-      
-      function startOnboarding(username, restoreFromStorage = false) {
-        if (!restoreFromStorage) {
-          onboardingData.username = username;
-          onboardingData.currentStep = 1;
-          saveOnboardingProgress();
-        }
-        
-        const initial = onboardingData.username ? onboardingData.username.charAt(0).toUpperCase() : 'U';
-        
-        // Ocultar todas las otras paginas
-        
-        // Mostrar onboarding
-        
-        // Configurar username input con el valor actual
-        const usernameInput = document.getElementById('onboardingUsername');
-        if (usernameInput) {
-          usernameInput.value = onboardingData.username || username;
-        }
-        
-        // Configurar inicial en todos los avatars
-        document.querySelectorAll('.option-initial').forEach(el => {
-          el.textContent = initial;
-        });
-        document.getElementById('avatarPreviewInitial').textContent = initial;
-        document.getElementById('avatarPreviewName').textContent = '@' + (onboardingData.username || username);
-        
-        // Si hay progreso guardado, restaurar UI
-        if (restoreFromStorage) {
-          restoreOnboardingUI();
-        }
-        
-        // Cambiar hash a #config
-        window.location.hash = 'config';
-      }
-      
-      // Verificar si hay onboarding pendiente al cargar la pagina
-      function checkPendingOnboarding() {
-        const hasPendingOnboarding = localStorage.getItem('devcenter_onboarding_pending');
-        const hasProgress = loadOnboardingProgress();
-        
-        if (hasPendingOnboarding && hasProgress && onboardingData.username) {
-          // Hay onboarding pendiente, restaurar
-          startOnboarding(onboardingData.username, true);
-          return true;
-        }
-        return false;
-      }
-      
-      // Verificar al cargar la pagina
-      if (window.location.hash === '#config' || localStorage.getItem('devcenter_onboarding_pending')) {
-        setTimeout(() => {
-          checkPendingOnboarding();
-        }, 100);
-      }
-      
-      // Step 1: Username - Continue button
-      const onboardingNextStep1 = document.getElementById('onboardingNextStep1');
-      if (onboardingNextStep1) {
-        onboardingNextStep1.addEventListener('click', () => {
-          const usernameInput = document.getElementById('onboardingUsername');
-          const usernameWrapper = usernameInput.closest('.username-input-wrapper');
-          const newUsername = usernameInput.value.trim();
-          
-          if (!newUsername) {
-            usernameWrapper.style.borderColor = '#ef4444';
-            usernameWrapper.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
-            usernameInput.focus();
-            return;
-          }
-          
-          // Limpiar estilos de error
-          usernameWrapper.style.borderColor = '';
-          usernameWrapper.style.boxShadow = '';
-          
-          // Actualizar el username con el nuevo valor
-          onboardingData.username = newUsername;
-          const initial = newUsername.charAt(0).toUpperCase();
-          
-          // Actualizar inicial en todos los avatars
-          document.querySelectorAll('.option-initial').forEach(el => {
-            el.textContent = initial;
-          });
-          document.getElementById('avatarPreviewInitial').textContent = initial;
-          document.getElementById('avatarPreviewName').textContent = '@' + newUsername;
-          
-          // Pasar al paso 2
-          document.getElementById('onboardingStep1').style.display = 'none';
-          document.getElementById('onboardingStep2').style.display = 'block';
-          
-          // Actualizar indicador de progreso
-          document.querySelector('.progress-step[data-step="1"]').classList.remove('active');
-          document.querySelector('.progress-step[data-step="1"]').classList.add('completed');
-          document.querySelector('.progress-step[data-step="2"]').classList.add('active');
-          document.querySelector('.progress-line').classList.add('active');
-          
-          // Guardar progreso
-          onboardingData.currentStep = 2;
-          saveOnboardingProgress();
-        });
-      }
-      
-      // Limpiar error al escribir en el input de username
-      const usernameInputEl = document.getElementById('onboardingUsername');
-      if (usernameInputEl) {
-        usernameInputEl.addEventListener('input', () => {
-          const wrapper = usernameInputEl.closest('.username-input-wrapper');
-          if (wrapper) {
-            wrapper.style.borderColor = '';
-            wrapper.style.boxShadow = '';
-          }
-        });
-      }
-      
-      // Step 2: Back button
-      const onboardingBackStep2 = document.getElementById('onboardingBackStep2');
-      if (onboardingBackStep2) {
-        onboardingBackStep2.addEventListener('click', () => {
-          document.getElementById('onboardingStep2').style.display = 'none';
-          document.getElementById('onboardingStep1').style.display = 'block';
-          
-          // Actualizar indicador de progreso
-          document.querySelector('.progress-step[data-step="1"]').classList.add('active');
-          document.querySelector('.progress-step[data-step="1"]').classList.remove('completed');
-          document.querySelector('.progress-step[data-step="2"]').classList.remove('active');
-          document.querySelector('.progress-line').classList.remove('active');
-          
-          // Guardar progreso
-          onboardingData.currentStep = 1;
-          saveOnboardingProgress();
-        });
-      }
-      
-      // Avatar selection
-      document.querySelectorAll('.avatar-option-card').forEach(card => {
-        card.addEventListener('click', () => {
-          // Quitar seleccion de todos
-          document.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
-          // Seleccionar este
-          card.classList.add('selected');
-          
-          const color = card.dataset.color;
-          onboardingData.avatar = color;
-          onboardingData.avatarImage = null;
-          
-          // Actualizar preview
-          const preview = document.getElementById('avatarPreview');
-          preview.style.background = avatarGradients[color];
-          preview.innerHTML = '<span id="avatarPreviewInitial">' + onboardingData.username.charAt(0).toUpperCase() + '</span>';
-          
-          // Guardar progreso
-          saveOnboardingProgress();
-        });
-      });
-      
-      // Avatar upload
-      const avatarUpload = document.getElementById('avatarUpload');
-      if (avatarUpload) {
-        avatarUpload.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              onboardingData.avatarImage = event.target.result;
-              onboardingData.avatar = 'custom';
-              
-              // Quitar seleccion de colores
-              document.querySelectorAll('.avatar-option-card').forEach(c => c.classList.remove('selected'));
-              
-              // Actualizar preview
-              const preview = document.getElementById('avatarPreview');
-              preview.style.background = 'none';
-              preview.innerHTML = '<img src="' + event.target.result + '" alt="Avatar">';
-              
-              // Guardar progreso
-              saveOnboardingProgress();
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-      
-      // Complete onboarding
-      const onboardingComplete = document.getElementById('onboardingComplete');
-      if (onboardingComplete) {
-        onboardingComplete.addEventListener('click', async () => {
-          onboardingComplete.disabled = true;
-          onboardingComplete.innerHTML = 'Guardando...';
-          
-          try {
-            // Save onboarding data to localStorage (Firebase auth is already in localStorage)
-            localStorage.setItem('devcenter_user', onboardingData.username);
-            if (onboardingData.avatar) {
-              localStorage.setItem('devcenter_avatar', onboardingData.avatar);
-            }
-            if (onboardingData.avatarImage) {
-              localStorage.setItem('devcenter_avatar_image', onboardingData.avatarImage);
-            }
-            
-            // Clear onboarding flag
-            localStorage.removeItem('devcenter_onboarding_pending');
-            
-            // Clear onboarding progress (completed)
-            clearOnboardingProgress();
-            
-            // Clear hash
-            window.location.hash = '';
-            
-            // Show loading screen
-            document.getElementById('loadingScreen').style.display = 'flex';
-            
-            // Redirect after 2 seconds
-            setTimeout(() => {
-              window.location.href = '/';
-            }, 2500);
-          } catch (error) {
-            console.error('Error en onboarding:', error);
-            onboardingComplete.disabled = false;
-            onboardingComplete.innerHTML = 'Completar <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-          }
-        });
-      }
-      
-      // Hacer funcion global
-      window.startOnboarding = startOnboarding;
-    })();
-    
-    // ==================== SETTINGS FUNCTIONALITY ====================
-    (function initSettings() {
-      // Theme toggle
-      const themeDarkBtn = document.getElementById('themeDarkBtn');
-      const themeLightBtn = document.getElementById('themeLightBtn');
-      
-      function setTheme(theme) {
-        localStorage.setItem('devcenter_theme', theme);
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Update active state
-        if (themeDarkBtn && themeLightBtn) {
-          themeDarkBtn.classList.toggle('active', theme === 'dark');
-          themeLightBtn.classList.toggle('active', theme === 'light');
-        }
-      }
-      
-      // Load saved theme
-      const savedTheme = localStorage.getItem('devcenter_theme') || 'dark';
-      setTheme(savedTheme);
-      
-      if (themeDarkBtn) {
-        themeDarkBtn.addEventListener('click', () => setTheme('dark'));
-      }
-      if (themeLightBtn) {
-        themeLightBtn.addEventListener('click', () => setTheme('light'));
-      }
-      
-      // Load saved settings
-      function loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('devcenter_settings') || '{}');
-        
-        const emailNotif = document.getElementById('emailNotifications');
-        const projectNotif = document.getElementById('projectNotifications');
-        const communityNotif = document.getElementById('communityNotifications');
-        const publicProfile = document.getElementById('publicProfile');
-        const showPublicProjects = document.getElementById('showPublicProjects');
-        
-        if (emailNotif) emailNotif.checked = settings.emailNotifications !== false;
-        if (projectNotif) projectNotif.checked = settings.projectNotifications !== false;
-        if (communityNotif) communityNotif.checked = settings.communityNotifications === true;
-        if (publicProfile) publicProfile.checked = settings.publicProfile !== false;
-        if (showPublicProjects) showPublicProjects.checked = settings.showPublicProjects !== false;
-      }
-      
-      // Save settings on change
-      function saveSettings() {
-        const settings = {
-          emailNotifications: document.getElementById('emailNotifications')?.checked,
-          projectNotifications: document.getElementById('projectNotifications')?.checked,
-          communityNotifications: document.getElementById('communityNotifications')?.checked,
-          publicProfile: document.getElementById('publicProfile')?.checked,
-          showPublicProjects: document.getElementById('showPublicProjects')?.checked
-        };
-        localStorage.setItem('devcenter_settings', JSON.stringify(settings));
-      }
-      
-      // Add listeners to all settings toggles
-      document.querySelectorAll('.settings-switch input').forEach(input => {
-        input.addEventListener('change', saveSettings);
-      });
-      
-      // Clear cache button
-      const clearCacheBtn = document.getElementById('clearCacheBtn');
-      if (clearCacheBtn) {
-        clearCacheBtn.addEventListener('click', () => {
-          localStorage.removeItem('devcenter_cache');
-          sessionStorage.clear();
-          alert('Cache limpiado correctamente');
-        });
-      }
-      
-      // Export data button
-      const exportDataBtn = document.getElementById('exportDataBtn');
-      if (exportDataBtn) {
-        exportDataBtn.addEventListener('click', () => {
-          const userData = localStorage.getItem('devcenter_user');
-          const data = {
-            user: userData,
-            settings: JSON.parse(localStorage.getItem('devcenter_settings') || '{}'),
-            exportDate: new Date().toISOString()
-          };
-          
-          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'devcenter-data.json';
-          a.click();
-          URL.revokeObjectURL(url);
-        });
-      }
-      
-      // Delete account button
-      const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-      if (deleteAccountBtn) {
-        deleteAccountBtn.addEventListener('click', () => {
-          if (confirm('¿Estas seguro de que quieres eliminar tu cuenta? Esta accion no se puede deshacer.')) {
-            if (confirm('Esta es tu ultima oportunidad. ¿Realmente quieres eliminar tu cuenta permanentemente?')) {
-              alert('Para eliminar tu cuenta, por favor contacta a soporte.');
-            }
-          }
-        });
-      }
-      
-      // Load settings on page load
-      loadSettings();
-    })();
-  </script>
 </body>
 </html>
