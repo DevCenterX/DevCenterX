@@ -478,8 +478,31 @@ body.light-theme .prompt-tab.active {
 /* CTA button contrast */
 html.light-theme .landing-signup-btn,
 body.light-theme .landing-signup-btn {
-  background: var(--accent);
+  background: #0070f3;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 112, 243, 0.3);
+}
+
+html.light-theme .landing-signup-btn:hover,
+body.light-theme .landing-signup-btn:hover {
+  background: #0761d1;
+  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.4);
+  transform: translateY(-1px);
+}
+
+html.light-theme .landing-login-link,
+body.light-theme .landing-login-link {
+  background: #e8e8e8;
+  color: #2d3748;
+  font-weight: 500;
+  border: 1px solid #d0d0d0;
+}
+
+html.light-theme .landing-login-link:hover,
+body.light-theme .landing-login-link:hover {
+  background: #d5d5d5;
+  border-color: #b8b8b8;
+  color: #1a202c;
 }
 
 /* App images subtle background for light */
@@ -500,18 +523,12 @@ body.light-theme .landing-footer {
 
 
 /* Additional light-theme overrides to fix remaining dark elements */
-html.light-theme .landing-signup-btn,
-body.light-theme .landing-signup-btn,
-html.light-theme .landing-login-link,
-body.light-theme .landing-login-link,
 html.light-theme .landing-contact-link,
 body.light-theme .landing-contact-link {
   color: #0b1220;
   background: transparent;
 }
 
-html.light-theme .landing-login-link:hover,
-body.light-theme .landing-login-link:hover,
 html.light-theme .landing-contact-link:hover,
 body.light-theme .landing-contact-link:hover {
   background: rgba(6,78,181,0.04);
@@ -1199,5 +1216,18 @@ body.light-theme .trusted-text {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE - Hide DevCenterX text
+   ============================================ */
+@media (max-width: 768px) {
+  .landing-logo span {
+    display: none !important;
+  }
+  
+  .landing-logo {
+    margin-left: 0;
   }
 }

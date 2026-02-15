@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="style.css">
   <style>
     #createPage { display: flex !important; }
+    .splash-screen { display: flex; }
+    .splash-screen.hidden { display: none; }
   </style>
   <script>
     (function(){
@@ -27,8 +29,27 @@
   </script>
 </head>
 <body>
+  <!-- ==================== SPLASH SCREEN ==================== -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-container">
+      <div class="splash-content">
+        <svg class="splash-logo" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+        </svg>
+        <h1 class="splash-title">DevCenterX</h1>
+        <p class="splash-subtitle">Crear cuenta</p>
+        <div class="splash-loader">
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== CREATE ACCOUNT PAGE - Split Screen Design ==================== -->
-  <div id="createPage" class="split-auth-page">
+  <div id="createPage" class="split-auth-page hidden-content">
     <div class="split-auth-left">
       <div class="split-auth-content">
         <a href="/" class="split-auth-back">
@@ -127,6 +148,17 @@
     </div>
   </div>
 
+  <script>
+    // Splash screen animation and content loading
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        const createPage = document.getElementById('createPage');
+        if (splash) splash.classList.add('hidden');
+        if (createPage) createPage.classList.remove('hidden-content');
+      }, 2400);
+    });
+  </script>
   <script type="module" src="script.js"></script>
 </body>
 </html>
