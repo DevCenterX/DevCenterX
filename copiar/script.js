@@ -1315,12 +1315,12 @@ const POP_CONSISTENCY_PENALTY = 0.1;
     }
     
     if (userAgentUsage) {
-      userAgentUsage.textContent = `${currentSupabaseUser.limite || 0}% used`;
+      userAgentUsage.textContent = `${currentSupabaseUser.limite || 0}% usado`;
     }
     
     if (userAppsCount && userPlan) {
       const projectCount = currentSupabaseUser.proyectos ? currentSupabaseUser.proyectos.length : 0;
-      userAppsCount.textContent = `${projectCount}/${userPlan.maxApps} created`;
+      userAppsCount.textContent = `${projectCount}/${userPlan.maxApps} creadas`;
     }
     
     // Ocultar botón de Upgrade para usuarios Ultimate (status >= 2)

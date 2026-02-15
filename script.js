@@ -74,18 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Logout item en options menu
   if (optionsMenuLogout) {
     optionsMenuLogout.addEventListener('click', () => {
-      const isLoggedIn = localStorage.getItem('devcenter_isLoggedIn');
-      const uid = localStorage.getItem('devcenter_user_id');
-      
-      if (isLoggedIn === 'true' && uid) {
-        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-          localStorage.removeItem('devcenter_user_id');
-          localStorage.removeItem('devcenter_isLoggedIn');
-          console.log('✅ Sesión cerrada');
-          window.location.href = '/agent.html';
-        }
-      } else {
-        alert('No hay ninguna sesión activa.');
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        performLogout();
       }
       if (optionsMenu) optionsMenu.classList.remove('active');
     });
@@ -174,29 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Logout item
   if (menuLogout) {
     menuLogout.addEventListener('click', () => {
-      const localUser = localStorage.getItem('devcenter_user');
-      const localUserId = localStorage.getItem('devcenter_user_id');
-      
-      if (localUser || localUserId) {
-        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-          localStorage.removeItem('devcenter_user');
-          localStorage.removeItem('devcenter_user_id');
-          localStorage.removeItem('devcenter_email');
-          localStorage.removeItem('devcenter_avatar');
-          localStorage.removeItem('devcenter_plan');
-          localStorage.removeItem('devcenter_limit');
-          localStorage.removeItem('devcenter_login_time');
-          localStorage.removeItem('devcenter_datos');
-          localStorage.removeItem('devcenter_session');
-          localStorage.removeItem('supabase_nombrepersona');
-          console.log('✅ Sesión cerrada');
-          window.location.href = '/agent.html';
-        }
-      } else {
-        alert('No hay ninguna sesión activa.');
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        performLogout();
       }
       if (logoMenu) logoMenu.classList.remove('active');
     });
+  }
+
+  // Logout helper to keep behavior consistent
+  function performLogout() {
+    try {
+      const keys = [
+        'devcenter_user_id','devcenter_isLoggedIn','devcenter_user','devcenter_user_name',
+        'devcenter_email','devcenter_avatar','devcenter_plan','devcenter_limit',
+        'devcenter_login_time','devcenter_datos','devcenter_session','supabase_nombrepersona'
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+      console.log('✅ Sesión cerrada (localStorage limpiado)');
+    } catch (e) {
+      console.warn('Error al limpiar sesión:', e);
+    }
+    window.location.href = '/agent.html';
   }
 
   // Theme icons
@@ -204,41 +192,18 @@ document.addEventListener('DOMContentLoaded', () => {
     icon.addEventListener('click', (e) => {
       e.stopPropagation();
       const theme = icon.dataset.theme;
-      console.log(`Cambio de tema a: ${theme}`);
+      // Aplicar y guardar tema para todos los iconos (consistente con optionsThemeIcons)
+      try {
+        applyTheme(theme);
+        saveTheme(theme);
+      } catch (err) {
+        console.warn('No se pudo aplicar el tema:', err);
+      }
     });
   });
 });
 
-// ==================== SECTION NAVIGATION ====================
-// Navegación entre secciones (Home, Apps, Published, Usage, Settings)
-document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-  if (item.dataset.section !== 'settings') {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const section = item.dataset.section;
-      // Actualizar estado activo
-      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-      item.classList.add('active');
-      // Mostrar sección correspondiente
-      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-      const targetSection = document.getElementById(`${section}-section`);
-      if (targetSection) {
-        targetSection.classList.add('active');
-      }
-      // Cerrar sidebar automáticamente en móvil al cambiar de sección
-      if (window.innerWidth <= 768) {
-        const sidebar = document.getElementById('mainSidebar');
-        const mainContent = document.querySelector('.main-content');
-        const sidebarCollapsedControls = document.getElementById('sidebarCollapsedControls');
-        if (sidebar && mainContent && sidebarCollapsedControls) {
-          sidebar.classList.add('sidebar-hidden');
-          mainContent.classList.add('sidebar-hidden');
-          sidebarCollapsedControls.style.display = 'flex';
-        }
-      }
-    });
-  }
-});
+// NOTE: Section navigation handled by separate pages; do not intercept nav links to allow folder redirection.
 
 // ==================== CREATE APP BUTTON ====================
 // Botón principal "Create App" del sidebar
@@ -246,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainCreateBtn = document.getElementById('mainCreateBtn');
   if (mainCreateBtn) {
     mainCreateBtn.addEventListener('click', () => {
-      window.location.href = '/Programar/crear-app/index.html';
+      window.location.href = '/Programar/crear-app';
     });
   }
 
@@ -358,8 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const upgradeBtn = document.getElementById('upgradeAgentBtn');
 
         if (planTitleEl) {
-          if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Starter Plan' : (plan + ' Plan' || 'Starter Plan');
-          else planTitleEl.textContent = plan + ' Plan';
+          if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Plan Inicial' : `Plan ${plan || 'Normal'}`;
+          else planTitleEl.textContent = `Plan ${plan}`;
         }
 
         if (appsCountEl) appsCountEl.textContent = `${createdCount}/${planLimits} creadas`;

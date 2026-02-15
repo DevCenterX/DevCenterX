@@ -1260,6 +1260,116 @@ body:has(#createPage:target) .options-menu {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
+/* Home section - Light theme overrides (only affects home area when body.light-theme is set) */
+body.light-theme #home-section .home-search__chips {
+  background: #ffffff;
+  border-top: 1px solid rgba(11, 18, 32, 0.06);
+}
+
+body.light-theme #home-section .app-type-compact {
+  background: #f3f6fb;
+  border: 1px solid rgba(11, 18, 32, 0.06);
+  color: #0b1220;
+}
+
+body.light-theme #home-section .app-type-compact:hover {
+  background: #e9f0ff;
+  color: #0b1220;
+  border-color: rgba(6, 78, 181, 0.12);
+  box-shadow: 0 6px 18px rgba(6, 78, 181, 0.06);
+}
+
+body.light-theme #home-section .home-search .input-wrapper {
+  background: #ffffff;
+  border: 1px solid rgba(11, 18, 32, 0.06);
+  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+  color: #0b1220;
+}
+
+body.light-theme #home-section .home-search input,
+body.light-theme #home-section .home-search textarea {
+  color: #0b1220;
+}
+
+body.light-theme #home-section .home-search input::placeholder,
+body.light-theme #home-section .home-search textarea::placeholder {
+  color: #94a3b8;
+}
+
+body.light-theme #home-section .home-search__actions {
+  background: #ffffff;
+  border-top: 1px solid rgba(11, 18, 32, 0.06);
+}
+
+body.light-theme #home-section .home-search__actions .start-chat-btn {
+  background: linear-gradient(135deg, #0066ff 0%, #004bb5 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(6, 78, 181, 0.12);
+  border: none;
+}
+
+body.light-theme #home-section .home-search__actions .start-chat-btn svg {
+  fill: #ffffff;
+  opacity: 1;
+}
+
+/* Ensure chips scrollbar remains hidden but matches light background */
+body.light-theme #home-section .home-search__chips {
+  scrollbar-width: none;
+}
+
+/* Projects section - Light theme overrides so headings and controls remain visible */
+body.light-theme #home-section .projects-section-premium {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid rgba(11, 18, 32, 0.06);
+}
+
+body.light-theme #home-section .projects-section-premium .section-header-left h2 {
+  color: var(--text-primary);
+}
+
+body.light-theme #home-section .projects-section-premium .create-app-btn-premium {
+  background: var(--btn-primary);
+  color: #ffffff;
+  border: none;
+}
+
+body.light-theme #home-section .projects-section-premium .create-app-btn-premium:hover {
+  background: var(--accent-hover);
+}
+
+/* Sidebar adjustments for light theme: mejor contraste para los enlaces (Inicio, Apps, Publicadas, Uso, Ajustes) */
+body.light-theme .sidebar {
+  color: var(--menu-text);
+  background: var(--sidebar-bg);
+  border-right: var(--sidebar-border);
+}
+
+body.light-theme .sidebar .nav-item {
+  color: var(--menu-text);
+  opacity: 1;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+body.light-theme .sidebar .nav-item svg {
+  stroke: var(--menu-icon);
+}
+
+body.light-theme .sidebar .nav-item:hover,
+body.light-theme .sidebar .nav-item.active {
+  background: var(--menu-hover-bg);
+  color: var(--menu-text);
+}
+
+body.light-theme .sidebar .sidebar-footer .plan-title,
+body.light-theme .sidebar .sidebar-footer .stat-label,
+body.light-theme .sidebar .sidebar-footer .stat-value {
+  color: var(--menu-text);
+}
+
+
+
+
 .app-type-compact svg {
   opacity: 0.7;
   color: #60a5fa;

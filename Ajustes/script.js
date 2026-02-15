@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (planTitleEl) {
           // Mostrar el nombre tal cual viene o con sufijo "Plan" para Normal
-          if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Starter Plan' : (plan + ' Plan' || 'Starter Plan');
+            if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Plan Inicial' : `Plan ${plan || 'Normal'}`;
           else planTitleEl.textContent = plan + ' Plan';
         }
 
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
         // Separar etiqueta (stat-label) del valor para evitar duplicados
-        if (appsCountEl) appsCountEl.textContent = `${createdCount}/${planLimits} created`;
+        if (appsCountEl) appsCountEl.textContent = `${createdCount}/${planLimits} creadas`;
         try {
           const appsLabelEl = appsCountEl ? appsCountEl.parentElement.querySelector('.stat-label') : null;
           if (appsLabelEl) appsLabelEl.textContent = appsLabel;
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let percent = 0;
         if (planLimits > 0) percent = Math.round((createdCount / planLimits) * 100);
         if (percent > 100) percent = 100;
-        if (usageEl) usageEl.textContent = `${percent}% used`;
+        if (usageEl) usageEl.textContent = `${percent}% usado`;
 
         // Ajustar boton Upgrade: pequeño si Premium, oculto si Pro
         if (upgradeBtn) {

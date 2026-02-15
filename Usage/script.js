@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Actualizar sidebar
         if (userPlanTitleEl) {
-          if (planKey === 'Normal') userPlanTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Starter Plan' : (plan + ' Plan' || 'Starter Plan');
-          else userPlanTitleEl.textContent = plan + ' Plan';
+          if (planKey === 'Normal') userPlanTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Plan Inicial' : `Plan ${plan || 'Normal'}`;
+          else userPlanTitleEl.textContent = `Plan ${plan}`;
         }
 
         // Aplicar clase global según plan

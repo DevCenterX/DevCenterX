@@ -300,7 +300,7 @@
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
       </svg>
-      Log out
+      Cerrar sesión
     </div>
   </div>
 
@@ -378,21 +378,21 @@
           <polyline points="16 17 21 12 16 7"/>
           <line x1="21" y1="12" x2="9" y2="12"/>
         </svg>
-        Log out
+        Cerrar sesión
       </div>
     </div>
 
     <button class="create-btn" id="mainCreateBtn">
-      <span>+</span> Create App
+      <span>+</span> Crear App
     </button>
 
     <nav class="nav-menu">
-      <a href="#" class="nav-item active" data-section="home" data-tooltip="Home">
+      <a href="#" class="nav-item active" data-section="home" data-tooltip="Inicio">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
-        Home
+        Inicio
       </a>
       <a href="#" class="nav-item" data-section="apps" data-tooltip="Apps">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -429,21 +429,21 @@
     <div class="sidebar-footer">
       <div class="user-section">
         <div class="plan-info">
-          <div class="plan-title" id="userPlanTitle">Starter Plan</div>
+          <div class="plan-title" id="userPlanTitle">Plan Inicial</div>
           <div class="plan-stats">
             <div class="stat">
               <span class="stat-label">Free Apps</span>
-              <span class="stat-value" id="userAppsCount">0/10 created</span>
+              <span class="stat-value" id="userAppsCount">0/10 creadas</span>
             </div>
             <div class="stat">
               <span class="stat-label">Agent Usage</span>
-              <span class="stat-value" id="userAgentUsage">0% used</span>
+              <span class="stat-value" id="userAgentUsage">0% usado</span>
             </div>
           </div>
         </div>
-        <button class="upgrade-btn" id="upgradeAgentBtn">
-          <span>+</span> Upgrade Agent
-        </button>
+          <button class="upgrade-btn" id="upgradeAgentBtn">
+            <span>+</span> Mejorar Agente
+          </button>
       </div>
     </div>
   </aside>
@@ -544,7 +544,7 @@
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            <span>Create App</span>
+            <span>Crear App</span>
           </button>
         </div>
         
@@ -1627,7 +1627,7 @@
           // Usuario logueado: mostrar mensaje normal
           if (emptyStateTitle) emptyStateTitle.textContent = 'No tienes apps todavía';
           if (emptyStateDescription) emptyStateDescription.textContent = 'Crea tu primera app para empezar';
-          if (createFirstAppBtnText) createFirstAppBtnText.textContent = 'Create App';
+          if (createFirstAppBtnText) createFirstAppBtnText.textContent = 'Crear App';
         } else {
           // Usuario NO logueado: mostrar mensaje de login
           if (emptyStateTitle) emptyStateTitle.textContent = 'Inicia sesión para empezar a crear';

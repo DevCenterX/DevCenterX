@@ -2,6 +2,21 @@
 // LANDING PAGE JAVASCRIPT
 // ============================================
 
+// Listen for theme-applied events from inline script (for debugging)
+window.addEventListener('devcenter:theme-applied', (e) => {
+  try{
+    console.log('[agent.js] devcenter:theme-applied event received, isLight=', e?.detail?.isLight);
+  }catch(err){}
+});
+
+// Also log detected theme on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  try{
+    const isLight = !!(document.documentElement && document.documentElement.classList.contains('light-theme')) || !!(document.body && document.body.classList.contains('light-theme'));
+    console.log('[agent.js] DOMContentLoaded - light-theme present=', isLight);
+  }catch(e){}
+});
+
 // Prompt Data for Animation
 const promptData = [
   {

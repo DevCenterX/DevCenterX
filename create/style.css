@@ -9,6 +9,127 @@
   box-sizing: border-box;
 }
 
+/* Light-theme overrides for device-preferred light mode
+   This block enforces readable light colors across all auth components. */
+html.light-theme, body.light-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f7fb;
+  --text-primary: #0b1220;
+  --text-secondary: #55606a;
+  --accent: #0366d6;
+  --accent-hover: #024ea8;
+  --border: rgba(11,18,32,0.06);
+  --panel-bg: #ffffff;
+  --card-bg: #ffffff;
+  --muted: #6b7280;
+  --shadow: 0 6px 18px rgba(11,18,32,0.06);
+}
+
+body.light-theme, html.light-theme {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Split auth layout */
+body.light-theme .split-auth-page { background: var(--bg-secondary); }
+body.light-theme .split-auth-left .split-auth-content {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+body.light-theme .split-auth-right {
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%);
+}
+body.light-theme .split-auth-brand { color: var(--text-primary); }
+
+/* Typography and links */
+body.light-theme h1, body.light-theme h2, body.light-theme h3 { color: var(--text-primary); }
+body.light-theme p, body.light-theme label, body.light-theme .split-auth-terms { color: var(--text-secondary); }
+body.light-theme a { color: var(--accent); text-decoration: none; }
+body.light-theme a:hover { text-decoration: underline; }
+
+/* Buttons */
+body.light-theme .split-submit-btn {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 18px rgba(3,102,214,0.12);
+}
+body.light-theme .split-submit-btn:hover { background: var(--accent-hover); }
+
+body.light-theme .social-auth-btn {
+  background: #fff;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+body.light-theme .social-auth-btn svg { opacity: 0.95; }
+
+/* Form inputs */
+body.light-theme input[type="text"],
+body.light-theme input[type="email"],
+body.light-theme input[type="password"],
+body.light-theme .split-form-group input {
+  background: #fff;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+body.light-theme .password-input-wrapper { background: transparent; }
+
+/* Divider and minor UI */
+body.light-theme .split-auth-divider span { background: #fff; color: var(--muted); }
+body.light-theme .split-auth-divider { color: var(--muted); }
+
+/* Make sure SVG strokes/icons appear dark in light mode */
+body.light-theme svg { stroke: currentColor; fill: none; color: var(--text-primary); }
+body.light-theme .brand-icon-svg, body.light-theme .split-auth-logo-svg { color: var(--accent); }
+
+/* Fallback: force background and text for any remaining panels */
+body.light-theme [class*="panel"], body.light-theme [class*="card"], body.light-theme .panel, body.light-theme .card {
+  background: #fff !important; color: var(--text-primary) !important; border-color: var(--border) !important;
+}
+
+/* Forceful catch-all overrides to ensure light theme applies over legacy dark rules */
+html.light-theme, html.light-theme body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme * {
+  background-color: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  border-color: var(--border) !important;
+}
+
+html.light-theme .split-auth-left .split-auth-content,
+html.light-theme .split-auth-right,
+html.light-theme .split-auth-page {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light-theme input,
+html.light-theme textarea,
+html.light-theme select,
+html.light-theme button {
+  background: #fff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+html.light-theme svg, html.light-theme svg * {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+
+
+
 :root {
   /* Colors */
   --bg-primary: #0e1525;

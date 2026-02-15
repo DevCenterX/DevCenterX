@@ -406,7 +406,287 @@ body {
   right: -60px;
   top: 50%;
   transform: translateY(-30%) rotate(4deg);
+
 }
+
+/* Light theme overrides for the landing page (scoped to .light-theme on html/body) */
+html.light-theme, body.light-theme {
+  --bg-primary: #f6f8fb;
+  --bg-secondary: #ffffff;
+  --text-primary: #0b1220;
+  --text-secondary: #475569;
+  --accent: #0066ff;
+  --accent-hover: #004bb5;
+  --border: rgba(11,18,32,0.06);
+}
+
+html.light-theme body, body.light-theme body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Header / nav adjustments */
+html.light-theme .landing-header,
+body.light-theme .landing-header {
+  border-bottom-color: rgba(11,18,32,0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+html.light-theme .landing-nav-link,
+body.light-theme .landing-nav-link {
+  color: var(--text-secondary);
+}
+
+html.light-theme .landing-nav-link:hover,
+body.light-theme .landing-nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(6,78,181,0.04);
+}
+
+/* Hero text in light theme */
+html.light-theme .landing-hero-title,
+body.light-theme .landing-hero-title {
+  color: var(--text-primary);
+}
+
+html.light-theme .landing-hero-subtitle,
+body.light-theme .landing-hero-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Prompt box and tabs */
+html.light-theme .landing-prompt-box,
+body.light-theme .landing-prompt-box {
+  background: #ffffff;
+  border-color: rgba(11,18,32,0.06);
+  color: var(--text-primary);
+}
+
+html.light-theme .prompt-tab,
+body.light-theme .prompt-tab {
+  background: transparent;
+  border-color: rgba(11,18,32,0.06);
+  color: var(--text-secondary);
+}
+
+html.light-theme .prompt-tab.active,
+body.light-theme .prompt-tab.active {
+  background: rgba(0,102,255,0.08);
+  color: var(--text-primary);
+}
+
+/* CTA button contrast */
+html.light-theme .landing-signup-btn,
+body.light-theme .landing-signup-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* App images subtle background for light */
+html.light-theme .app-image,
+body.light-theme .app-image {
+  background: linear-gradient(145deg, #f7f9fc, #ffffff);
+  border: 1px solid rgba(11,18,32,0.04);
+  box-shadow: 0 8px 20px rgba(11,18,32,0.06);
+}
+
+/* Footer in light */
+html.light-theme .landing-footer,
+body.light-theme .landing-footer {
+  background: #ffffff;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(11,18,32,0.06);
+}
+
+
+/* Additional light-theme overrides to fix remaining dark elements */
+html.light-theme .landing-signup-btn,
+body.light-theme .landing-signup-btn,
+html.light-theme .landing-login-link,
+body.light-theme .landing-login-link,
+html.light-theme .landing-contact-link,
+body.light-theme .landing-contact-link {
+  color: #0b1220;
+  background: transparent;
+}
+
+html.light-theme .landing-login-link:hover,
+body.light-theme .landing-login-link:hover,
+html.light-theme .landing-contact-link:hover,
+body.light-theme .landing-contact-link:hover {
+  background: rgba(6,78,181,0.04);
+}
+
+html.light-theme .landing-cta-button,
+body.light-theme .landing-cta-button {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(6,78,181,0.12);
+}
+
+html.light-theme .landing-prompt-box {
+  color: var(--text-primary);
+}
+
+html.light-theme .prompt-text,
+body.light-theme .prompt-text,
+html.light-theme .prompt-label,
+body.light-theme .prompt-label {
+  color: var(--text-secondary);
+}
+
+html.light-theme .prompt-highlight,
+body.light-theme .prompt-highlight {
+  color: var(--text-primary);
+  background: rgba(6,78,181,0.06);
+}
+
+html.light-theme .feature-card,
+body.light-theme .feature-card {
+  background: #ffffff;
+  border: 1px solid rgba(11,18,32,0.04);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(11,18,32,0.04);
+}
+
+html.light-theme .feature-card h3,
+body.light-theme .feature-card h3 {
+  color: var(--text-primary);
+}
+
+html.light-theme .feature-card p,
+body.light-theme .feature-card p {
+  color: var(--text-secondary);
+}
+
+html.light-theme .final-cta-primary,
+body.light-theme .final-cta-primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+html.light-theme .mobile-menu-btn svg,
+body.light-theme .mobile-menu-btn svg,
+html.light-theme .landing-logo-svg,
+body.light-theme .landing-logo-svg {
+  filter: none;
+  color: var(--accent);
+}
+
+/* Ensure footer text is readable */
+html.light-theme .footer-description,
+body.light-theme .footer-description,
+html.light-theme .footer-bottom p,
+body.light-theme .footer-bottom p {
+  color: var(--text-secondary);
+}
+
+/* Make CTA and small buttons look consistent in light */
+html.light-theme .create-btn,
+body.light-theme .create-btn,
+html.light-theme .upgrade-btn,
+body.light-theme .upgrade-btn {
+  background: #f3f6fb;
+  color: var(--text-primary);
+  border: 1px solid rgba(11,18,32,0.04);
+}
+
+/* Final comprehensive light-theme clean-up for any remaining dark elements */
+html.light-theme .replit-landing,
+body.light-theme .replit-landing {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 50%, #ffffff 100%);
+}
+
+html.light-theme .landing-header,
+body.light-theme .landing-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(11,18,32,0.04);
+}
+
+html.light-theme .landing-nav-link,
+body.light-theme .landing-nav-link {
+  color: var(--text-secondary);
+}
+
+html.light-theme .landing-nav-link svg,
+body.light-theme .landing-nav-link svg {
+  opacity: 0.9;
+  color: var(--text-secondary);
+}
+
+html.light-theme .landing-prompt-box,
+body.light-theme .landing-prompt-box {
+  background: #ffffff;
+  border: 1px solid rgba(11,18,32,0.04);
+  box-shadow: 0 8px 24px rgba(11,18,32,0.04);
+}
+
+html.light-theme .landing-prompt-tabs .prompt-tab,
+body.light-theme .landing-prompt-tabs .prompt-tab {
+  background: #f6f8fb;
+  border: 1px solid rgba(11,18,32,0.03);
+  color: var(--text-secondary);
+}
+
+html.light-theme .landing-prompt-tabs .prompt-tab.active,
+body.light-theme .landing-prompt-tabs .prompt-tab.active {
+  background: #e9f3ff;
+  color: var(--text-primary);
+  border-color: rgba(6,78,181,0.12);
+}
+
+html.light-theme .home-hero .greeting-centered h1,
+body.light-theme .home-hero .greeting-centered h1,
+html.light-theme .landing-hero-title,
+body.light-theme .landing-hero-title {
+  color: var(--text-primary);
+}
+
+html.light-theme .landing-hero-subtitle,
+body.light-theme .landing-hero-subtitle,
+html.light-theme .prompt-text,
+body.light-theme .prompt-text {
+  color: var(--text-secondary);
+}
+
+html.light-theme .app-image .app-preview-img,
+body.light-theme .app-image .app-preview-img {
+  filter: none;
+  opacity: 1;
+}
+
+html.light-theme .feature-card,
+body.light-theme .feature-card {
+  background: #ffffff;
+  border: 1px solid rgba(11,18,32,0.04);
+}
+
+html.light-theme .feature-card .feature-tag,
+body.light-theme .feature-card .feature-tag {
+  background: rgba(0,102,255,0.08);
+  color: var(--text-primary);
+}
+
+html.light-theme .landing-footer,
+body.light-theme .landing-footer {
+  background: #ffffff;
+  color: var(--text-secondary);
+}
+
+/* Buttons, small controls */
+html.light-theme button,
+body.light-theme button,
+html.light-theme a.landing-login-link,
+body.light-theme a.landing-login-link {
+  color: var(--text-primary);
+}
+
+/* Neutralize any remaining translucent white shadows used in dark mode */
+html.light-theme * {
+  --shadow-white: rgba(11,18,32,0.06);
+}
+
+
 
 /* CTA Button */
 .landing-cta-button {
@@ -477,6 +757,25 @@ body {
 .trusted-logo span {
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Light-theme: make trusted logos and labels visible */
+html.light-theme .trusted-logo,
+body.light-theme .trusted-logo {
+  color: var(--text-secondary);
+  opacity: 0.95;
+}
+
+html.light-theme .trusted-logo svg,
+body.light-theme .trusted-logo svg {
+  fill: currentColor;
+  color: var(--text-secondary);
+  opacity: 0.95;
+}
+
+html.light-theme .trusted-text,
+body.light-theme .trusted-text {
+  color: var(--text-secondary);
 }
 
 /* Features Section */

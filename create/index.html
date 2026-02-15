@@ -9,6 +9,22 @@
   <style>
     #createPage { display: flex !important; }
   </style>
+  <script>
+    (function(){
+      try{
+        const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        const applyTheme = (isLight) => {
+          const root = document.documentElement;
+          if (isLight) { root.classList.add('light-theme'); root.classList.remove('dark-theme'); }
+          else { root.classList.remove('light-theme'); root.classList.add('dark-theme'); }
+          document.dispatchEvent(new CustomEvent('devcenter:theme-applied',{detail:{light:isLight}}));
+          console.log('[create] prefers-light=', isLight);
+        };
+        if (mq) { applyTheme(mq.matches); if (mq.addEventListener) mq.addEventListener('change', e => applyTheme(e.matches)); else mq.addListener && mq.addListener(e => applyTheme(e.matches)); }
+        else { console.log('[create] prefers-color-scheme not supported'); }
+      } catch (err) { console.error('[create] theme detect error', err); }
+    })();
+  </script>
 </head>
 <body>
   <!-- ==================== CREATE ACCOUNT PAGE - Split Screen Design ==================== -->

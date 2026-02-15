@@ -9,6 +9,52 @@
   <title>DevCenterX Agent - Landing Page</title>
   <link rel="shortcut icon" href="Images/Agent.webp" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function(){
+      try{
+        const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        const apply = (isLight) => {
+          try{
+            if (isLight) {
+              if (document.documentElement) document.documentElement.classList.add('light-theme');
+              if (document.body) document.body.classList.add('light-theme');
+            } else {
+              if (document.documentElement) document.documentElement.classList.remove('light-theme');
+              if (document.body) document.body.classList.remove('light-theme');
+            }
+          }catch(e){}
+        };
+
+        if (mq) {
+          console.log('[agent.html] matchMedia supported, prefers-light=', mq.matches);
+          apply(mq.matches);
+          // Dispatch event so other scripts can react
+          try{ window.dispatchEvent(new CustomEvent('devcenter:theme-applied', { detail: { isLight: mq.matches } })); }catch(e){}
+
+          // Listen for changes to system theme and update live
+          const onChange = (e) => {
+            console.log('[agent.html] prefers-color-scheme changed, isLight=', e.matches);
+            apply(e.matches);
+            try{ window.dispatchEvent(new CustomEvent('devcenter:theme-applied', { detail: { isLight: e.matches } })); }catch(e){}
+          };
+          if (mq.addEventListener) mq.addEventListener('change', onChange);
+          else if (mq.addListener) mq.addListener(onChange);
+        } else {
+          // Fallback: try matchMedia again on load
+          document.addEventListener('DOMContentLoaded', () => {
+            try{
+              const pm = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+              console.log('[agent.html] fallback matchMedia on DOMContentLoaded, prefers-light=', pm && pm.matches);
+              if (pm) {
+                apply(pm.matches);
+                try{ window.dispatchEvent(new CustomEvent('devcenter:theme-applied', { detail: { isLight: pm.matches } })); }catch(e){}
+              }
+            }catch(e){}
+          });
+        }
+      }catch(e){/* ignore */}
+    })();
+  </script>
   <link rel="stylesheet" href="agent.css">
 </head>
 <body>
@@ -87,22 +133,7 @@
           </div>
         </div>
 
-        <!-- Background App Images -->
-        <div class="landing-app-images">
-          <div class="app-image app-image-left-1">
-            <img src="Images/DevCenter.jpg" alt="App Preview" class="app-preview-img">
-          </div>
-          <div class="app-image app-image-left-2">
-            <img src="Images/DevCenterT.jpg" alt="App Preview" class="app-preview-img">
-          </div>
-          <div class="app-image app-image-right-1">
-            <img src="Images/DevCenter.jpg" alt="App Preview" class="app-preview-img">
-          </div>
-          <div class="app-image app-image-right-2">
-            <img src="Images/DevCenterT.jpg" alt="App Preview" class="app-preview-img">
-          </div>
-        </div>
-      </div>
+       
 
       <!-- CTA Button -->
       <a href="/create" class="landing-cta-button" id="landingStartBtn">
