@@ -407,3 +407,24 @@
     text-align: center;
   }
 }
+
+/* Upgrade button styles inside sidebar footer */
+.upgrade-btn {
+  background: var(--btn-primary);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+.upgrade-btn.small {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+}
+.upgrade-btn.hidden {
+  display: none !important;
+}

@@ -41,6 +41,19 @@ firestore (devcenter-agent-48c86)
 
 
 
+
+ ---------------------- Extra ----------------------
+
+Planes existentes: Normal, Premium, Pro
+Limite de apps segun plan: Normal (10 apps), Premium (15 apps), Pro (30 apps)
+
+
+
+
+
+
+
+
  ---------------------- Cuenta nueva  ----------------------
 
 

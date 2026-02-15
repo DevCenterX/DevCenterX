@@ -181,6 +181,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log('✅ Perfil cargado desde Firestore:', { username, plan, limit });
 
+      // --- Cargar proyectos del usuario para calcular apps creadas ---
+      try {
+        const proyectosRef = doc(db, 'proyectos', uid);
+        const proyectosSnap = await getDoc(proyectosRef);
+        let createdCount = 0;
+        if (proyectosSnap.exists()) {
+          const pData = proyectosSnap.data();
+          if (Array.isArray(pData.proyectos)) createdCount = pData.proyectos.length;
+        }
+
+        // Normalizar nombre de plan y límites
+        function normalizePlan(p) {
+          const s = (p || '').toString().toLowerCase();
+          if (s.includes('pro')) return 'Pro';
+          if (s.includes('premium')) return 'Premium';
+          return 'Normal';
+        }
+
+        const planKey = normalizePlan(plan);
+        const limits = { 'Normal': 10, 'Premium': 15, 'Pro': 30 };
+        const planLimits = limits[planKey] || 10;
+
+        // Etiqueta para apps según plan
+        const appsLabelMap = { 'Normal': 'Free Apps', 'Premium': 'Premium Apps', 'Pro': 'Pro Apps' };
+        const appsLabel = appsLabelMap[planKey] || 'Free Apps';
+
+        // Actualizar sidebar (IDs: userPlanTitle, userAppsCount, userAgentUsage)
+        const planTitleEl = document.getElementById('userPlanTitle');
+        const appsCountEl = document.getElementById('userAppsCount');
+        const usageEl = document.getElementById('userAgentUsage');
+        const upgradeBtn = document.getElementById('upgradeAgentBtn');
+
+        if (planTitleEl) {
+          // Mostrar el nombre tal cual viene o con sufijo "Plan" para Normal
+          if (planKey === 'Normal') planTitleEl.textContent = (plan && /starter/i.test(plan)) ? 'Starter Plan' : (plan + ' Plan' || 'Starter Plan');
+          else planTitleEl.textContent = plan + ' Plan';
+        }
+
+        if (appsCountEl) appsCountEl.textContent = `${appsLabel} ${createdCount}/${planLimits} created`;
+
+        // Calcular porcentaje de uso relativo al límite del plan
+        let percent = 0;
+        if (planLimits > 0) percent = Math.round((createdCount / planLimits) * 100);
+        if (percent > 100) percent = 100;
+        if (usageEl) usageEl.textContent = `${percent}% used`;
+
+        // Ajustar boton Upgrade: pequeño si Premium, oculto si Pro
+        if (upgradeBtn) {
+          upgradeBtn.classList.remove('small', 'hidden');
+          if (planKey === 'Pro') {
+            upgradeBtn.classList.add('hidden');
+          } else if (planKey === 'Premium') {
+            upgradeBtn.classList.add('small');
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo cargar proyectos para conteo:', e);
+      }
+
       // Ocultar spinner
       if (spinnerEl) spinnerEl.style.display = 'none';
     } catch (e) {
