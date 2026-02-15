@@ -219,7 +219,24 @@ document.addEventListener('DOMContentLoaded', () => {
           else planTitleEl.textContent = plan + ' Plan';
         }
 
-        if (appsCountEl) appsCountEl.textContent = `${appsLabel} ${createdCount}/${planLimits} created`;
+          // Aplicar clase global según plan para ajustar estilos (plan-normal, plan-premium, plan-pro)
+          try {
+            document.body.classList.remove('plan-normal', 'plan-premium', 'plan-pro');
+            if (planKey === 'Pro') document.body.classList.add('plan-pro');
+            else if (planKey === 'Premium') document.body.classList.add('plan-premium');
+            else document.body.classList.add('plan-normal');
+          } catch (e) {
+            // ignore
+          }
+
+        // Separar etiqueta (stat-label) del valor para evitar duplicados
+        if (appsCountEl) appsCountEl.textContent = `${createdCount}/${planLimits} created`;
+        try {
+          const appsLabelEl = appsCountEl ? appsCountEl.parentElement.querySelector('.stat-label') : null;
+          if (appsLabelEl) appsLabelEl.textContent = appsLabel;
+        } catch (e) {
+          // no hacer nada si la estructura DOM es diferente
+        }
 
         // Calcular porcentaje de uso relativo al límite del plan
         let percent = 0;
@@ -252,4 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initFirebaseAndLoadUser();
+
+  // Menu logout: navegar a agent.html al hacer clic
+  const menuLogout = document.getElementById('menuLogout');
+  if (menuLogout) {
+    menuLogout.addEventListener('click', () => {
+      window.location.href = '../agent.html';
+    });
+  }
 });

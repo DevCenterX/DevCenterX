@@ -428,3 +428,40 @@
 .upgrade-btn.hidden {
   display: none !important;
 }
+
+/* Plan-specific UI changes */
+body.plan-pro .sidebar-footer .user-section {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.06));
+  padding: 1rem;
+  border-radius: 10px;
+}
+body.plan-pro .plan-title {
+  font-weight: 700;
+  color: var(--btn-primary);
+}
+body.plan-pro .user-profile-box {
+  background: linear-gradient(90deg, rgba(0,166,255,0.06), rgba(37,99,235,0.06));
+  box-shadow: 0 8px 24px rgba(0,102,255,0.12);
+}
+body.plan-pro .user-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+}
+
+body.plan-premium .sidebar-footer .user-section {
+  background: rgba(37,99,235,0.02);
+  padding: 0.6rem;
+  border-radius: 8px;
+}
+body.plan-premium .plan-title {
+  font-weight: 700;
+  color: #00a6ff;
+  font-size: 0.98rem;
+}
+body.plan-premium .user-avatar {
+  width: 76px;
+  height: 76px;
+}
+
+/* keep normal as default, no extra visual changes */
