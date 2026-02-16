@@ -1,6 +1,6 @@
 {
-  "buildCommand": "echo 'Build complete'",
-  "framework": "html",
+  "buildCommand": "echo 'Static HTML project'",
+  "outputDirectory": ".",
   "headers": [
     {
       "source": "/create/(.*)",
