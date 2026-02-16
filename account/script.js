@@ -6,110 +6,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     const avatarGradients = {
         'color-1': 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
         'color-2': 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-        'color-3': 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+        'color-3': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
         'color-4': 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
         'color-5': 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        'color-6': 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+        'color-6': 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
         'color-7': 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
         'color-8': 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
     };
 
-    // Get Firebase instances
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Splash screen timer
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splashScreen');
+            if (splash) splash.style.display = 'none';
+        }, 2400);
+    });
+
+    // Initialize app
     async function init() {
-        try {
-            // Configurar listener para cambios de autenticación
-            auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    showNotLoggedIn();
-                    return;
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                showNotLoggedIn();
+                return;
+            }
+
+            try {
+                const userDocSnap = await db.collection('users').doc(user.uid).get();
+
+                if (!userDocSnap.exists) {
+                    throw new Error('Usuario no encontrado');
                 }
 
-                try {
-                    // Cargar datos del usuario desde Firestore
-                    const userDocSnap = await db.collection('users').doc(user.uid).get();
+                currentUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    ...userDocSnap.data()
+                };
 
-                    if (!userDocSnap.exists) {
-                        throw new Error('Usuario no encontrado en la base de datos');
-                    }
-
-                    currentUser = {
-                        uid: user.uid,
-                        email: user.email,
-                        ...userDocSnap.data()
-                    };
-
-                    displayProfile(currentUser);
-                    await loadUserStats(user.uid);
-
-                } catch (error) {
-                    console.error('Error cargando perfil:', error);
-                    showMessage('Error al cargar el perfil: ' + error.message, 'error');
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('profileContent').style.display = 'block';
-                }
-            });
-
-        } catch (error) {
-            console.error('Error en inicialización:', error);
-            showNotLoggedIn();
-        }
+                displayProfile(currentUser);
+                await loadUserStats(user.uid);
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                showMessage('Error al cargar el perfil', 'error');
+                showNotLoggedIn();
+            }
+        });
     }
 
     function showNotLoggedIn() {
-        const loadingEl = document.getElementById('loading');
-        const notLoggedInEl = document.getElementById('notLoggedIn');
-        
-        // Smooth fade out loading
-        loadingEl.style.opacity = '0';
-        loadingEl.style.visibility = 'hidden';
-        
-        // Smooth fade in not logged in
-        setTimeout(() => {
-            notLoggedInEl.style.display = 'block';
-            requestAnimationFrame(() => {
-                notLoggedInEl.style.opacity = '1';
-                notLoggedInEl.style.visibility = 'visible';
-            });
-        }, 200);
+        const loadingState = document.getElementById('loadingState');
+        const notLoggedInState = document.getElementById('notLoggedInState');
+        const profileContent = document.getElementById('profileContent');
+
+        loadingState.style.display = 'none';
+        profileContent.style.display = 'none';
+        notLoggedInState.style.display = 'block';
     }
 
     function displayProfile(userData) {
-        const loadingEl = document.getElementById('loading');
-        const profileContentEl = document.getElementById('profileContent');
-        
-        // Smooth fade out loading
-        loadingEl.style.opacity = '0';
-        loadingEl.style.visibility = 'hidden';
-        
-        // Smooth fade in profile content after a tiny delay
-        setTimeout(() => {
-            profileContentEl.style.display = 'block';
-            requestAnimationFrame(() => {
-                profileContentEl.style.opacity = '1';
-                profileContentEl.style.visibility = 'visible';
-            });
-        }, 200);
+        const loadingState = document.getElementById('loadingState');
+        const profileContent = document.getElementById('profileContent');
+
+        loadingState.style.display = 'none';
+        profileContent.style.display = 'block';
 
         const username = userData.username || 'Usuario';
         const email = userData.email || '';
         const avatar = userData.avatar || 'color-1';
         const initial = username[0].toUpperCase();
 
-        // Actualizar campos del formulario
+        // Update form fields
         document.getElementById('usuario').value = username;
         document.getElementById('email').value = email;
         document.getElementById('accountId').textContent = userData.uid || '-';
         document.getElementById('usernameDisplay').textContent = username;
         document.getElementById('emailDisplay').textContent = email;
 
-        // Mostrar fecha de creación
+        // Update created date
         if (userData.createdAt) {
             try {
                 let timestamp = userData.createdAt;
-                // Si es un timestamp de Firestore
                 if (timestamp.toDate && typeof timestamp.toDate === 'function') {
                     timestamp = timestamp.toDate();
                 } else if (typeof timestamp === 'string') {
@@ -126,40 +105,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Manejar visualización del avatar
+        // Handle avatar display
         if (userData.avatar === 'custom' && userData.avatarUrl && userData.avatarUrl.trim() !== '') {
             customAvatarUrl = userData.avatarUrl;
-            showCustomAvatar(customAvatarUrl, initial);
-            document.getElementById('customAvatarImg').style.display = 'block';
-            document.getElementById('customAvatarImg').src = customAvatarUrl;
-            document.getElementById('avatarInitial').style.display = 'none';
+            showCustomAvatar(customAvatarUrl);
+            setAvatarView('custom');
             selectedAvatar = 'custom';
         } else if (avatarGradients[avatar]) {
             selectedAvatar = avatar;
-            document.getElementById('userAvatar').style.background = avatarGradients[avatar];
-            document.getElementById('avatarInitial').textContent = initial;
-            document.getElementById('customAvatarImg').style.display = 'none';
-            document.getElementById('avatarInitial').style.display = 'block';
+            setAvatarView(avatar, initial);
         } else {
-            document.getElementById('avatarInitial').textContent = initial;
-            document.getElementById('customAvatarImg').style.display = 'none';
-            document.getElementById('avatarInitial').style.display = 'block';
+            setAvatarView('color-1', initial);
         }
 
-        // Actualizar opciones de avatar
-        document.querySelectorAll('.avatar-option:not(.custom-avatar-option)').forEach(opt => {
-            opt.textContent = initial;
-            opt.classList.remove('selected');
-            if (opt.classList.contains(selectedAvatar)) {
-                opt.classList.add('selected');
-            }
-        });
+        // Update avatar options
+        updateAvatarOptions(selectedAvatar, initial);
 
-        if (selectedAvatar === 'custom') {
-            document.getElementById('customAvatarOption').classList.add('selected');
-        }
-
-        // Mostrar plan del usuario
+        // Display user plan
         const planDisplay = userData.plan || 'Normal';
         const planElements = document.querySelectorAll('.stat-value');
         if (planElements.length > 1) {
@@ -167,7 +129,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function showCustomAvatar(url, initial) {
+    function setAvatarView(avatarType, initial = '') {
+        const avatar = document.getElementById('userAvatar');
+        const customImg = document.getElementById('customAvatarImg');
+        const avatarInitial = document.getElementById('avatarInitial');
+
+        if (avatarType === 'custom' && customAvatarUrl) {
+            avatar.style.background = 'transparent';
+            customImg.src = customAvatarUrl;
+            customImg.style.display = 'block';
+            avatarInitial.style.display = 'none';
+        } else if (avatarGradients[avatarType]) {
+            avatar.style.background = avatarGradients[avatarType];
+            customImg.style.display = 'none';
+            avatarInitial.textContent = initial || '?';
+            avatarInitial.style.display = 'block';
+        }
+    }
+
+    function updateAvatarOptions(selected, initial) {
+        document.querySelectorAll('.avatar-option[data-color]').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+
+        const selectedOpt = document.querySelector(`[data-color="${selected}"]`);
+        if (selectedOpt) {
+            selectedOpt.classList.add('selected');
+        }
+
+        if (selected === 'custom' && document.getElementById('customAvatarOption')) {
+            document.getElementById('customAvatarOption').classList.add('selected');
+        }
+    }
+
+    function showCustomAvatar(url) {
         const customOption = document.getElementById('customAvatarOption');
         const customImg = document.getElementById('customOptionImg');
         
@@ -179,22 +174,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUserStats(uid) {
         try {
-            // Cargar cantidad de proyectos desde la colección 'proyectos'
             const userProjectsSnap = await db.collection('proyectos').doc(uid).get();
+            const projectsArray = userProjectsSnap.exists && Array.isArray(userProjectsSnap.data()?.proyectos) 
+                ? userProjectsSnap.data().proyectos 
+                : [];
+            
+            document.getElementById('projectsCount').textContent = projectsArray.length;
 
-            if (userProjectsSnap.exists) {
-                const proyectosData = userProjectsSnap.data();
-                const projectsArray = Array.isArray(proyectosData.proyectos) ? proyectosData.proyectos : [];
-                document.getElementById('projectsCount').textContent = projectsArray.length;
-            } else {
-                document.getElementById('projectsCount').textContent = '0';
-            }
+            // Count applications if available
+            const appsCount = projectsArray.reduce((sum, p) => sum + (p.apps?.length || 0), 0);
+            document.getElementById('appsCount').textContent = appsCount;
         } catch (e) {
-            console.log('No se pudieron cargar estadísticas:', e);
+            console.log('Error loading stats:', e);
             document.getElementById('projectsCount').textContent = '0';
+            document.getElementById('appsCount').textContent = '0';
         }
     }
 
+    // Global functions
     window.toggleAvatarOptions = function() {
         const options = document.getElementById('avatarOptions');
         options.classList.toggle('active');
@@ -203,76 +200,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.selectAvatar = function(color) {
         selectedAvatar = color;
         
-        document.querySelectorAll('.avatar-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-
         if (color === 'custom' && customAvatarUrl) {
-            document.getElementById('customAvatarImg').style.display = 'block';
-            document.getElementById('customAvatarImg').src = customAvatarUrl;
-            document.getElementById('avatarInitial').style.display = 'none';
-            document.getElementById('userAvatar').style.background = 'var(--bg-tertiary)';
-            document.getElementById('customAvatarOption').classList.add('selected');
+            setAvatarView('custom');
         } else if (avatarGradients[color]) {
-            document.getElementById('customAvatarImg').style.display = 'none';
-            document.getElementById('avatarInitial').style.display = 'block';
-            document.getElementById('userAvatar').style.background = avatarGradients[color];
-            
-            document.querySelectorAll('.avatar-option').forEach(opt => {
-                if (opt.classList.contains(color)) {
-                    opt.classList.add('selected');
-                }
-            });
+            const initial = currentUser?.username?.[0]?.toUpperCase() || '?';
+            setAvatarView(color, initial);
         }
         
+        updateAvatarOptions(color);
         document.getElementById('avatarOptions').classList.remove('active');
     };
 
-    window.togglePassword = function() {
+    window.togglePasswordVisibility = function() {
         const input = document.getElementById('contrasena');
         const icon = document.getElementById('passwordIcon');
         
         if (input.type === 'password') {
             input.type = 'text';
-            icon.className = 'fas fa-eye-slash';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
         } else {
             input.type = 'password';
-            icon.className = 'fas fa-eye';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
         }
     };
 
-    function showMessage(text, type) {
-        const msgEl = document.getElementById('message');
-        const icon = type === 'success' 
-            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    // Show message utility
+    function showMessage(text, type = 'success') {
+        const container = document.getElementById('messageContainer');
         
-        msgEl.innerHTML = `<div class="message ${type}">${icon}<span>${text}</span></div>`;
-        setTimeout(() => msgEl.innerHTML = '', 5000);
+        const iconSvg = type === 'success' 
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+        
+        const msgEl = document.createElement('div');
+        msgEl.className = `message ${type}`;
+        msgEl.innerHTML = `${iconSvg}<span>${text}</span>`;
+        
+        container.innerHTML = '';
+        container.appendChild(msgEl);
+        
+        setTimeout(() => {
+            if (container.contains(msgEl)) {
+                container.removeChild(msgEl);
+            }
+        }, 4000);
     }
 
-    function showRedeemMessage(text, type) {
-        const msgEl = document.getElementById('redeemMessage');
-        const icon = type === 'success' 
-            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-        
-        msgEl.innerHTML = `<div class="message ${type}">${icon}<span>${text}</span></div>`;
-        setTimeout(() => msgEl.innerHTML = '', 5000);
-    }
-
+    // Redeem code
     window.redeemCode = async function() {
-        // Funcionalidad de canjeo en desarrollo
-        showRedeemMessage('Funcionalidad de canjeo en desarrollo', 'error');
+        const code = document.getElementById('redeemCode').value.trim();
+        
+        if (!code) {
+            showMessage('Ingresa un código válido', 'error');
+            return;
+        }
+
+        try {
+            // Validar formato del código
+            if (!/^[A-Z0-9-]+$/.test(code)) {
+                throw new Error('Formato de código inválido');
+            }
+
+            showMessage('Funcionalidad en desarrollo. Código: ' + code, 'success');
+            document.getElementById('redeemCode').value = '';
+        } catch (error) {
+            showMessage(error.message, 'error');
+        }
     };
 
+    // Form submission
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const btn = document.getElementById('saveBtn');
+        const btn = e.target.querySelector('button[type="submit"]');
         const newPassword = document.getElementById('contrasena').value;
         
         btn.disabled = true;
+        const originalContent = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
         try {
@@ -280,23 +286,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (newPassword.length < 6) {
                     throw new Error('La contraseña debe tener al menos 6 caracteres');
                 }
-                // Actualizar contraseña en Firebase Auth
                 await auth.currentUser.updatePassword(newPassword);
+                document.getElementById('contrasena').value = '';
             }
 
             showMessage('Cambios guardados correctamente', 'success');
-            document.getElementById('contrasena').value = '';
-
         } catch (error) {
             showMessage('Error: ' + error.message, 'error');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Cambios';
+            btn.innerHTML = originalContent;
         }
     });
 
+    // Logout handler
     window.handleLogout = function() {
-        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
             auth.signOut().then(() => {
                 localStorage.removeItem('devcenter_user_id');
                 localStorage.removeItem('devcenter_isLoggedIn');
@@ -308,7 +313,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    document.getElementById('redeemCode').addEventListener('keypress', function(e) {
+    // Allow Enter key on redeem input
+    document.getElementById('redeemCode')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             window.redeemCode();
