@@ -1,22 +1,21 @@
 // ============================================
-// LOGIN PAGE - Firebase Authentication (OPTIMIZED)
+// LOGIN PAGE - Firebase Authentication
 // ============================================
 
-console.log('[LOGIN] 🚀 Script loading started (ts: ' + Date.now() + ')');
+console.log('[LOGIN] 🚀 Script loading');
 
-// State variables - inline for IMMEDIATE initialization
+// ===== STATE VARIABLES =====
 let firebaseReady = false;
-let auth = null;
-let db = null;
 let uiElementsReady = false;
 let eventListenersReady = false;
 let pageFullyReady = false;
-let firebaseInitStartTime = Date.now();
-let initAttempts = 0;
+
+let auth = null;
+let db = null;
 let uiInitialized_script = false;
 let eventListenersAttached = false;
 
-console.log('[LOGIN] 📋 State variables initialized (ts: ' + Date.now() + ')');
+console.log('[LOGIN] 📋 State variables initialized');
 
 // NOTIFICATION SYSTEM - Initialize early
 const NotificationSystem = (() => {
