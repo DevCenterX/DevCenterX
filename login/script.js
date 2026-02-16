@@ -77,14 +77,7 @@ const NotificationSystem = (() => {
   };
 })();
 
-// Firebase state
-let firebaseReady = false;
-let auth = null;
-let db = null;
-let uiElementsReady = false;
-let eventListenersReady = false;
-let pageFullyReady = false;
-let firebaseInitStartTime = Date.now();
+// Already declared above - no redeclaration needed
 
 function checkPageReady() {
   const ready = firebaseReady && uiElementsReady && eventListenersReady;
@@ -245,9 +238,7 @@ function setButtonLoading(button, loading) {
 // UI Elements Setup
 // ============================================
 
-// Track if UI is initialized to prevent double initialization
-let uiInitialized_script = false;
-let eventListenersAttached = false;
+// Track if UI is initialized to prevent double initialization (already declared at top)
 
 function attachEventListeners() {
   if (eventListenersAttached) return; // Prevent double attachment
