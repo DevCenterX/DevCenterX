@@ -173,7 +173,13 @@ function setButtonLoading(button, loading) {
 // UI Elements Setup
 // ============================================
 
-function initializeUI() {
+// Track if UI is initialized to prevent double initialization
+let uiInitialized_script = false;
+let eventListenersAttached = false;
+
+function attachEventListeners() {
+  if (eventListenersAttached) return; // Prevent double attachment
+  eventListenersAttached = true;
   const emailBtn = document.querySelector('.email-auth-option');
   const form = document.querySelector('.split-auth-form');
   const googleBtn = document.querySelectorAll('.social-auth-btn')[0];
@@ -335,9 +341,42 @@ function initializeUI() {
   }
 }
 
+function initializeUI() {
+  if (uiInitialized_script) return;
+  uiInitialized_script = true;
+  
+  // Ensure all elements are in the DOM and visible
+  const emailBtn = document.querySelector('.email-auth-option');
+  const form = document.querySelector('.split-auth-form');
+  const googleBtn = document.querySelectorAll('.social-auth-btn')[0];
+  const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
+  
+  if (!emailBtn && !form && !googleBtn && !githubBtn) {
+    // Elements not ready yet, retry in 100ms
+    setTimeout(initializeUI, 100);
+    return;
+  }
+  
+  // Ensure buttons are clickable and visible
+  [emailBtn, googleBtn, githubBtn].forEach(btn => {
+    if (btn) {
+      btn.style.pointerEvents = 'auto';
+      btn.style.cursor = 'pointer';
+    }
+  });
+  
+  attachEventListeners();
+}
+
+// Make reinitializeUI globally accessible for splash screen
+window.reinitializeUI = initializeUI;
+
 // Wait for DOM to be ready and Firebase to load during splash
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeUI);
 } else {
   initializeUI();
 }
+
+// Force re-initialization after a safe delay to ensure Firebase is ready
+setTimeout(initializeUI, 1000);

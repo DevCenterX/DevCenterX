@@ -330,13 +330,30 @@
 
   <script>
     // Splash screen animation and content loading
+    let uiInitialized = false;
+    function showCreatePage() {
+      if (uiInitialized) return;
+      const splash = document.getElementById('splashScreen');
+      const createPage = document.getElementById('createPage');
+      if (splash) {
+        splash.classList.add('hidden');
+        splash.style.pointerEvents = 'none';
+      }
+      if (createPage) {
+        createPage.classList.remove('hidden-content');
+        createPage.style.pointerEvents = 'auto';
+      }
+      uiInitialized = true;
+      // Re-initialize UI after page becomes visible
+      if (window.reinitializeUI) window.reinitializeUI();
+    }
+    
     window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        const createPage = document.getElementById('createPage');
-        if (splash) splash.classList.add('hidden');
-        if (createPage) createPage.classList.remove('hidden-content');
-      }, 2400);
+      // Show page after splash animation (2.4s) or timeout
+      setTimeout(showCreatePage, 2500);
+      // Also show on any user interaction (for faster mobile response)
+      document.addEventListener('click', () => { if (!uiInitialized) showCreatePage(); }, { once: true });
+      document.addEventListener('touchstart', () => { if (!uiInitialized) showCreatePage(); }, { once: true });
     });
   </script>
   <script type="module" src="script.js"></script>

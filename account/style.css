@@ -985,6 +985,8 @@ body {
         width: 80px;
         height: 80px;
     }
+    /* Ensure touch targets are comfortable on small devices */
+    .btn, .btn-full { min-height: 48px; }
 }
 
 /* Light theme support (activable con class="light-theme" en <html> o <body>) */
@@ -1001,6 +1003,42 @@ body.light-theme {
     --color-accent-bright: #2b7be6;
     --color-success: #059669;
     --color-error: #b91c1c;
+}
+
+/* Fix: make splash title visible in light theme and tune splash colors */
+.light-theme .splash-title {
+    color: var(--color-text-primary);
+}
+.light-theme .splash-subtitle {
+    color: var(--color-accent-bright);
+}
+.light-theme .splash-logo {
+    filter: none;
+    color: var(--color-accent);
+}
+
+/* Mobile layout improvements to avoid crowded look */
+@media (max-width: 480px) {
+    .container { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .page-header { padding: 0.25rem 0; gap: 0.75rem; }
+    .page-header h1 { font-size: 1.15rem; }
+    .profile-card { padding: 0.75rem; }
+    .profile-avatar-section { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .avatar-wrapper { width: 88px; height: 88px; }
+    .avatar { width: 88px; height: 88px; font-size: 34px; }
+    .avatar-edit-btn { width: 36px; height: 36px; }
+    /* Make stats horizontally scrollable instead of crammed */
+    .stats-grid {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+    }
+    .stat-item { min-width: 92px; flex: 0 0 auto; padding: 0.75rem; }
+    /* Increase spacing between sections */
+    .card { margin-bottom: 1.25rem; }
+    .section-header { padding-bottom: 0.75rem; }
+    .form-group input { font-size: 0.95rem; }
 }
 
 /* Mobile-specific improvements: make controls more touch-friendly and visible */

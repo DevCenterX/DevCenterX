@@ -79,6 +79,29 @@
   }
 }
 
+/* Mobile performance optimization */
+@media (max-width: 768px) {
+  @keyframes splashLogoEnter {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes logoGlow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 112, 243, 0.2)); }
+    50% { filter: drop-shadow(0 0 15px rgba(0, 112, 243, 0.4)); }
+  }
+  
+  .splash-screen {
+    animation: fadeOutUp 0.4s ease-out 2.4s forwards;
+    will-change: opacity, transform;
+  }
+  
+  .loader-dot {
+    will-change: transform;
+  }
+}
+
 /* Splash Screen Styles */
 .splash-screen {
   position: fixed;
@@ -173,6 +196,7 @@
 
 .hidden-content {
   animation: fadeOutUp 0s ease-out 0s forwards;
+  pointer-events: auto !important;
 }
 
 /* Light theme splash screen styles */
@@ -6897,6 +6921,11 @@ html.theme-light .panel-edit-btn:hover {
   color: #1f2937;
   cursor: pointer;
   transition: all 0.2s;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .social-auth-btn:hover {
@@ -6944,6 +6973,11 @@ html.theme-light .panel-edit-btn:hover {
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 1rem;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .email-auth-option:hover {

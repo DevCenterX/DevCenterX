@@ -9,6 +9,19 @@
     <link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('devcenter_theme');
+                var theme = null;
+                if (raw) {
+                    try { theme = JSON.parse(raw); } catch (e) { theme = raw; }
+                }
+                if (theme === 'light') document.documentElement.classList.add('light-theme');
+                else if (theme === 'dark') document.documentElement.classList.add('dark-theme');
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
     <!-- Animated Background -->
