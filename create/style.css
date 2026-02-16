@@ -6856,6 +6856,12 @@ html.theme-light .panel-edit-btn:hover {
   font-size: 0.875rem;
   margin-bottom: 2rem;
   transition: color 0.2s;
+  pointer-events: auto !important;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .split-auth-back:hover {
