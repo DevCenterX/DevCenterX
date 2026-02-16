@@ -1,5 +1,5 @@
 // ============================================
-// LOGIN PAGE - Firebase Authentication
+// LOGIN PAGE - Firebase Authentication + Onboarding
 // ============================================
 
 // ===== STATE VARIABLES =====
@@ -12,6 +12,13 @@ let auth = null;
 let db = null;
 let uiInitialized_script = false;
 let eventListenersAttached = false;
+let currentUser = null;
+let authProvider = null;
+
+// Cloudinary config
+const CLOUDINARY_NAME = 'duybqkv24';
+const CLOUDINARY_UPLOAD_PRESET = 'devcenter_profile';
+const CLOUDINARY_API_KEY = '445151322255556';
 
 // ===== NOTIFICATION SYSTEM =====
 const NotificationSystem = (() => {
@@ -116,34 +123,190 @@ function checkPageReady() {
 })();
 
 
-// ===== HELPER FUNCTIONS =====
-async function saveUserData(user, provider) {
-  if (!user || !db) return;
+// ===== ONBOARDING SYSTEM =====
+async function showOnboardingModal(user, provider) {
+  currentUser = user;
+  authProvider = provider;
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.id = 'onboardingModal';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); display: flex; align-items: center;
+    justify-content: center; z-index: 10000; backdrop-filter: blur(4px);
+  `;
+  
+  // Step 1: Profile Picture
+  const step1HTML = `
+    <div style="background: #1a1f2e; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; color: white; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Tu Foto de Perfil</h2>
+      <p style="color: #b0b0b0; margin-bottom: 1.5rem;">Sube una foto o usaremos tu icono de proveedor</p>
+      
+      <div id="profilePreview" style="width: 120px; height: 120px; border-radius: 50%; margin: 1rem auto; overflow: hidden; background: #2a2f3e; display: flex; align-items: center; justify-content: center; border: 2px solid #0070f3;">
+        ${provider === 'google' ? '<span style="font-size: 3rem;">🔵</span>' : 
+          provider === 'github' ? '<span style="font-size: 3rem;">⬛</span>' : 
+          '<span style="font-size: 3rem;">👤</span>'}
+      </div>
+      
+      <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+      <button onclick="document.getElementById('profileImageInput').click()" style="width: 100%; padding: 0.8rem; background: #0070f3; color: white; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 0.5rem; font-weight: 500;">
+        Elegir Foto
+      </button>
+      <p style="text-align: center; font-size: 0.9rem; color: #808080;">o continúa sin foto</p>
+      
+      <button id="nextStep1" style="width: 100%; padding: 0.8rem; background: rgba(0,112,243,0.1); color: #0070f3; border: 1px solid #0070f3; border-radius: 6px; cursor: pointer; margin-top: 1rem; font-weight: 500;">
+        Continuar
+      </button>
+    </div>
+  `;
+  
+  modal.innerHTML = step1HTML;
+  document.body.appendChild(modal);
+  
+  // Handle profile image upload
+  const imageInput = document.getElementById('profileImageInput');
+  imageInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        if (data.secure_url) {
+          currentUser.photoURL = data.secure_url;
+          document.getElementById('profilePreview').innerHTML = `<img src="${data.secure_url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+          NotificationSystem.success('Foto cargada');
+        }
+      } catch (error) {
+        NotificationSystem.error('Error al cargar foto');
+      }
+    }
+  });
+  
+  // Next step button
+  document.getElementById('nextStep1').addEventListener('click', () => {
+    modal.innerHTML = `
+      <div style="background: #1a1f2e; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; color: white; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Elige tu Nombre de Usuario</h2>
+        <p style="color: #b0b0b0; margin-bottom: 1.5rem;">Este será tu nombre visible en DevCenterX</p>
+        
+        <input 
+          type="text" 
+          id="usernameInput" 
+          placeholder="Tu nombre de usuario" 
+          style="width: 100%; padding: 0.8rem; background: #2a2f3e; color: white; border: 1px solid #0070f3; border-radius: 6px; margin-bottom: 0.5rem; font-size: 1rem;"
+        >
+        <p id="usernameStatus" style="font-size: 0.9rem; color: #808080; min-height: 20px;"></p>
+        
+        <button id="finalizeBtn" disabled style="width: 100%; padding: 0.8rem; background: rgba(0,112,243,0.3); color: #0070f3; border: 1px solid #0070f3; border-radius: 6px; cursor: not-allowed; margin-top: 1rem; font-weight: 500;">
+          Finalizar
+        </button>
+      </div>
+    `;
+    
+    const usernameInput = document.getElementById('usernameInput');
+    const finalizeBtn = document.getElementById('finalizeBtn');
+    const statusText = document.getElementById('usernameStatus');
+    
+    usernameInput.addEventListener('input', async () => {
+      const username = usernameInput.value.trim();
+      
+      if (!username) {
+        finalizeBtn.disabled = true;
+        finalizeBtn.style.background = 'rgba(0,112,243,0.3)';
+        finalizeBtn.style.cursor = 'not-allowed';
+        statusText.textContent = '';
+        return;
+      }
+      
+      if (username.length < 3) {
+        statusText.textContent = '❌ Mínimo 3 caracteres';
+        statusText.style.color = '#ff6b6b';
+        finalizeBtn.disabled = true;
+        return;
+      }
+      
+      try {
+        const { query, where, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', username.toLowerCase()));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          statusText.textContent = '✅ Este nombre está disponible';
+          statusText.style.color = '#51cf66';
+          finalizeBtn.disabled = false;
+          finalizeBtn.style.background = '#0070f3';
+          finalizeBtn.style.cursor = 'pointer';
+        } else {
+          statusText.textContent = '❌ Este nombre ya existe';
+          statusText.style.color = '#ff6b6b';
+          finalizeBtn.disabled = true;
+          finalizeBtn.style.background = 'rgba(0,112,243,0.3)';
+        }
+      } catch (error) {
+        statusText.textContent = 'Error verificando nombre';
+        statusText.style.color = '#ff6b6b';
+      }
+    });
+    
+    finalizeBtn.addEventListener('click', async () => {
+      const username = usernameInput.value.trim().toLowerCase();
+      await saveFinalUserData(username);
+      modal.remove();
+      NotificationSystem.success('¡Perfil completo!');
+      setTimeout(() => { window.location.href = '/'; }, 800);
+    });
+  });
+}
+
+async function saveFinalUserData(username) {
+  if (!currentUser || !db) return;
   try {
     const { doc, setDoc, getDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
-    const userRef = doc(db, 'users', user.uid);
+    const userRef = doc(db, 'users', currentUser.uid);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
-      await setDoc(userRef, { updatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(userRef, { 
+        username: username,
+        avatar: currentUser.photoURL || '',
+        updatedAt: serverTimestamp() 
+      }, { merge: true });
     } else {
       await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email || '',
-        username: user.displayName || user.email?.split('@')[0] || 'user',
-        avatar: user.photoURL || '',
-        provider: provider,
+        uid: currentUser.uid,
+        email: currentUser.email || '',
+        username: username,
+        avatar: currentUser.photoURL || '',
+        provider: authProvider,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         plan: 'free',
         limit: 'default'
       });
     }
-    localStorage.setItem('devcenter_user_id', user.uid);
+    localStorage.setItem('devcenter_user_id', currentUser.uid);
     localStorage.setItem('devcenter_isLoggedIn', 'true');
   } catch (error) {
     console.error('User data save error:', error);
   }
+}
+
+// ===== HELPER FUNCTIONS =====
+async function handleAuthSuccess(user, provider) {
+  currentUser = user;
+  authProvider = provider;
+  NotificationSystem.success('Autenticación exitosa');
+  showOnboardingModal(user, provider);
 }
 
 function handleAuthError(error) {
@@ -232,9 +395,7 @@ function attachEventListeners() {
           setButtonLoading(submitBtn, true);
           const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
           const result = await signInWithEmailAndPassword(auth, email, password);
-          await saveUserData(result.user, 'email');
-          NotificationSystem.success('¡Bienvenido!');
-          setTimeout(() => { window.location.href = '/'; }, 800);
+          await handleAuthSuccess(result.user, 'email');
         } catch (error) {
           handleAuthError(error);
           setButtonLoading(submitBtn, false);
@@ -255,9 +416,7 @@ function attachEventListeners() {
           const provider = new GoogleAuthProvider();
           provider.setCustomParameters({ prompt: 'select_account' });
           const result = await signInWithPopup(auth, provider);
-          await saveUserData(result.user, 'google');
-          NotificationSystem.success('¡Sesión iniciada!');
-          setTimeout(() => { window.location.href = '/'; }, 800);
+          await handleAuthSuccess(result.user, 'google');
         } catch (error) {
           console.error('Google Auth error:', error.code, error.message);
           if (error.code !== 'auth/popup-blocked') handleAuthError(error);
@@ -279,9 +438,7 @@ function attachEventListeners() {
           const provider = new GithubAuthProvider();
           provider.setCustomParameters({ prompt: 'login' });
           const result = await signInWithPopup(auth, provider);
-          await saveUserData(result.user, 'github');
-          NotificationSystem.success('¡Sesión iniciada!');
-          setTimeout(() => { window.location.href = '/'; }, 800);
+          await handleAuthSuccess(result.user, 'github');
         } catch (error) {
           console.error('GitHub Auth error:', error.code, error.message);
           if (error.code !== 'auth/popup-blocked') handleAuthError(error);
