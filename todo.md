@@ -92,35 +92,6 @@ async function saveUserData(user, provider) {
 
 
 
- ---------------------- Permisos actuales  ----------------------
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Permite que usuarios autenticados lean sus propios documentos de usuario y otros usuarios puedan leer datos públicos
-    match /users/{userId} {
-      allow read: if request.auth != null; // Todo usuario autenticado puede leer perfiles
-      allow write: if request.auth.uid == userId; // Solo el propietario puede escribir
-    }
-    
-    // Colección proyectos - permite lectura/escritura para usuarios autenticados
-    match /proyectos/{userId} {
-      allow read, write, delete: if request.auth.uid == userId;
-    }
-    
-    // Colección proyectos-publicos - todos pueden leer, solo propietario puede escribir
-    match /proyectos-publicos/{userId} {
-      allow read: if request.auth != null; // Usuarios autenticados pueden leer
-      allow write, delete: if request.auth.uid == userId; // Solo propietario puede escribir/eliminar
-    }
-  }
-}
-
-
-
-
-
-
 
 
 
