@@ -277,15 +277,25 @@ document.addEventListener('DOMContentLoaded', () => {
       // Actualizar greeting con el nombre del usuario
       const greetingText = document.getElementById('greetingText');
       if (greetingText) {
-        const greetings = [
-          `${username}, ¿creamos algo hoy?`,
-          `¿Listo ${username}? Vamos a crear`,
-          `${username}, ¿qué haremos?`,
-          `¡Bienvenido ${username}! ¿Qué construimos?`,
-          `${username}, es hora de crear`,
-          `¿Qué le parece ${username}? Empecemos`,
-          `${username}, ¡creemos juntos!`
-        ];
+const greetings = [
+  `${username}, ¿creamos algo hoy?`,
+  `¿Listo ${username}? Vamos a crear`,
+  `${username}, ¿qué haremos?`,
+  `¡Bienvenido ${username}! ¿Qué construimos?`,
+  `${username}, es hora de crear`,
+  `¿Qué le parece ${username}? Empecemos`,
+  `${username}, ¡creemos juntos!`,
+  `${username}, manos a la obra`,
+  `¿Qué sigue, ${username}?`,
+  `¡A darle, ${username}!`,
+  `${username}, ¿qué sigue en la lista?`,
+  `¡Hola ${username}! A diseñar`,
+  `${username}, materializa tu idea`,
+  `¿Inspirado, ${username}?`,
+  `${username}, hagamos magia`,
+  `¡Dale, ${username}! Empieza ahora`,
+  `${username}, el lienzo es tuyo`
+];
         
         const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
         const usernameSpan = document.getElementById('usernameSpan');
