@@ -2,7 +2,9 @@
 // CREATE ACCOUNT PAGE - Firebase Authentication
 // ============================================
 
-console.log('[CREATE] 🚀 Script loading');
+console.log('[CREATE] 🚀 Script loading - PHASE 1: Initial log');
+console.log('[CREATE] 📍 Window object:', typeof window !== 'undefined' ? '✅' : '❌');
+console.log('[CREATE] 📍 Document object:', typeof document !== 'undefined' ? '✅' : '❌');
 
 // ===== STATE VARIABLES =====
 let firebaseReady = false;
@@ -48,13 +50,19 @@ console.log('[CREATE] ✅ NotificationSystem initialized');
 function checkPageReady() {
   const allReady = firebaseReady && uiElementsReady && eventListenersReady;
   
+  console.log('[CREATE] 🔍 checkPageReady() called: FB=' + firebaseReady + ' UI=' + uiElementsReady + ' L=' + eventListenersReady + ' => ALL=' + allReady);
+  
   if (allReady && !pageFullyReady) {
     pageFullyReady = true;
-    console.log('[CREATE] 🎉🎉🎉 PAGE FULLY READY! All systems operational!');
+    console.log('[CREATE] 🎉🎉🎉 PAGE FULLY READY! Setting window.pageFullyReady=true');
     window.pageFullyReady = true;
+    console.log('[CREATE] ✅ window.pageFullyReady is now:', window.pageFullyReady);
     if (window.hideLoadingAndShowContent) {
-      console.log('[CREATE] 📞 Calling hideLoadingAndShowContent...');
+      console.log('[CREATE] 📞 Calling hideLoadingAndShowContent("all-systems-ready")...');
       window.hideLoadingAndShowContent('all-systems-ready');
+      console.log('[CREATE] ✅ hideLoadingAndShowContent completed');
+    } else {
+      console.warn('[CREATE] ⚠️ window.hideLoadingAndShowContent not available!');
     }
   }
   
@@ -63,34 +71,41 @@ function checkPageReady() {
 
 
 // ===== FIREBASE INITIALIZATION =====
-console.log('[CREATE] 🔥 Starting Firebase initialization...');
+console.log('[CREATE] 🔥 PHASE 2: Starting Firebase initialization...');
+console.log('[CREATE] ⏰ Timestamp:', new Date().toISOString());
+
 (async () => {
   try {
-    console.log('[CREATE] 📥 Importing Firebase modules...');
+    console.log('[CREATE] 📥 PHASE 2A: About to import Firebase modules...');
     
-    // Retry logic for module imports (network can be unstable)
-    let retries = 0;
-    let app = null;
     let firebaseApp, authModule, dbModule;
-    
+    let retries = 0;
     const maxRetries = 3;
     let lastError = null;
     
-    while (retries < maxRetries && !app) {
+    console.log('[CREATE] 🔄 Starting import attempts (max: ' + maxRetries + ')');
+    
+    while (retries < maxRetries) {
       try {
         retries++;
-        console.log(`[CREATE] 🔄 Import attempt #${retries}...`);
+        console.log(`[CREATE] 🔄 PHASE 2B.${retries}: Import attempt #${retries}...`);
         
-        const initResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
-        firebaseApp = initResult.initializeApp;
+        console.log('[CREATE] 📦 Loading firebase-app.js from https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js');
+        const initRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+        firebaseApp = initRes.initializeApp;
+        console.log('[CREATE] ✅ firebase-app loaded');
         
-        const authResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-        authModule = authResult;
+        console.log('[CREATE] 📦 Loading firebase-auth.js');
+        const authRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+        authModule = authRes;
+        console.log('[CREATE] ✅ firebase-auth loaded');
         
-        const dbResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
-        dbModule = dbResult;
+        console.log('[CREATE] 📦 Loading firebase-firestore.js');
+        const dbRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+        dbModule = dbRes;
+        console.log('[CREATE] ✅ firebase-firestore loaded');
         
-        console.log('[CREATE] ✅ All modules imported successfully');
+        console.log('[CREATE] 🎉 All modules imported successfully on attempt #' + retries);
         
         const firebaseConfig = {
           apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
@@ -102,41 +117,51 @@ console.log('[CREATE] 🔥 Starting Firebase initialization...');
           measurementId: "G-S5GTYBRVK8"
         };
         
-        console.log('[CREATE] 🔧 Initializing Firebase app...');
-        app = firebaseApp(firebaseConfig);
+        console.log('[CREATE] 🔧 PHASE 2C: Initializing Firebase app...');
+        const app = firebaseApp(firebaseConfig);
+        console.log('[CREATE] ✅ Firebase app initialized');
         
         auth = authModule.getAuth(app);
+        console.log('[CREATE] ✅ Auth module ready');
         db = dbModule.getFirestore(app);
+        console.log('[CREATE] ✅ Firestore database ready');
         
         console.log('[CREATE] 🔐 Setting persistence...');
         await authModule.setPersistence(auth, authModule.browserLocalPersistence);
+        console.log('[CREATE] ✅ Persistence set');
         
         firebaseReady = true;
-        console.log('[CREATE] ✅ Firebase initialized successfully!');
+        console.log('[CREATE] ✅✅✅ FIREBASE FULLY INITIALIZED! firebaseReady=true');
         checkPageReady();
         break;
         
-      } catch (error) {
-        lastError = error;
-        console.error(`[CREATE] ❌ Import attempt #${retries} failed:`, error.message);
+      } catch (err) {
+        lastError = err;
+        console.error(`[CREATE] ❌ Attempt #${retries} FAILED:`, err.message);
+        console.error('[CREATE] Error details:', err);
         
         if (retries < maxRetries) {
-          console.log(`[CREATE] ⏳ Waiting 1 second before retry...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(`[CREATE] ⏳ Waiting 500ms before retry #${retries + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     }
     
-    if (!app) {
-      throw new Error(`Failed to initialize Firebase after ${maxRetries} retries: ${lastError?.message}`);
+    if (!auth || !db) {
+      throw new Error(`Firebase not initialized after ${maxRetries} attempts. Last error: ${lastError?.message}`);
     }
     
+    console.log('[CREATE] 🎉 Firebase initialization COMPLETE');
+    
   } catch (error) {
-    console.error('[CREATE] ❌ FATAL Firebase error:', error);
-    NotificationSystem.error('Error cargando autenticación: ' + (error.message || 'Desconocido'));
+    console.error('[CREATE] ❌❌❌ FATAL ERROR in Firebase init:', error);
+    console.error('[CREATE] Stack:', error.stack);
+    NotificationSystem.error('Firebase error: ' + (error.message || 'Unknown'));
     firebaseReady = false;
   }
 })();
+
+console.log('[CREATE] PHASE 2 END: Firebase initialization async function started');
 
 // ===== HELPER FUNCTIONS =====
 async function saveUserData(user, provider) {

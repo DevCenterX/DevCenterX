@@ -2,7 +2,9 @@
 // LOGIN PAGE - Firebase Authentication
 // ============================================
 
-console.log('[LOGIN] 🚀 Script loading');
+console.log('[LOGIN] 🚀 Script loading - PHASE 1: Initial log');
+console.log('[LOGIN] 📍 Window object:', typeof window !== 'undefined' ? '✅' : '❌');
+console.log('[LOGIN] 📍 Document object:', typeof document !== 'undefined' ? '✅' : '❌');
 
 // ===== STATE VARIABLES =====
 let firebaseReady = false;
@@ -48,13 +50,19 @@ console.log('[LOGIN] ✅ NotificationSystem initialized');
 function checkPageReady() {
   const allReady = firebaseReady && uiElementsReady && eventListenersReady;
   
+  console.log('[LOGIN] 🔍 checkPageReady() called: FB=' + firebaseReady + ' UI=' + uiElementsReady + ' L=' + eventListenersReady + ' => ALL=' + allReady);
+  
   if (allReady && !pageFullyReady) {
     pageFullyReady = true;
-    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! All systems operational!');
+    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! Setting window.pageFullyReady=true');
     window.pageFullyReady = true;
+    console.log('[LOGIN] ✅ window.pageFullyReady is now:', window.pageFullyReady);
     if (window.hideLoadingAndShowContent) {
-      console.log('[LOGIN] 📞 Calling hideLoadingAndShowContent...');
+      console.log('[LOGIN] 📞 Calling hideLoadingAndShowContent("all-systems-ready")...');
       window.hideLoadingAndShowContent('all-systems-ready');
+      console.log('[LOGIN] ✅ hideLoadingAndShowContent completed');
+    } else {
+      console.warn('[LOGIN] ⚠️ window.hideLoadingAndShowContent not available!');
     }
   }
   
@@ -62,34 +70,41 @@ function checkPageReady() {
 }
 
 // ===== FIREBASE INITIALIZATION =====
-console.log('[LOGIN] 🔥 Starting Firebase initialization...');
+console.log('[LOGIN] 🔥 PHASE 2: Starting Firebase initialization...');
+console.log('[LOGIN] ⏰ Timestamp:', new Date().toISOString());
+
 (async () => {
   try {
-    console.log('[LOGIN] 📥 Importing Firebase modules...');
+    console.log('[LOGIN] 📥 PHASE 2A: About to import Firebase modules...');
     
-    // Retry logic for module imports (network can be unstable)
-    let retries = 0;
-    let app = null;
     let firebaseApp, authModule, dbModule;
-    
+    let retries = 0;
     const maxRetries = 3;
     let lastError = null;
     
-    while (retries < maxRetries && !app) {
+    console.log('[LOGIN] 🔄 Starting import attempts (max: ' + maxRetries + ')');
+    
+    while (retries < maxRetries) {
       try {
         retries++;
-        console.log(`[LOGIN] 🔄 Import attempt #${retries}...`);
+        console.log(`[LOGIN] 🔄 PHASE 2B.${retries}: Import attempt #${retries}...`);
         
-        const initResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
-        firebaseApp = initResult.initializeApp;
+        console.log('[LOGIN] 📦 Loading firebase-app.js');
+        const initRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+        firebaseApp = initRes.initializeApp;
+        console.log('[LOGIN] ✅ firebase-app loaded');
         
-        const authResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-        authModule = authResult;
+        console.log('[LOGIN] 📦 Loading firebase-auth.js');
+        const authRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+        authModule = authRes;
+        console.log('[LOGIN] ✅ firebase-auth loaded');
         
-        const dbResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
-        dbModule = dbResult;
+        console.log('[LOGIN] 📦 Loading firebase-firestore.js');
+        const dbRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+        dbModule = dbRes;
+        console.log('[LOGIN] ✅ firebase-firestore loaded');
         
-        console.log('[LOGIN] ✅ All modules imported successfully');
+        console.log('[LOGIN] 🎉 All modules imported successfully on attempt #' + retries);
         
         const firebaseConfig = {
           apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
@@ -101,41 +116,51 @@ console.log('[LOGIN] 🔥 Starting Firebase initialization...');
           measurementId: "G-S5GTYBRVK8"
         };
         
-        console.log('[LOGIN] 🔧 Initializing Firebase app...');
-        app = firebaseApp(firebaseConfig);
+        console.log('[LOGIN] 🔧 PHASE 2C: Initializing Firebase app...');
+        const app = firebaseApp(firebaseConfig);
+        console.log('[LOGIN] ✅ Firebase app initialized');
         
         auth = authModule.getAuth(app);
+        console.log('[LOGIN] ✅ Auth module ready');
         db = dbModule.getFirestore(app);
+        console.log('[LOGIN] ✅ Firestore database ready');
         
         console.log('[LOGIN] 🔐 Setting persistence...');
         await authModule.setPersistence(auth, authModule.browserLocalPersistence);
+        console.log('[LOGIN] ✅ Persistence set');
         
         firebaseReady = true;
-        console.log('[LOGIN] ✅ Firebase initialized successfully!');
+        console.log('[LOGIN] ✅✅✅ FIREBASE FULLY INITIALIZED! firebaseReady=true');
         checkPageReady();
         break;
         
-      } catch (error) {
-        lastError = error;
-        console.error(`[LOGIN] ❌ Import attempt #${retries} failed:`, error.message);
+      } catch (err) {
+        lastError = err;
+        console.error(`[LOGIN] ❌ Attempt #${retries} FAILED:`, err.message);
+        console.error('[LOGIN] Error details:', err);
         
         if (retries < maxRetries) {
-          console.log(`[LOGIN] ⏳ Waiting 1 second before retry...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(`[LOGIN] ⏳ Waiting 500ms before retry #${retries + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     }
     
-    if (!app) {
-      throw new Error(`Failed to initialize Firebase after ${maxRetries} retries: ${lastError?.message}`);
+    if (!auth || !db) {
+      throw new Error(`Firebase not initialized after ${maxRetries} attempts. Last error: ${lastError?.message}`);
     }
     
+    console.log('[LOGIN] 🎉 Firebase initialization COMPLETE');
+    
   } catch (error) {
-    console.error('[LOGIN] ❌ FATAL Firebase error:', error);
-    NotificationSystem.error('Error cargando autenticación: ' + (error.message || 'Desconocido'));
+    console.error('[LOGIN] ❌❌❌ FATAL ERROR in Firebase init:', error);
+    console.error('[LOGIN] Stack:', error.stack);
+    NotificationSystem.error('Firebase error: ' + (error.message || 'Unknown'));
     firebaseReady = false;
   }
 })();
+
+console.log('[LOGIN] PHASE 2 END: Firebase initialization async function started');
 
 // ===== HELPER FUNCTIONS =====
 async function saveUserData(user, provider) {
