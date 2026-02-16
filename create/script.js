@@ -492,9 +492,13 @@ function initializeUI() {
     }
   });
   
+  uiElementsReady = true;
+  console.log('[CREATE] 🎨 Setting uiElementsReady = true');
+  
   console.log('[CREATE] 📞 Calling attachEventListeners()...');
   attachEventListeners();
   console.log('[CREATE] ✅ initializeUI() completed!');
+  checkPageReady();
 }
 
 // Make reinitializeUI globally accessible for splash screen
