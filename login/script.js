@@ -466,8 +466,8 @@ for (let i = 1; i <= 20; i++) {
   }, i * 100);
 }
 
-// Aggressive monitoring - check every 100ms
-console.log('[LOGIN] 📊 Starting aggressive readiness monitoring...');
+// Aggressive monitoring - check every 100ms INDEFINITELY
+console.log('[LOGIN] 📊 Starting aggressive readiness monitoring (NO TIMEOUT)...');
 let monitoringAttempts = 0;
 const readinessInterval = setInterval(() => {
   monitoringAttempts++;
@@ -480,10 +480,5 @@ const readinessInterval = setInterval(() => {
   }
 }, 100);
 
-setTimeout(() => {
-  if (!pageFullyReady) {
-    console.warn('[LOGIN] ⚠️⚠️⚠️ Page NOT fully ready after 5 seconds!');
-    console.warn(`[LOGIN] Firebase=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} Listeners=${eventListenersReady ? '✅' : '❌'}`);
-  }
-  clearInterval(readinessInterval);
-}, 5000);
+// NO TIMEOUT - Let monitoring continue indefinitely
+console.log('[LOGIN] 🔄 Will keep monitoring until pageFullyReady=true (NO MAXIMUM TIME LIMIT)');

@@ -318,21 +318,20 @@ for (let i = 1; i <= 20; i++) {
   }, i * 100);
 }
 
-console.log('[CREATE] 📊 Monitoring...');
+console.log('[CREATE] 📊 Monitoring indefinitely (NO TIMEOUT)...');
 let mon = 0;
 const monInt = setInterval(() => {
   mon++;
   if (mon % 5 === 0) {
     console.log(`[CREATE] 📊 Mon #${mon}: FB=${firebaseReady} UI=${uiElementsReady} L=${eventListenersReady} READY=${pageFullyReady}`);
   }
-  if (pageFullyReady) clearInterval(monInt);
+  if (pageFullyReady) {
+    clearInterval(monInt);
+    console.log('[CREATE] ✅✅✅ PAGE FULLY READY - Stopping monitor after ' + (mon * 100) + 'ms');
+  }
 }, 100);
 
-setTimeout(() => {
-  clearInterval(monInt);
-  if (!pageFullyReady) {
-    console.warn('[CREATE] ⚠️ Not ready: FB=' + firebaseReady + ' UI=' + uiElementsReady + ' L=' + eventListenersReady);
-  }
-}, 5000);
+// NO TIMEOUT - Let monitoring continue indefinitely
+console.log('[CREATE] 🔄 Will keep monitoring until pageFullyReady=true (NO MAXIMUM TIME LIMIT)');
 
 console.log('[CREATE] ✅ Loaded!');

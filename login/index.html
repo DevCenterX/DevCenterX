@@ -398,15 +398,9 @@
     // Start checking immediately
     startReadinessCheck();
     
-    // Absolute timeout - show anyway if nothing else works
-    const maxWaitTimeout = setTimeout(() => {
-      if (readinessCheck) clearInterval(readinessCheck);
-      if (!uiInitialized) {
-        console.warn('[LOGIN HTML] ⚠️ Max wait time reached (4s), showing page anyway');
-        console.warn('[LOGIN HTML] Final state: pageFullyReady=' + window.pageFullyReady);
-        window.hideLoadingAndShowContent('timeout-max');
-      }
-    }, 4000);
+    // NO TIMEOUT - Wait indefinitely for pageFullyReady to be true
+    // DO NOT force show page on timeout - only show when actually ready
+    console.log('[LOGIN HTML] 🔄 Waiting indefinitely for pageFullyReady=true (NO TIMEOUT)');
     
     // Also show on any user interaction
     const handleInteraction = (e) => {
@@ -414,9 +408,7 @@
       console.log('[LOGIN HTML] 👆 User interaction detected:', e.type);
       
       if (window.pageFullyReady === true) {
-        if (readinessCheck) clearInterval(readinessCheck);
-        clearTimeout(maxWaitTimeout);
-        window.hideLoadingAndShowContent('user-' + e.type);
+      // Removed - no user interaction shortcuts
       } else {
         console.warn(`[LOGIN HTML] ⚠️ User ${e.type} but page not fully ready. pageFullyReady=${window.pageFullyReady}`);
         if (window.NotificationSystem) {
@@ -428,8 +420,9 @@
       }
     };
     
-    document.addEventListener('click', handleInteraction, { passive: true });
-    document.addEventListener('touchstart', handleInteraction, { passive: true });
+    // Don't show on user interaction - only show when pageFullyReady is true
+    // document.addEventListener('click', handleInteraction, { passive: true });
+    // document.addEventListener('touchstart', handleInteraction, { passive: true });
     
     console.log('[LOGIN HTML] ✅ Splash screen logic loaded!');
   </script>
