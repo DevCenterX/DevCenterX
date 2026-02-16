@@ -67,33 +67,74 @@ console.log('[CREATE] 🔥 Starting Firebase initialization...');
 (async () => {
   try {
     console.log('[CREATE] 📥 Importing Firebase modules...');
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
-    const { getAuth, setPersistence, browserLocalPersistence } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
-    const { getFirestore } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
     
-    console.log('[CREATE] 🔧 Initializing Firebase app...');
-    const app = initializeApp({
-      apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
-      authDomain: "devcenter-agent-48c86.firebaseapp.com",
-      projectId: "devcenter-agent-48c86",
-      storageBucket: "devcenter-agent-48c86.firebasestorage.app",
-      messagingSenderId: "911929994293",
-      appId: "1:911929994293:web:1d08f68b4c507ee162557c",
-      measurementId: "G-S5GTYBRVK8"
-    });
+    // Retry logic for module imports (network can be unstable)
+    let retries = 0;
+    let app = null;
+    let firebaseApp, authModule, dbModule;
     
-    auth = getAuth(app);
-    db = getFirestore(app);
+    const maxRetries = 3;
+    let lastError = null;
     
-    console.log('[CREATE] 🔐 Setting persistence...');
-    await setPersistence(auth, browserLocalPersistence);
+    while (retries < maxRetries && !app) {
+      try {
+        retries++;
+        console.log(`[CREATE] 🔄 Import attempt #${retries}...`);
+        
+        const initResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+        firebaseApp = initResult.initializeApp;
+        
+        const authResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+        authModule = authResult;
+        
+        const dbResult = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+        dbModule = dbResult;
+        
+        console.log('[CREATE] ✅ All modules imported successfully');
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+          authDomain: "devcenter-agent-48c86.firebaseapp.com",
+          projectId: "devcenter-agent-48c86",
+          storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+          messagingSenderId: "911929994293",
+          appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+          measurementId: "G-S5GTYBRVK8"
+        };
+        
+        console.log('[CREATE] 🔧 Initializing Firebase app...');
+        app = firebaseApp(firebaseConfig);
+        
+        auth = authModule.getAuth(app);
+        db = dbModule.getFirestore(app);
+        
+        console.log('[CREATE] 🔐 Setting persistence...');
+        await authModule.setPersistence(auth, authModule.browserLocalPersistence);
+        
+        firebaseReady = true;
+        console.log('[CREATE] ✅ Firebase initialized successfully!');
+        checkPageReady();
+        break;
+        
+      } catch (error) {
+        lastError = error;
+        console.error(`[CREATE] ❌ Import attempt #${retries} failed:`, error.message);
+        
+        if (retries < maxRetries) {
+          console.log(`[CREATE] ⏳ Waiting 1 second before retry...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
     
-    firebaseReady = true;
-    console.log('[CREATE] ✅ Firebase initialized successfully!');
-    checkPageReady();
+    if (!app) {
+      throw new Error(`Failed to initialize Firebase after ${maxRetries} retries: ${lastError?.message}`);
+    }
+    
   } catch (error) {
-    console.error('[CREATE] ❌ Firebase error:', error);
-    NotificationSystem.error('Error cargando autenticación');
+    console.error('[CREATE] ❌ FATAL Firebase error:', error);
+    NotificationSystem.error('Error cargando autenticación: ' + (error.message || 'Desconocido'));
+    firebaseReady = false;
   }
 })();
 

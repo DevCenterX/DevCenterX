@@ -1,0 +1,65 @@
+{
+  "buildCommand": "echo 'Build complete'",
+  "framework": "html",
+  "headers": [
+    {
+      "source": "/create/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firestore.googleapis.com https://*.googleapis.com https://accounts.google.com https://github.com https://*.vercel.app; img-src 'self' data: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline' https:;"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "ALLOWALL"
+        }
+      ]
+    },
+    {
+      "source": "/login/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firestore.googleapis.com https://*.googleapis.com https://accounts.google.com https://github.com https://*.vercel.app; img-src 'self' data: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline' https:;"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "ALLOWALL"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
