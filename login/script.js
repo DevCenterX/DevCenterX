@@ -63,11 +63,25 @@ const NotificationSystem = (() => {
 let firebaseReady = false;
 let auth = null;
 let db = null;
+let uiElementsReady = false;
+let eventListenersReady = false;
+let pageFullyReady = false;
+let firebaseInitStartTime = Date.now();
 
-// Initialize Firebase asynchronously during splash screen
-(async () => {
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+function checkPageReady() {
+  const ready = firebaseReady && uiElementsReady && eventListenersReady;
+  if (ready && !pageFullyReady) {
+    pageFullyReady = true;
+    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! All systems operational!');
+    window.pageFullyReady = true;
+    if (window.hideLoadingAndShowContent) {
+      window.hideLoadingAndShowContent('all-systems-ready');
+    }
+  }
+  return ready;
+}
+
+console.log('[LOGIN] ⏱️ Firebase initialization started');
     const { 
       getAuth, 
       setPersistence,

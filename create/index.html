@@ -335,7 +335,7 @@
     let uiInitialized = false;
     let splashShownTime = Date.now();
     
-    function showCreatePage(reason) {
+    window.hideLoadingAndShowContent = function(reason) {
       if (uiInitialized) {
         console.warn('[CREATE HTML] ⚠️ Already initialized, skipping (reason: ' + reason + ')');
         return;
@@ -366,37 +366,47 @@
         createPage.style.visibility = 'visible';
         console.log('[CREATE HTML] ✅ Create page shown');
       }
-      
-      // Trigger UI initialization in the script module
-      if (window.reinitializeUI) {
-        console.log('[CREATE HTML] 📞 Calling window.reinitializeUI()...');
-        window.reinitializeUI();
-      } else {
-        console.warn('[CREATE HTML] ⚠️ window.reinitializeUI not available yet');
-      }
-    }
+    };
     
     console.log('[CREATE HTML] 📅 Window loaded, setting timing logic...');
     
-    // Show page after splash animation (2.4s) but can be triggered earlier
-    const splashTimeout = setTimeout(() => {
-      console.log('[CREATE HTML] ⏱️ Timeout reached (2.5s), calling showCreatePage...');
-      showCreatePage('timeout');
-    }, 2500);
+    // Wait for everything to be ready
+    const readinessCheck = setInterval(() => {
+      if (window.pageFullyReady) {
+        console.log('[CREATE HTML] 🎉 Page fully ready detected! Showing content...');
+        clearInterval(readinessCheck);
+        window.hideLoadingAndShowContent('script-ready');
+      }
+    }, 100);
     
-    // Also show on any user interaction (for faster mobile response)
+    // BUT: If it takes too long, show it anyway (max 5 seconds)
+    const maxWaitTimeout = setTimeout(() => {
+      clearInterval(readinessCheck);
+      if (!uiInitialized) {
+        console.warn('[CREATE HTML] ⚠️ Max wait time reached (5s), showing page anyway');
+        window.hideLoadingAndShowContent('timeout-max');
+      }
+    }, 5000);
+    
+    // Also show on any user interaction
     const handleInteraction = (e) => {
-      console.log('[CREATE HTML] 👆 User interaction:', e.type);
-      clearTimeout(splashTimeout);
-      showCreatePage('user-' + e.type);
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
+      if (uiInitialized) return; // Already shown
+      console.log('[CREATE HTML] 👆 User interaction detected:', e.type);
+      
+      if (window.pageFullyReady) {
+        clearInterval(readinessCheck);
+        clearTimeout(maxWaitTimeout);
+        window.hideLoadingAndShowContent('user-' + e.type);
+      } else {
+        console.warn('[CREATE HTML] ⚠️ User clicked but page not fully ready yet');
+        if (window.NotificationSystem) {
+          window.NotificationSystem.warning('Espera un momento para que cargue completamente...');
+        }
+      }
     };
     
-    document.addEventListener('click', handleInteraction, { once: false, passive: true });
-    document.addEventListener('touchstart', handleInteraction, { once: false, passive: true });
-    document.addEventListener('keydown', handleInteraction, { once: false, passive: true });
+    document.addEventListener('click', handleInteraction, { passive: true });
+    document.addEventListener('touchstart', handleInteraction, { passive: true });
     
     console.log('[CREATE HTML] ✅ Splash screen logic loaded!');
   </script>

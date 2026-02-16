@@ -517,26 +517,31 @@ if (document.readyState === 'loading') {
   initializeUI();
 }
 
-// Force re-initialization after a safe delay to ensure Firebase is ready
-console.log('[CREATE] ⏱️ Setting timeout for reinitialization after 1000ms...');
-setTimeout(() => {
-  console.log('[CREATE] ⏱️ 1000ms passed, calling initializeUI() again...');
-  initializeUI();
-}, 1000);
+// Aggressive re-initialization attempts to ensure everything is ready
+for (let i = 1; i <= 5; i++) {
+  setTimeout(() => {
+    const ready = checkPageReady();
+    console.log(`[CREATE] ⏱️ Retry #${i} (after ${i * 300}ms): ${ready ? '✅ READY' : '⏳ NOT READY'}`);
+    if (!ready) initializeUI();
+  }, i * 300);
+}
 
 // Additional logging for Firebase readiness
-const firebaseCheckInterval = setInterval(() => {
-  if (firebaseReady) {
-    console.log('[CREATE] 🎉 Firebase is now READY! auth=' + (auth ? '✅' : '❌') + ', db=' + (db ? '✅' : '❌'));
-    clearInterval(firebaseCheckInterval);
+console.log('[CREATE] 📊 Setting up readiness monitoring...');
+const readinessInterval = setInterval(() => {
+  console.log(`[CREATE] 📊 Status: Firebase=${firebaseReady ? '✅' : '❌'} | UI=${uiElementsReady ? '✅' : '❌'} | Listeners=${eventListenersReady ? '✅' : '❌'} | FullyReady=${pageFullyReady ? '✅' : '❌'}`);
+  if (pageFullyReady) {
+    clearInterval(readinessInterval);
+    console.log('[CREATE] 🎉 Page fully ready - monitoring stopped');
   }
-}, 200);
+}, 500);
 
 setTimeout(() => {
-  clearInterval(firebaseCheckInterval);
-  if (!firebaseReady) {
-    console.error('[CREATE] ❌ Firebase initialization timed out after 5 seconds');
+  if (!pageFullyReady) {
+    console.error('[CREATE] ⚠️ Page not fully ready after 10 seconds!');
+    console.error(`[CREATE] Firebase=${firebaseReady ? '✅' : '❌'} | UI=${uiElementsReady ? '✅' : '❌'} | Listeners=${eventListenersReady ? '✅' : '❌'}`);
   }
-}, 5000);
+  clearInterval(readinessInterval);
+}, 10000);
 
 console.log('[CREATE] ✅ Script loaded successfully!');
