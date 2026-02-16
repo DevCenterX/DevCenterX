@@ -59,13 +59,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function showNotLoggedIn() {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('notLoggedIn').style.display = 'block';
+        const loadingEl = document.getElementById('loading');
+        const notLoggedInEl = document.getElementById('notLoggedIn');
+        
+        // Smooth fade out loading
+        loadingEl.style.opacity = '0';
+        loadingEl.style.visibility = 'hidden';
+        
+        // Smooth fade in not logged in
+        setTimeout(() => {
+            notLoggedInEl.style.display = 'block';
+            requestAnimationFrame(() => {
+                notLoggedInEl.style.opacity = '1';
+                notLoggedInEl.style.visibility = 'visible';
+            });
+        }, 200);
     }
 
     function displayProfile(userData) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('profileContent').style.display = 'block';
+        const loadingEl = document.getElementById('loading');
+        const profileContentEl = document.getElementById('profileContent');
+        
+        // Smooth fade out loading
+        loadingEl.style.opacity = '0';
+        loadingEl.style.visibility = 'hidden';
+        
+        // Smooth fade in profile content after a tiny delay
+        setTimeout(() => {
+            profileContentEl.style.display = 'block';
+            requestAnimationFrame(() => {
+                profileContentEl.style.opacity = '1';
+                profileContentEl.style.visibility = 'visible';
+            });
+        }, 200);
 
         const username = userData.username || 'Usuario';
         const email = userData.email || '';
@@ -172,6 +198,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.toggleAvatarOptions = function() {
         const options = document.getElementById('avatarOptions');
         options.classList.toggle('active');
+        
+        // Cerrar al hacer clic fuera (para móvil)
+        if (options.classList.contains('active')) {
+            setTimeout(() => {
+                document.addEventListener('touchstart', closeAvatarOnClickOutside);
+                document.addEventListener('click', closeAvatarOnClickOutside);
+            }, 100);
+        }
+    };
+
+    const closeAvatarOnClickOutside = function(e) {
+        const options = document.getElementById('avatarOptions');
+        const avatar = document.getElementById('userAvatar');
+        
+        if (!options.contains(e.target) && !avatar.contains(e.target)) {
+            options.classList.remove('active');
+            document.removeEventListener('touchstart', closeAvatarOnClickOutside);
+            document.removeEventListener('click', closeAvatarOnClickOutside);
+        }
     };
 
     window.selectAvatar = function(color) {
@@ -247,6 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const newPassword = document.getElementById('contrasena').value;
         
         btn.disabled = true;
+        const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
         try {
@@ -265,7 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage('Error: ' + error.message, 'error');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Cambios';
+            btn.innerHTML = originalHTML;
         }
     });
 
@@ -274,6 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             auth.signOut().then(() => {
                 localStorage.removeItem('devcenter_user_id');
                 localStorage.removeItem('devcenter_isLoggedIn');
+                localStorage.removeItem('devcenter_user_name');
                 window.location.href = '/';
             }).catch((error) => {
                 console.error('Error al cerrar sesión:', error);
@@ -288,6 +335,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.redeemCode();
         }
     });
+
+    // Soporte para teclados en móvil
+    const userAvatar = document.getElementById('userAvatar');
+    if (userAvatar) {
+        userAvatar.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.toggleAvatarOptions();
+            }
+        });
+    }
 
     init();
 });

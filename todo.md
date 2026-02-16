@@ -49,7 +49,7 @@ Limite de apps segun plan: Normal (10 apps), Premium (15 apps), Pro (30 apps)
 
 
 
-// Guardar SOLO 3 claves en localStorage
+// 3 claves en localStorage
   localStorage.setItem('devcenter_user_id', user.uid);
   localStorage.setItem('devcenter_isLoggedIn', 'true');
   localStorage.setItem('devcenter_user_name', user.displayName || user.email?.split('@')[0] || 'Usuario');
@@ -81,10 +81,11 @@ async function saveUserData(user, provider) {
     limit: '0'
   });
 
-  // Guardar SOLO 2 claves en localStorage
+  // Guardar SOLO 3 claves en localStorage
   localStorage.setItem('devcenter_user_id', user.uid);
-  localStorage.setItem('devcenter_isLoggedIn', 'true');
-}
+    localStorage.setItem('devcenter_isLoggedIn', 'true');
+    localStorage.setItem('devcenter_user_name', user.displayName || user.email?.split('@')[0] || 'Usuario');
+  }
 
 
 

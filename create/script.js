@@ -118,8 +118,8 @@ async function saveUserData(user, provider) {
       provider: provider,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      plan: 'free',
-      limit: 'default'
+      plan: 'Normal',
+      limit: '0'
     });
 
     localStorage.setItem('devcenter_user_id', user.uid);

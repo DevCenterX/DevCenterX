@@ -40,6 +40,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    transition: opacity 0.4s ease-out, background 0.3s ease-out;
 }
 
 .page-background {
@@ -132,6 +133,12 @@ body {
     justify-content: center;
     padding: 100px;
     gap: 20px;
+    transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+}
+
+.loading[style*="display: none"] {
+    opacity: 0;
+    visibility: hidden;
 }
 
 .spinner {
@@ -169,6 +176,7 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(37, 99, 235, 0.1);
     animation: fadeInUp 0.6s ease-out;
     animation-fill-mode: backwards;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out;
 }
 
 .profile-section:nth-child(2) { animation-delay: 0.1s; }
@@ -784,54 +792,475 @@ body {
     margin-bottom: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .container {
-        padding: 24px 16px;
+        max-width: 100%;
+        padding: 20px 12px;
     }
     
     .header {
-        margin-bottom: 32px;
+        gap: 12px;
+        margin-bottom: 24px;
     }
     
     .header h1 {
-        font-size: 22px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+    
+    .back-btn {
+        width: 40px;
+        height: 40px;
     }
     
     .profile-section {
-        padding: 24px;
-        border-radius: 16px;
+        padding: 20px 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        gap: 0;
+    }
+    
+    .avatar-section {
+        margin-bottom: 24px;
     }
     
     .avatar {
-        width: 110px;
-        height: 110px;
-        font-size: 44px;
+        width: 100px;
+        height: 100px;
+        font-size: 38px;
+        margin-bottom: 16px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+    
+    .username-display {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+    
+    .email-display {
+        font-size: 13px;
     }
     
     .avatar-option {
-        width: 48px;
-        height: 48px;
-        font-size: 18px;
-    }
-    
-    .form-group input {
-        padding: 14px 16px;
+        width: 44px;
+        height: 44px;
         font-size: 16px;
     }
     
+    .section-title {
+        font-size: 16px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .form-group input {
+        padding: 12px 14px;
+        font-size: 16px;
+        border-radius: 10px;
+    }
+    
     .btn {
-        padding: 14px 24px;
+        padding: 12px 20px;
+        font-size: 14px;
+        border-radius: 10px;
+        min-height: 44px;
+    }
+    
+    .btn-primary {
+        width: 100%;
+    }
+    
+    .btn-danger {
+        width: 100%;
+        min-height: 44px;
+        margin-top: 12px;
     }
     
     .stats-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    
+    .stat-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+    }
+    
+    .account-info {
+        gap: 12px;
+    }
+    
+    .account-info-item {
+        padding: 12px 14px;
+        border-radius: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .account-info-label {
+        font-size: 12px;
+    }
+    
+    .account-info-value {
+        font-size: 13px;
+        word-break: break-all;
+        width: 100%;
     }
     
     .redeem-input-group {
         flex-direction: column;
+        gap: 10px;
+    }
+    
+    .redeem-input {
+        padding: 12px 14px;
+        font-size: 14px;
+        border-radius: 10px;
     }
     
     .btn-redeem {
         width: 100%;
+        padding: 12px 20px;
+        font-size: 14px;
     }
+    
+    .redeem-description {
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+    
+    .not-logged-in {
+        padding: 60px 20px;
+    }
+    
+    .not-logged-in-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 24px;
+    }
+    
+    .not-logged-in-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .not-logged-in h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .not-logged-in p {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    
+    .security-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+        margin-top: 12px;
+    }
+    
+    .avatar-options {
+        padding: 16px;
+        gap: 10px;
+        margin-top: 16px;
+    }
+    
+    .password-toggle {
+        right: 12px;
+        padding: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 16px 10px;
+        max-width: 100%;
+    }
+    
+    .header {
+        margin-bottom: 20px;
+        gap: 10px;
+    }
+    
+    .header h1 {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .back-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+    
+    .back-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .profile-section {
+        padding: 16px 12px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+        margin-bottom: 12px;
+    }
+    
+    .username-display {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .avatar-option {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .section-title {
+        font-size: 15px;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+    }
+    
+    .section-title svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .form-group {
+        margin-bottom: 14px;
+    }
+    
+    .form-group label {
+        font-size: 11px;
+        gap: 6px;
+    }
+    
+    .form-group label svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .form-group input {
+        padding: 11px 12px;
+        font-size: 15px;
+        border-radius: 9px;
+    }
+    
+    .btn {
+        padding: 11px 16px;
+        font-size: 13px;
+        border-radius: 9px;
+        min-height: 40px;
+        gap: 8px;
+    }
+    
+    .btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .btn-primary {
+        width: 100%;
+    }
+    
+    .btn-danger {
+        width: 100%;
+        min-height: 40px;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+    
+    .stat-card {
+        padding: 14px 12px;
+        border-radius: 10px;
+    }
+    
+    .stat-value {
+        font-size: 22px;
+        margin-bottom: 4px;
+    }
+    
+    .stat-label {
+        font-size: 11px;
+    }
+    
+    .account-info {
+        gap: 10px;
+    }
+    
+    .account-info-item {
+        padding: 11px 12px;
+        border-radius: 9px;
+        gap: 6px;
+    }
+    
+    .account-info-label {
+        font-size: 11px;
+        gap: 8px;
+    }
+    
+    .account-info-label svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .account-info-value {
+        font-size: 12px;
+    }
+    
+    .redeem-input-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .redeem-input {
+        padding: 11px 12px;
+        font-size: 13px;
+        border-radius: 9px;
+    }
+    
+    .btn-redeem {
+        width: 100%;
+        padding: 11px 16px;
+        font-size: 13px;
+    }
+    
+    .redeem-description {
+        font-size: 12px;
+        margin-bottom: 14px;
+    }
+    
+    .not-logged-in {
+        padding: 40px 16px;
+    }
+    
+    .not-logged-in-icon {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 20px;
+    }
+    
+    .not-logged-in-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .not-logged-in h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+    
+    .not-logged-in p {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+    
+    .avatar-options {
+        padding: 12px;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    
+    .security-badge {
+        font-size: 11px;
+        padding: 5px 10px;
+        margin-top: 10px;
+    }
+    
+    .security-badge svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .password-toggle {
+        right: 10px;
+        padding: 4px;
+    }
+    
+    .splash-title {
+        font-size: 1.8rem;
+    }
+    
+    .splash-subtitle {
+        font-size: 1rem;
+    }
+}
+
+/* Smooth transitions for content visibility */
+#profileContent,
+#notLoggedIn {
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+#profileContent[style*="display: none"],
+#notLoggedIn[style*="display: none"] {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Light theme support */
+html.light-theme,
+body.light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #fafbff;
+    --bg-tertiary: #f5f6fb;
+    --bg-card: linear-gradient(180deg, rgba(250, 251, 255, 0.95) 0%, rgba(245, 246, 251, 0.95) 100%);
+    --text-primary: #0b1220;
+    --text-secondary: #55606a;
+    --accent: #0366d6;
+    --accent-hover: #0155c1;
+    --accent-glow: rgba(3, 102, 214, 0.15);
+    --border: rgba(11, 18, 32, 0.08);
+}
+
+html.light-theme .profile-section,
+body.light-theme .profile-section {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+html.light-theme .form-group input,
+body.light-theme .form-group input {
+    background: rgba(3, 102, 214, 0.02);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+html.light-theme .form-group input:focus,
+body.light-theme .form-group input:focus {
+    background: rgba(3, 102, 214, 0.05);
+    border-color: var(--accent);
 }
