@@ -59,8 +59,9 @@
       try {
         var id = localStorage.getItem('devcenter_user_id');
         var isLogged = localStorage.getItem('devcenter_isLoggedIn');
-        var name = localStorage.getItem('devcenter_user_name');
-        if (!(isLogged === 'true' && id && name)) {
+        // Only require a valid login flag and user id here.
+        // The user's display name can be fetched asynchronously after page load.
+        if (!(isLogged === 'true' && id)) {
           window.location.replace('agent.html');
         }
       } catch (e) {

@@ -1048,31 +1048,29 @@
       return null;
     }
 
-    // Cloudinary upload (uses provided credentials) - NOTE: embedding API secret client-side is insecure
+    // Cloudinary upload (unsigned - secure method using upload_preset)
     async function cloudinaryUpload(fileBlob, fileName) {
       try {
         const cloudName = 'duybqkv24';
-        const apiKey = '445151322255556';
-        const apiSecret = 'zOxNfHhz-K5E4vOPx2-34H_pJgI';
+        const uploadPreset = 'devcenter_profile';
         const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-        const timestamp = Math.floor(Date.now() / 1000);
-        const toSign = `timestamp=${timestamp}${apiSecret}`;
-
-        const sigBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(toSign));
-        const sigArray = Array.from(new Uint8Array(sigBuffer));
-        const signature = sigArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
         const form = new FormData();
         form.append('file', fileBlob, fileName || 'upload.png');
-        form.append('api_key', apiKey);
-        form.append('timestamp', String(timestamp));
-        form.append('signature', signature);
+        form.append('upload_preset', uploadPreset);
+        form.append('folder', 'devcenter/profiles');
 
         const res = await fetch(url, { method: 'POST', body: form });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('Cloudinary error:', errorData);
+          throw new Error(`Upload failed: ${res.status} - ${errorData.error?.message || 'Unknown'}`);
+        }
+        
         const json = await res.json();
         if (json && json.secure_url) return json.secure_url;
-        console.error('Cloudinary upload failed', json);
+        console.error('Cloudinary upload failed - no URL', json);
         return null;
       } catch (err) {
         console.error('Cloudinary upload error', err);
