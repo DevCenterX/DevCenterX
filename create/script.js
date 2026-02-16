@@ -254,6 +254,7 @@ function attachEventListeners() {
           NotificationSystem.success('¡Sesión iniciada!');
           setTimeout(() => window.location.href = '/', 800);
         } catch (error) {
+          console.error('Google Auth error:', error.code, error.message);
           if (error.code !== 'auth/popup-blocked') handleAuthError(error);
           setButtonLoading(googleBtn, false);
         }
@@ -263,8 +264,8 @@ function attachEventListeners() {
     // GitHub auth
     if (githubBtn) {
       githubBtn.addEventListener('click', async function() {
-        if (!checkPageReady()) { 
-          NotificationSystem.error('Cargando sistemas...'); 
+        if (!firebaseReady || !auth) { 
+          NotificationSystem.error('Sistema de autenticación no disponible'); 
           return; 
         }
         try {
@@ -277,6 +278,7 @@ function attachEventListeners() {
           NotificationSystem.success('¡Sesión iniciada!');
           setTimeout(() => window.location.href = '/', 800);
         } catch (error) {
+          console.error('GitHub Auth error:', error.code, error.message);
           if (error.code !== 'auth/popup-blocked') handleAuthError(error);
           setButtonLoading(githubBtn, false);
         }
