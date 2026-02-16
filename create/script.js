@@ -2,12 +2,104 @@
 // CREATE ACCOUNT PAGE - Firebase Authentication (OPTIMIZED)
 // ============================================
 
-console.log('[CREATE] 🚀 Script loading started');
+console.log('[CREATE] 🚀 Script loading started (ts: ' + Date.now() + ')');
+
+// State variables - inline for IMMEDIATE initialization
+let firebaseReady = false;
+let auth = null;
+let db = null;
+let uiElementsReady = false;
+let eventListenersReady = false;
+let pageFullyReady = false;
+let firebaseInitStartTime = Date.now();
+let initAttempts = 0;
+let uiInitialized_script = false;
+let eventListenersAttached = false;
+
+console.log('[CREATE] 📋 State variables initialized (ts: ' + Date.now() + ')');
 
 // NOTIFICATION SYSTEM - Initialize early
 const NotificationSystem = (() => {
   const container = document.getElementById('notificationContainer');
   console.log('[CREATE] 📢 Notification container:', container ? '✅ Found' : '❌ Not found');
+  
+  return {
+    show(message, type = 'info', duration = 4000) {
+      console.log(`[CREATE] 💬 ${type.toUpperCase()}: ${message}`);
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      
+      const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ',
+        warning: '⚠'
+      };
+      
+      notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || '•'}</span>
+        <span>${message}</span>
+        <button class="notification-close">×</button>
+      `;
+      
+      container.appendChild(notification);
+      
+      const closeBtn = notification.querySelector('.notification-close');
+      const removeNotification = () => {
+        notification.classList.add('removing');
+        setTimeout(() => notification.remove(), 300);
+      };
+      
+      closeBtn.addEventListener('click', removeNotification);
+      
+      if (duration > 0) {
+        setTimeout(removeNotification, duration);
+      }
+      
+      return notification;
+    },
+    
+    success(message, duration) {
+      return this.show(message, 'success', duration);
+    },
+    
+    error(message, duration) {
+      return this.show(message, 'error', duration || 5000);
+    },
+    
+    info(message, duration) {
+      return this.show(message, 'info', duration);
+    },
+    
+    warning(message, duration) {
+      return this.show(message, 'warning', duration);
+    }
+  };
+})();
+
+function checkPageReady() {
+  const ready = firebaseReady && uiElementsReady && eventListenersReady;
+  const timestamp = Date.now() - firebaseInitStartTime;
+  
+  if (ready && !pageFullyReady) {
+    pageFullyReady = true;
+    console.log(`[CREATE] 🎉🎉🎉 PAGE FULLY READY! All systems operational! (${timestamp}ms)`);
+    window.pageFullyReady = true;
+    if (window.hideLoadingAndShowContent) {
+      console.log('[CREATE] 📞 Calling hideLoadingAndShowContent...');
+      window.hideLoadingAndShowContent('all-systems-ready');
+    } else {
+      console.warn('[CREATE] ⚠️ hideLoadingAndShowContent not available');
+    }
+  } else if (!ready) {
+    const elapsed = timestamp;
+    if (elapsed % 500 === 0) { // Log sparingly
+      console.log(`[CREATE] ⏳ Status (${elapsed}ms): Firebase=${firebaseReady} UI=${uiElementsReady} Listeners=${eventListenersReady}`);
+    }
+  }
+  
+  return ready;
+}
   
   return {
     show(message, type = 'info', duration = 4000) {
@@ -85,19 +177,29 @@ function checkPageReady() {
   return ready;
 }
 
-console.log('[CREATE] ⏱️ Firebase initialization started');
+console.log('[CREATE] ⏱️ Firebase initialization started (ts: ' + Date.now() + ')');
+console.log('[CREATE] 🚀 BEGINNING FIREBASE IIFE');
 
 // Initialize Firebase asynchronously during splash screen
 (async () => {
+  console.log('[CREATE] 📥 INSIDE FIREBASE IIFE - Starting imports (ts: ' + Date.now() + ')');
   try {
     console.log('[CREATE] 📥 Importing Firebase modules...');
+    const firebaseImportStart = Date.now();
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+    console.log(`[CREATE] 📦 firebase-app imported (${Date.now() - firebaseImportStart}ms)`);
+    
+    const authImportStart = Date.now();
     const { 
       getAuth, 
       setPersistence,
       browserLocalPersistence 
     } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+    console.log(`[CREATE] 📦 firebase-auth imported (${Date.now() - authImportStart}ms)`);
+    
+    const dbImportStart = Date.now();
     const { getFirestore } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+    console.log(`[CREATE] 📦 firebase-firestore imported (${Date.now() - dbImportStart}ms)`);
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
@@ -120,12 +222,18 @@ console.log('[CREATE] ⏱️ Firebase initialization started');
     firebaseReady = true;
     const initTime = Date.now() - firebaseInitStartTime;
     console.log(`[CREATE] ✅ Firebase initialized successfully (${initTime}ms)`);
-    console.log('[CREATE] 🔑 auth:', auth ? 'Ready' : 'Error');
-    console.log('[CREATE] 🗄️ db:', db ? 'Ready' : 'Error');
+    console.log('[CREATE] 🔑 auth:', auth ? '✅ Ready' : '❌ Error');
+    console.log('[CREATE] 🗄️ db:', db ? '✅ Ready' : '❌ Error');
+    console.log('[CREATE] 📊 State after Firebase: firebaseReady=' + firebaseReady);
+    console.log('[CREATE] 🎯 Calling checkPageReady() from Firebase init...');
     checkPageReady();
+    console.log('[CREATE] ✅ Firebase IIFE completed!');
   } catch (error) {
     console.error('[CREATE] ❌ Firebase init error:', error);
-    NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
+    console.error('[CREATE] Error details:', error.message);
+    if (window.NotificationSystem) {
+      NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
+    }
   }
 })();
 
@@ -503,45 +611,59 @@ function initializeUI() {
 
 // Make reinitializeUI globally accessible for splash screen
 window.reinitializeUI = initializeUI;
-console.log('[CREATE] 🌐 window.reinitializeUI exposed');
+console.log('[CREATE] 🌐 window.reinitializeUI exposed (ts: ' + Date.now() + ')');
 
-// Log when DOM is ready
+// IMMEDIATE UI initialization attempt
+console.log('[CREATE] 🚀 Attempting immediate initializeUI (DOM state: ' + document.readyState + ')');
+initializeUI();
+
+// But also wait for DOM if needed
 if (document.readyState === 'loading') {
-  console.log('[CREATE] ⏳ DOM is still loading, waiting for DOMContentLoaded...');
+  console.log('[CREATE] ⏳ DOM is loading, will reinitialize on DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('[CREATE] ✅ DOMContentLoaded fired!');
-    initializeUI();
+    console.log('[CREATE] ✅ DOMContentLoaded fired! Reinitializing UI...');
+    setTimeout(() => initializeUI(), 50);
   });
 } else {
-  console.log('[CREATE] ✅ DOM already loaded, initializing immediately...');
-  initializeUI();
+  console.log('[CREATE] ✅ DOM already loaded');
 }
 
-// Aggressive re-initialization attempts to ensure everything is ready
-for (let i = 1; i <= 5; i++) {
+// AGGRESSIVE re-initialization attempts - every 100ms for first 2 seconds
+console.log('[CREATE] 🔄 Starting aggressive initialization retries...');
+for (let i = 1; i <= 20; i++) {
   setTimeout(() => {
-    const ready = checkPageReady();
-    console.log(`[CREATE] ⏱️ Retry #${i} (after ${i * 300}ms): ${ready ? '✅ READY' : '⏳ NOT READY'}`);
-    if (!ready) initializeUI();
-  }, i * 300);
+    if (!pageFullyReady) {
+      const ready = checkPageReady();
+      if (i <= 5 || i % 5 === 0) {
+        console.log(`[CREATE] ⏱️ Retry #${i} (${i * 100}ms): ${ready ? '✅ READY' : '⏳ NOT READY'} [F=${firebaseReady} U=${uiElementsReady} L=${eventListenersReady}]`);
+      }
+      if (!ready) {
+        initializeUI();
+      }
+    }
+  }, i * 100);
 }
 
-// Additional logging for Firebase readiness
-console.log('[CREATE] 📊 Setting up readiness monitoring...');
+// Aggressive monitoring - check every 100ms
+console.log('[CREATE] 📊 Starting aggressive readiness monitoring...');
+let monitoringAttempts = 0;
 const readinessInterval = setInterval(() => {
-  console.log(`[CREATE] 📊 Status: Firebase=${firebaseReady ? '✅' : '❌'} | UI=${uiElementsReady ? '✅' : '❌'} | Listeners=${eventListenersReady ? '✅' : '❌'} | FullyReady=${pageFullyReady ? '✅' : '❌'}`);
+  monitoringAttempts++;
+  if (monitoringAttempts % 5 === 0) { // Log every 500ms
+    console.log(`[CREATE] 📊 Monitor #${monitoringAttempts} (${monitoringAttempts * 100}ms): Firebase=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} Listeners=${eventListenersReady ? '✅' : '❌'} FullyReady=${pageFullyReady ? '✅' : '❌'}`);
+  }
   if (pageFullyReady) {
     clearInterval(readinessInterval);
-    console.log('[CREATE] 🎉 Page fully ready - monitoring stopped');
+    console.log('[CREATE] 🎉 Page fully ready - monitoring stopped after ' + (monitoringAttempts * 100) + 'ms');
   }
-}, 500);
+}, 100);
 
 setTimeout(() => {
   if (!pageFullyReady) {
-    console.error('[CREATE] ⚠️ Page not fully ready after 10 seconds!');
-    console.error(`[CREATE] Firebase=${firebaseReady ? '✅' : '❌'} | UI=${uiElementsReady ? '✅' : '❌'} | Listeners=${eventListenersReady ? '✅' : '❌'}`);
+    console.warn('[CREATE] ⚠️⚠️⚠️ Page NOT fully ready after 5 seconds!');
+    console.warn(`[CREATE] Firebase=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} Listeners=${eventListenersReady ? '✅' : '❌'}`);
   }
   clearInterval(readinessInterval);
-}, 10000);
+}, 5000);
 
 console.log('[CREATE] ✅ Script loaded successfully!');

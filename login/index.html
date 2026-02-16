@@ -329,32 +329,109 @@
   </div>
 
   <script>
+    console.log('[LOGIN HTML] 🚀 Initializing splash screen logic...');
+    
     // Splash screen animation and content loading
     let uiInitialized = false;
-    function showLoginPage() {
-      if (uiInitialized) return;
+    let splashShownTime = Date.now();
+    
+    window.hideLoadingAndShowContent = function(reason) {
+      if (uiInitialized) {
+        console.warn('[LOGIN HTML] ⚠️ Already initialized, skipping (reason: ' + reason + ')');
+        return;
+      }
+      
+      uiInitialized = true;
+      const elapsedTime = Date.now() - splashShownTime;
+      console.log(`[LOGIN HTML] ✅ Showing login page (after ${elapsedTime}ms, reason: ${reason})`);
+      
       const splash = document.getElementById('splashScreen');
       const loginPage = document.getElementById('loginPage');
+      
+      console.log('[LOGIN HTML] 🎯 Elements:');
+      console.log('  splash:', splash ? '✅' : '❌');
+      console.log('  loginPage:', loginPage ? '✅' : '❌');
+      
       if (splash) {
         splash.classList.add('hidden');
         splash.style.pointerEvents = 'none';
+        splash.style.display = 'none';
+        console.log('[LOGIN HTML] ✅ Splash hidden');
       }
+      
       if (loginPage) {
         loginPage.classList.remove('hidden-content');
         loginPage.style.pointerEvents = 'auto';
+        loginPage.style.opacity = '1';
+        loginPage.style.visibility = 'visible';
+        console.log('[LOGIN HTML] ✅ Login page shown');
       }
-      uiInitialized = true;
-      // Re-initialize UI after page becomes visible
-      if (window.reinitializeUI) window.reinitializeUI();
-    }
+    };
     
-    window.addEventListener('DOMContentLoaded', () => {
-      // Show page after splash animation (2.4s) or timeout
-      setTimeout(showLoginPage, 2500);
-      // Also show on any user interaction (for faster mobile response)
-      document.addEventListener('click', () => { if (!uiInitialized) showLoginPage(); }, { once: true });
-      document.addEventListener('touchstart', () => { if (!uiInitialized) showLoginPage(); }, { once: true });
-    });
+    console.log('[LOGIN HTML] 📅 Window loaded, setting timing logic...');
+    
+    // Monitor for pageFullyReady - more aggressive checking
+    let readinessCheck = null;
+    let readinessAttempts = 0;
+    const pageReadyStartTime = Date.now();
+    
+    const startReadinessCheck = () => {
+      // Check very frequently at first (every 10ms for first 1s)
+      const fastCheckInterval = setInterval(() => {
+        readinessAttempts++;
+        const elapsedSinceBoot = Date.now() - pageReadyStartTime;
+        
+        if (readinessAttempts <= 50 || readinessAttempts % 10 === 0) {
+          console.log(`[LOGIN HTML] 📊 Readiness check #${readinessAttempts} (${elapsedSinceBoot}ms): pageFullyReady=${window.pageFullyReady}`);
+        }
+        
+        if (window.pageFullyReady === true) {
+          console.log(`[LOGIN HTML] 🎉 Page fully ready detected! Showing content after ${elapsedSinceBoot}ms...`);
+          clearInterval(fastCheckInterval);
+          window.hideLoadingAndShowContent('script-ready');
+        }
+      }, 10);
+      
+      readinessCheck = fastCheckInterval;
+    };
+    
+    // Start checking immediately
+    startReadinessCheck();
+    
+    // Absolute timeout - show anyway if nothing else works
+    const maxWaitTimeout = setTimeout(() => {
+      if (readinessCheck) clearInterval(readinessCheck);
+      if (!uiInitialized) {
+        console.warn('[LOGIN HTML] ⚠️ Max wait time reached (4s), showing page anyway');
+        console.warn('[LOGIN HTML] Final state: pageFullyReady=' + window.pageFullyReady);
+        window.hideLoadingAndShowContent('timeout-max');
+      }
+    }, 4000);
+    
+    // Also show on any user interaction
+    const handleInteraction = (e) => {
+      if (uiInitialized) return; // Already shown
+      console.log('[LOGIN HTML] 👆 User interaction detected:', e.type);
+      
+      if (window.pageFullyReady === true) {
+        if (readinessCheck) clearInterval(readinessCheck);
+        clearTimeout(maxWaitTimeout);
+        window.hideLoadingAndShowContent('user-' + e.type);
+      } else {
+        console.warn(`[LOGIN HTML] ⚠️ User ${e.type} but page not fully ready. pageFullyReady=${window.pageFullyReady}`);
+        if (window.NotificationSystem) {
+          console.log('[LOGIN HTML] 💬 Showing warning notification...');
+          window.NotificationSystem.warning('Espera un momento para que cargue completamente...');
+        } else {
+          console.warn('[LOGIN HTML] ⚠️ NotificationSystem not available yet');
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleInteraction, { passive: true });
+    document.addEventListener('touchstart', handleInteraction, { passive: true });
+    
+    console.log('[LOGIN HTML] ✅ Splash screen logic loaded!');
   </script>
   <script type="module" src="script.js"></script>
 </body>

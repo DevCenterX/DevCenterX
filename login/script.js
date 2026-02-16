@@ -2,12 +2,30 @@
 // LOGIN PAGE - Firebase Authentication (OPTIMIZED)
 // ============================================
 
+console.log('[LOGIN] 🚀 Script loading started (ts: ' + Date.now() + ')');
+
+// State variables - inline for IMMEDIATE initialization
+let firebaseReady = false;
+let auth = null;
+let db = null;
+let uiElementsReady = false;
+let eventListenersReady = false;
+let pageFullyReady = false;
+let firebaseInitStartTime = Date.now();
+let initAttempts = 0;
+let uiInitialized_script = false;
+let eventListenersAttached = false;
+
+console.log('[LOGIN] 📋 State variables initialized (ts: ' + Date.now() + ')');
+
 // NOTIFICATION SYSTEM - Initialize early
 const NotificationSystem = (() => {
   const container = document.getElementById('notificationContainer');
+  console.log('[LOGIN] 📢 Notification container:', container ? '✅ Found' : '❌ Not found');
   
   return {
     show(message, type = 'info', duration = 4000) {
+      console.log(`[LOGIN] 💬 ${type.toUpperCase()}: ${message}`);
       const notification = document.createElement('div');
       notification.className = `notification notification-${type}`;
       
@@ -70,30 +88,51 @@ let firebaseInitStartTime = Date.now();
 
 function checkPageReady() {
   const ready = firebaseReady && uiElementsReady && eventListenersReady;
+  const timestamp = Date.now() - firebaseInitStartTime;
+  
   if (ready && !pageFullyReady) {
     pageFullyReady = true;
-    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! All systems operational!');
+    console.log(`[LOGIN] 🎉🎉🎉 PAGE FULLY READY! All systems operational! (${timestamp}ms)`);
     window.pageFullyReady = true;
     if (window.hideLoadingAndShowContent) {
+      console.log('[LOGIN] 📞 Calling hideLoadingAndShowContent...');
       window.hideLoadingAndShowContent('all-systems-ready');
+    } else {
+      console.warn('[LOGIN] ⚠️ hideLoadingAndShowContent not available');
+    }
+  } else if (!ready) {
+    const elapsed = timestamp;
+    if (elapsed % 500 === 0) { // Log sparingly
+      console.log(`[LOGIN] ⏳ Status (${elapsed}ms): Firebase=${firebaseReady} UI=${uiElementsReady} Listeners=${eventListenersReady}`);
     }
   }
+  
   return ready;
 }
 
-console.log('[LOGIN] ⏱️ Firebase initialization started');
+console.log('[LOGIN] ⏱️ Firebase initialization started (ts: ' + Date.now() + ')');
+console.log('[LOGIN] 🚀 BEGINNING FIREBASE IIFE');
 
 // Initialize Firebase asynchronously during splash screen
 (async () => {
+  console.log('[LOGIN] 📥 INSIDE FIREBASE IIFE - Starting imports (ts: ' + Date.now() + ')');
   try {
     console.log('[LOGIN] 📥 Importing Firebase modules...');
+    const firebaseImportStart = Date.now();
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+    console.log(`[LOGIN] 📦 firebase-app imported (${Date.now() - firebaseImportStart}ms)`);
+    
+    const authImportStart = Date.now();
     const { 
       getAuth, 
       setPersistence,
       browserLocalPersistence 
     } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+    console.log(`[LOGIN] 📦 firebase-auth imported (${Date.now() - authImportStart}ms)`);
+    
+    const dbImportStart = Date.now();
     const { getFirestore } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+    console.log(`[LOGIN] 📦 firebase-firestore imported (${Date.now() - dbImportStart}ms)`);
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
@@ -105,6 +144,7 @@ console.log('[LOGIN] ⏱️ Firebase initialization started');
       measurementId: "G-S5GTYBRVK8"
     };
 
+    console.log('[LOGIN] 🔧 Initializing Firebase app...');
     const app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
@@ -115,15 +155,18 @@ console.log('[LOGIN] ⏱️ Firebase initialization started');
     firebaseReady = true;
     const initTime = Date.now() - firebaseInitStartTime;
     console.log(`[LOGIN] ✅ Firebase initialized successfully (${initTime}ms)`);
-    console.log('[LOGIN] 🔑 auth:', auth ? 'Ready' : 'Error');
-    console.log('[LOGIN] 🗄️ db:', db ? 'Ready' : 'Error');
+    console.log('[LOGIN] 🔑 auth:', auth ? '✅ Ready' : '❌ Error');
+    console.log('[LOGIN] 🗄️ db:', db ? '✅ Ready' : '❌ Error');
+    console.log('[LOGIN] 📊 State after Firebase: firebaseReady=' + firebaseReady);
+    console.log('[LOGIN] 🎯 Calling checkPageReady() from Firebase init...');
     checkPageReady();
+    console.log('[LOGIN] ✅ Firebase IIFE completed!');
   } catch (error) {
     console.error('[LOGIN] ❌ Firebase init error:', error);
-    NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
-  }
-})();
-    NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
+    console.error('[LOGIN] Error details:', error.message);
+    if (window.NotificationSystem) {
+      NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
+    }
   }
 })();
 
@@ -399,13 +442,57 @@ function initializeUI() {
 
 // Make reinitializeUI globally accessible for splash screen
 window.reinitializeUI = initializeUI;
+console.log('[LOGIN] 🌐 window.reinitializeUI exposed (ts: ' + Date.now() + ')');
 
-// Wait for DOM to be ready and Firebase to load during splash
+// IMMEDIATE UI initialization attempt
+console.log('[LOGIN] 🚀 Attempting immediate initializeUI (DOM state: ' + document.readyState + ')');
+initializeUI();
+
+// But also wait for DOM if needed
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeUI);
+  console.log('[LOGIN] ⏳ DOM is loading, will reinitialize on DOMContentLoaded...');
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[LOGIN] ✅ DOMContentLoaded fired! Reinitializing UI...');
+    setTimeout(() => initializeUI(), 50);
+  });
 } else {
-  initializeUI();
+  console.log('[LOGIN] ✅ DOM already loaded');
 }
 
-// Force re-initialization after a safe delay to ensure Firebase is ready
-setTimeout(initializeUI, 1000);
+// AGGRESSIVE re-initialization attempts - every 100ms for first 2 seconds
+console.log('[LOGIN] 🔄 Starting aggressive initialization retries...');
+for (let i = 1; i <= 20; i++) {
+  setTimeout(() => {
+    if (!pageFullyReady) {
+      const ready = checkPageReady();
+      if (i <= 5 || i % 5 === 0) {
+        console.log(`[LOGIN] ⏱️ Retry #${i} (${i * 100}ms): ${ready ? '✅ READY' : '⏳ NOT READY'} [F=${firebaseReady} U=${uiElementsReady} L=${eventListenersReady}]`);
+      }
+      if (!ready) {
+        initializeUI();
+      }
+    }
+  }, i * 100);
+}
+
+// Aggressive monitoring - check every 100ms
+console.log('[LOGIN] 📊 Starting aggressive readiness monitoring...');
+let monitoringAttempts = 0;
+const readinessInterval = setInterval(() => {
+  monitoringAttempts++;
+  if (monitoringAttempts % 5 === 0) { // Log every 500ms
+    console.log(`[LOGIN] 📊 Monitor #${monitoringAttempts} (${monitoringAttempts * 100}ms): Firebase=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} Listeners=${eventListenersReady ? '✅' : '❌'} FullyReady=${pageFullyReady ? '✅' : '❌'}`);
+  }
+  if (pageFullyReady) {
+    clearInterval(readinessInterval);
+    console.log('[LOGIN] 🎉 Page fully ready - monitoring stopped after ' + (monitoringAttempts * 100) + 'ms');
+  }
+}, 100);
+
+setTimeout(() => {
+  if (!pageFullyReady) {
+    console.warn('[LOGIN] ⚠️⚠️⚠️ Page NOT fully ready after 5 seconds!');
+    console.warn(`[LOGIN] Firebase=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} Listeners=${eventListenersReady ? '✅' : '❌'}`);
+  }
+  clearInterval(readinessInterval);
+}, 5000);
