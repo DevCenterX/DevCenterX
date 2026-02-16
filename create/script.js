@@ -2,10 +2,6 @@
 // CREATE ACCOUNT PAGE - Firebase Authentication
 // ============================================
 
-console.log('[CREATE] 🚀 Script loading - PHASE 1: Initial log');
-console.log('[CREATE] 📍 Window object:', typeof window !== 'undefined' ? '✅' : '❌');
-console.log('[CREATE] 📍 Document object:', typeof document !== 'undefined' ? '✅' : '❌');
-
 // ===== STATE VARIABLES =====
 let firebaseReady = false;
 let uiElementsReady = false;
@@ -17,14 +13,13 @@ let db = null;
 let uiInitialized_script = false;
 let eventListenersAttached = false;
 
-console.log('[CREATE] 📋 State variables initialized');
+
 
 // ===== NOTIFICATION SYSTEM =====
 const NotificationSystem = (() => {
   const container = document.getElementById('notificationContainer');
   return {
     show(msg, type = 'info', dur = 4000) {
-      console.log(`[CREATE] 💬 ${type}: ${msg}`);
       if (!container) return;
       const notification = document.createElement('div');
       notification.className = `notification notification-${type}`;
@@ -44,7 +39,7 @@ const NotificationSystem = (() => {
   };
 })();
 
-console.log('[CREATE] ✅ NotificationSystem initialized');
+
 
 // ===== CHECK PAGE READY =====
 function checkPageReady() {
@@ -54,15 +49,9 @@ function checkPageReady() {
   
   if (allReady && !pageFullyReady) {
     pageFullyReady = true;
-    console.log('[CREATE] 🎉🎉🎉 PAGE FULLY READY! Setting window.pageFullyReady=true');
     window.pageFullyReady = true;
-    console.log('[CREATE] ✅ window.pageFullyReady is now:', window.pageFullyReady);
     if (window.hideLoadingAndShowContent) {
-      console.log('[CREATE] 📞 Calling hideLoadingAndShowContent("all-systems-ready")...');
       window.hideLoadingAndShowContent('all-systems-ready');
-      console.log('[CREATE] ✅ hideLoadingAndShowContent completed');
-    } else {
-      console.warn('[CREATE] ⚠️ window.hideLoadingAndShowContent not available!');
     }
   }
   
@@ -71,41 +60,25 @@ function checkPageReady() {
 
 
 // ===== FIREBASE INITIALIZATION =====
-console.log('[CREATE] 🔥 PHASE 2: Starting Firebase initialization...');
-console.log('[CREATE] ⏰ Timestamp:', new Date().toISOString());
-
 (async () => {
   try {
-    console.log('[CREATE] 📥 PHASE 2A: About to import Firebase modules...');
-    
     let firebaseApp, authModule, dbModule;
     let retries = 0;
     const maxRetries = 3;
     let lastError = null;
     
-    console.log('[CREATE] 🔄 Starting import attempts (max: ' + maxRetries + ')');
-    
     while (retries < maxRetries) {
       try {
         retries++;
-        console.log(`[CREATE] 🔄 PHASE 2B.${retries}: Import attempt #${retries}...`);
         
-        console.log('[CREATE] 📦 Loading firebase-app.js from https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js');
         const initRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
         firebaseApp = initRes.initializeApp;
-        console.log('[CREATE] ✅ firebase-app loaded');
         
-        console.log('[CREATE] 📦 Loading firebase-auth.js');
         const authRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
         authModule = authRes;
-        console.log('[CREATE] ✅ firebase-auth loaded');
         
-        console.log('[CREATE] 📦 Loading firebase-firestore.js');
         const dbRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
         dbModule = dbRes;
-        console.log('[CREATE] ✅ firebase-firestore loaded');
-        
-        console.log('[CREATE] 🎉 All modules imported successfully on attempt #' + retries);
         
         const firebaseConfig = {
           apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
@@ -117,31 +90,21 @@ console.log('[CREATE] ⏰ Timestamp:', new Date().toISOString());
           measurementId: "G-S5GTYBRVK8"
         };
         
-        console.log('[CREATE] 🔧 PHASE 2C: Initializing Firebase app...');
         const app = firebaseApp(firebaseConfig);
-        console.log('[CREATE] ✅ Firebase app initialized');
         
         auth = authModule.getAuth(app);
-        console.log('[CREATE] ✅ Auth module ready');
         db = dbModule.getFirestore(app);
-        console.log('[CREATE] ✅ Firestore database ready');
         
-        console.log('[CREATE] 🔐 Setting persistence...');
         await authModule.setPersistence(auth, authModule.browserLocalPersistence);
-        console.log('[CREATE] ✅ Persistence set');
         
         firebaseReady = true;
-        console.log('[CREATE] ✅✅✅ FIREBASE FULLY INITIALIZED! firebaseReady=true');
         checkPageReady();
         break;
         
       } catch (err) {
         lastError = err;
-        console.error(`[CREATE] ❌ Attempt #${retries} FAILED:`, err.message);
-        console.error('[CREATE] Error details:', err);
         
         if (retries < maxRetries) {
-          console.log(`[CREATE] ⏳ Waiting 500ms before retry #${retries + 1}...`);
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
@@ -154,14 +117,10 @@ console.log('[CREATE] ⏰ Timestamp:', new Date().toISOString());
     console.log('[CREATE] 🎉 Firebase initialization COMPLETE');
     
   } catch (error) {
-    console.error('[CREATE] ❌❌❌ FATAL ERROR in Firebase init:', error);
-    console.error('[CREATE] Stack:', error.stack);
     NotificationSystem.error('Firebase error: ' + (error.message || 'Unknown'));
     firebaseReady = false;
   }
 })();
-
-console.log('[CREATE] PHASE 2 END: Firebase initialization async function started');
 
 // ===== HELPER FUNCTIONS =====
 async function saveUserData(user, provider) {
@@ -182,9 +141,8 @@ async function saveUserData(user, provider) {
     });
     localStorage.setItem('devcenter_user_id', user.uid);
     localStorage.setItem('devcenter_isLoggedIn', 'true');
-    console.log('[CREATE] ✅ User data saved');
   } catch (error) {
-    console.error('[CREATE] ❌ Save error:', error);
+    console.error('[CREATE] Save error: ', error);
   }
 }
 
@@ -199,15 +157,21 @@ function handleAuthError(error) {
 }
 
 function setButtonLoading(btn, loading) {
-  if (!btn) return;
-  if (loading) {
-    btn.disabled = true;
-    btn.classList.add('loading');
-    btn.dataset.originalText = btn.innerText;
-  } else {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
+  if (!btn || !btn.parentElement) return;
+  try {
+    if (loading) {
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.dataset.originalText = btn.innerText;
+    } else {
+      if (btn.parentElement) {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
+      }
+    }
+  } catch (e) {
+    console.error('Error in setButtonLoading:', e);
   }
 }
 
@@ -216,7 +180,6 @@ function setButtonLoading(btn, loading) {
 function attachEventListeners() {
   if (eventListenersAttached) return;
   eventListenersAttached = true;
-  console.log('[CREATE] 🔗 Attaching event listeners...');
   
   try {
     const emailBtn = document.querySelector('.email-auth-option');
@@ -225,12 +188,6 @@ function attachEventListeners() {
     const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
     const backBtn = document.querySelector('.split-auth-back');
 
-    console.log('[CREATE] 🎯 Elements found:');
-    console.log('  emailBtn:', emailBtn ? '✅' : '❌');
-    console.log('  form:', form ? '✅' : '❌');
-    console.log('  googleBtn:', googleBtn ? '✅' : '❌');
-    console.log('  githubBtn:', githubBtn ? '✅' : '❌');
-    console.log('  backBtn:', backBtn ? '✅' : '❌');
 
     // Email toggle
     if (emailBtn && form) {
@@ -239,7 +196,6 @@ function attachEventListeners() {
         form.style.display = isHidden ? 'block' : 'none';
         emailBtn.style.display = isHidden ? 'none' : 'flex';
       });
-      console.log('[CREATE] ✅ Email toggle listener attached');
     }
 
     // Password visibility
@@ -260,7 +216,6 @@ function attachEventListeners() {
         }
       });
     });
-    console.log('[CREATE] ✅ Password toggle listeners attached');
 
     // Email register form
     if (form) {
@@ -293,7 +248,6 @@ function attachEventListeners() {
           setButtonLoading(btn, false);
         }
       });
-      console.log('[CREATE] ✅ Email register listener attached');
     }
 
     // Google auth
@@ -317,7 +271,6 @@ function attachEventListeners() {
           setButtonLoading(googleBtn, false);
         }
       });
-      console.log('[CREATE] ✅ Google auth listener attached');
     }
 
     // GitHub auth
@@ -341,7 +294,6 @@ function attachEventListeners() {
           setButtonLoading(githubBtn, false);
         }
       });
-      console.log('[CREATE] ✅ GitHub auth listener attached');
     }
 
     // Back button
@@ -350,15 +302,12 @@ function attachEventListeners() {
         e.preventDefault();
         window.location.href = '/agent.html';
       });
-      console.log('[CREATE] ✅ Back button listener attached');
     }
 
     eventListenersReady = true;
-    console.log('[CREATE] ✅ ALL EVENT LISTENERS ATTACHED SUCCESSFULLY!');
     checkPageReady();
     
   } catch (error) {
-    console.error('[CREATE] ❌ Error attaching listeners:', error);
     eventListenersReady = false;
   }
 }
@@ -366,8 +315,7 @@ function attachEventListeners() {
 // ===== INITIALIZE UI =====
 function initializeUI() {
   if (uiInitialized_script) return;
-  
-  console.log('[CREATE] 🎨 Attempting to initialize UI...');
+
   
   try {
     const emailBtn = document.querySelector('.email-auth-option');
@@ -376,13 +324,11 @@ function initializeUI() {
     const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
     
     if (!emailBtn || !form || !googleBtn || !githubBtn) {
-      console.log('[CREATE] ⏳ UI elements not found yet, retrying...');
-      console.log('[CREATE] 📍 Elements found: email=' + (emailBtn ? 'yes' : 'no') + ', form=' + (form ? 'yes' : 'no') + ', google=' + (googleBtn ? 'yes' : 'no') + ', github=' + (githubBtn ? 'yes' : 'no'));
       return;
     }
     
     uiInitialized_script = true;
-    console.log('[CREATE] 🎯 UI elements found!');
+
     
     [emailBtn, googleBtn, githubBtn].forEach((btn) => {
       if (btn) {
@@ -393,68 +339,50 @@ function initializeUI() {
     });
     
     uiElementsReady = true;
-    console.log('[CREATE] 🎨 UI initialized successfully!');
+
     
     attachEventListeners();
     checkPageReady();
     
   } catch (error) {
-    console.error('[CREATE] ❌ Error initializing UI:', error);
     uiInitialized_script = false;
   }
 }
 
 // ===== MAIN INITIALIZATION =====
-console.log('[CREATE] 🌐 Exposing window functions...');
 window.reinitializeUI = initializeUI;
-
-console.log('[CREATE] 📅 DOM readyState:', document.readyState);
 
 // Wait for DOM to be fully ready
 if (document.readyState === 'loading') {
-  console.log('[CREATE] ⏳ Waiting for DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('[CREATE] ✅ DOMContentLoaded fired!');
     setTimeout(() => {
-      console.log('[CREATE] 🚀 Calling initializeUI after DOMContentLoaded...');
       initializeUI();
     }, 50);
   });
 } else {
-  console.log('[CREATE] ✅ DOM already fully loaded');
   setTimeout(() => {
-    console.log('[CREATE] 🚀 Calling initializeUI immediately...');
     initializeUI();
   }, 50);
 }
 
 // Aggressive retry loop
-console.log('[CREATE] 🔄 Starting aggressive retry loop...');
 for (let i = 1; i <= 50; i++) {
   setTimeout(() => {
     if (!pageFullyReady && !uiInitialized_script) {
-      if (i <= 5 || i % 10 === 0) {
-        console.log(`[CREATE] 🔄 Retry #${i} (${i * 50}ms): Trying initializeUI...`);
-      }
       initializeUI();
     }
   }, i * 50);
 }
 
 // Indefinite monitoring
-console.log('[CREATE] 📊 Starting indefinite monitoring (NO TIMEOUT)...');
 let monitorCount = 0;
 const monitor = setInterval(() => {
   monitorCount++;
   
-  if (monitorCount % 10 === 0) {
-    console.log(`[CREATE] 📊 Monitor #${monitorCount} (${monitorCount * 100}ms): FB=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} L=${eventListenersReady ? '✅' : '❌'} READY=${pageFullyReady ? '✅' : '❌'}`);
-  }
-  
   if (pageFullyReady) {
     clearInterval(monitor);
-    console.log('[CREATE] 🎉🎉🎉 PAGE FULLY READY! Monitor stopped after ' + (monitorCount * 100) + 'ms');
+    console.log('===============================================');
+    console.log('PAGE READY! Monitor stopped after ' + (monitorCount * 100) + 'ms');
+    console.log('===============================================');
   }
 }, 100);
-
-console.log('[CREATE] ✅ Script fully loaded! Waiting for all systems to be ready...');
