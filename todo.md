@@ -1,6 +1,6 @@
 # Estructura de Firebase Firestore - DevCenterX
 Web: https://devcenterx.vercel.app
-
+.
 
 Tu base de datos Firebase (`devcenter-agent-48c86`) tiene 3 colecciones principales:
 
