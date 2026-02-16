@@ -13,13 +13,12 @@ let db = null;
 let uiInitialized_script = false;
 let eventListenersAttached = false;
 
-
-
 // ===== NOTIFICATION SYSTEM =====
 const NotificationSystem = (() => {
   const container = document.getElementById('notificationContainer');
   return {
     show(msg, type = 'info', dur = 4000) {
+      console.log(`[LOGIN] 💬 ${type}: ${msg}`);
       if (!container) return;
       const notification = document.createElement('div');
       notification.className = `notification notification-${type}`;
@@ -38,8 +37,6 @@ const NotificationSystem = (() => {
     warning(m, d) { return this.show(m, 'warning', d); }
   };
 })();
-
-
 
 // ===== CHECK PAGE READY =====
 function checkPageReady() {
@@ -88,7 +85,6 @@ function checkPageReady() {
         };
         
         const app = firebaseApp(firebaseConfig);
-        
         auth = authModule.getAuth(app);
         db = dbModule.getFirestore(app);
         
@@ -100,6 +96,7 @@ function checkPageReady() {
         
       } catch (err) {
         lastError = err;
+        console.error(`Firebase import attempt #${retries} failed:`, err.message);
         
         if (retries < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -111,13 +108,13 @@ function checkPageReady() {
       throw new Error(`Firebase not initialized after ${maxRetries} attempts. Last error: ${lastError?.message}`);
     }
     
-    console.log('[LOGIN] 🎉 Firebase initialization COMPLETE');
-    
   } catch (error) {
+    console.error('Firebase initialization error:', error);
     NotificationSystem.error('Firebase error: ' + (error.message || 'Unknown'));
     firebaseReady = false;
   }
 })();
+
 
 // ===== HELPER FUNCTIONS =====
 async function saveUserData(user, provider) {
@@ -145,7 +142,7 @@ async function saveUserData(user, provider) {
     localStorage.setItem('devcenter_user_id', user.uid);
     localStorage.setItem('devcenter_isLoggedIn', 'true');
   } catch (error) {
-    console.error('[LOGIN] Save error:', error);
+    console.error('User data save error:', error);
   }
 }
 
@@ -163,21 +160,15 @@ function handleAuthError(error) {
 }
 
 function setButtonLoading(btn, loading) {
-  if (!btn || !btn.parentElement) return;
-  try {
-    if (loading) {
-      btn.disabled = true;
-      btn.classList.add('loading');
-      btn.dataset.originalText = btn.innerText;
-    } else {
-      if (btn.parentElement) {
-        btn.disabled = false;
-        btn.classList.remove('loading');
-        if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
-      }
-    }
-  } catch (e) {
-    console.error('Error in setButtonLoading:', e);
+  if (!btn) return;
+  if (loading) {
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.dataset.originalText = btn.innerText;
+  } else {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
   }
 }
 
@@ -192,7 +183,6 @@ function attachEventListeners() {
     const googleBtn = document.querySelectorAll('.social-auth-btn')[0];
     const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
     const backBtn = document.querySelector('.split-auth-back');
-
 
     // Email toggle
     if (emailBtn && form) {
@@ -310,6 +300,7 @@ function attachEventListeners() {
     checkPageReady();
     
   } catch (error) {
+    console.error('Error attaching listeners:', error);
     eventListenersReady = false;
   }
 }
@@ -317,7 +308,6 @@ function attachEventListeners() {
 // ===== INITIALIZE UI =====
 function initializeUI() {
   if (uiInitialized_script) return;
-
   
   try {
     const emailBtn = document.querySelector('.email-auth-option');
@@ -330,7 +320,6 @@ function initializeUI() {
     }
     
     uiInitialized_script = true;
-
     
     [emailBtn, googleBtn, githubBtn].forEach((btn) => {
       if (btn) {
@@ -341,12 +330,11 @@ function initializeUI() {
     });
     
     uiElementsReady = true;
-
-    
     attachEventListeners();
     checkPageReady();
     
   } catch (error) {
+    console.error('Error initializing UI:', error);
     uiInitialized_script = false;
   }
 }
