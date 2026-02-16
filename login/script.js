@@ -82,6 +82,12 @@ function checkPageReady() {
 }
 
 console.log('[LOGIN] ⏱️ Firebase initialization started');
+
+// Initialize Firebase asynchronously during splash screen
+(async () => {
+  try {
+    console.log('[LOGIN] 📥 Importing Firebase modules...');
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
     const { 
       getAuth, 
       setPersistence,
@@ -103,11 +109,20 @@ console.log('[LOGIN] ⏱️ Firebase initialization started');
     auth = getAuth(app);
     db = getFirestore(app);
     
+    console.log('[LOGIN] 🔐 Setting persistence...');
     await setPersistence(auth, browserLocalPersistence);
+    
     firebaseReady = true;
-    console.log('[login] Firebase initialized');
+    const initTime = Date.now() - firebaseInitStartTime;
+    console.log(`[LOGIN] ✅ Firebase initialized successfully (${initTime}ms)`);
+    console.log('[LOGIN] 🔑 auth:', auth ? 'Ready' : 'Error');
+    console.log('[LOGIN] 🗄️ db:', db ? 'Ready' : 'Error');
+    checkPageReady();
   } catch (error) {
-    console.error('[login] Firebase init error:', error);
+    console.error('[LOGIN] ❌ Firebase init error:', error);
+    NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
+  }
+})();
     NotificationSystem.error('Error cargando autenticación. Por favor recarga la página.');
   }
 })();

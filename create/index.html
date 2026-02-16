@@ -370,36 +370,55 @@
     
     console.log('[CREATE HTML] 📅 Window loaded, setting timing logic...');
     
-    // Wait for everything to be ready
-    const readinessCheck = setInterval(() => {
-      if (window.pageFullyReady) {
-        console.log('[CREATE HTML] 🎉 Page fully ready detected! Showing content...');
-        clearInterval(readinessCheck);
-        window.hideLoadingAndShowContent('script-ready');
-      }
-    }, 100);
+    // Wait for everything to be ready - check every 50ms
+    let readinessCheck = null;
+    let readinessAttempts = 0;
     
-    // BUT: If it takes too long, show it anyway (max 5 seconds)
+    const startReadinessCheck = () => {
+      readinessCheck = setInterval(() => {
+        readinessAttempts++;
+        
+        const hasModuleReady = window.pageFullyReady === true;
+        const hasScriptReady = window.pageFullyReady === true;
+        
+        if (readinessAttempts % 20 === 0) { // Log every 1 second
+          console.log(`[CREATE HTML] 📊 Check #${readinessAttempts} (${readinessAttempts * 50}ms): pageFullyReady=${hasModuleReady}`);
+        }
+        
+        if (hasScriptReady) {
+          console.log(`[CREATE HTML] 🎉 Page fully ready detected! Showing content after ${readinessAttempts * 50}ms...`);
+          clearInterval(readinessCheck);
+          window.hideLoadingAndShowContent('script-ready');
+        }
+      }, 50);
+    };
+    
+    // Start checking immediately
+    startReadinessCheck();
+    
+    // BUT: If it takes too long, show it anyway (max 6 seconds)
     const maxWaitTimeout = setTimeout(() => {
-      clearInterval(readinessCheck);
+      if (readinessCheck) clearInterval(readinessCheck);
       if (!uiInitialized) {
-        console.warn('[CREATE HTML] ⚠️ Max wait time reached (5s), showing page anyway');
+        console.warn('[CREATE HTML] ⚠️ Max wait time reached (6s), showing page anyway');
+        console.warn('[CREATE HTML] pageFullyReady=' + window.pageFullyReady);
         window.hideLoadingAndShowContent('timeout-max');
       }
-    }, 5000);
+    }, 6000);
     
     // Also show on any user interaction
     const handleInteraction = (e) => {
       if (uiInitialized) return; // Already shown
       console.log('[CREATE HTML] 👆 User interaction detected:', e.type);
       
-      if (window.pageFullyReady) {
-        clearInterval(readinessCheck);
+      if (window.pageFullyReady === true) {
+        if (readinessCheck) clearInterval(readinessCheck);
         clearTimeout(maxWaitTimeout);
         window.hideLoadingAndShowContent('user-' + e.type);
       } else {
-        console.warn('[CREATE HTML] ⚠️ User clicked but page not fully ready yet');
+        console.warn('[CREATE HTML] ⚠️ User clicked but page not fully ready yet. pageFullyReady=' + window.pageFullyReady);
         if (window.NotificationSystem) {
+          console.log('[CREATE HTML] 💬 Showing warning notification...');
           window.NotificationSystem.warning('Espera un momento para que cargue completamente...');
         }
       }
