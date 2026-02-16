@@ -329,32 +329,76 @@
   </div>
 
   <script>
+    console.log('[CREATE HTML] 🚀 Initializing splash screen logic...');
+    
     // Splash screen animation and content loading
     let uiInitialized = false;
-    function showCreatePage() {
-      if (uiInitialized) return;
+    let splashShownTime = Date.now();
+    
+    function showCreatePage(reason) {
+      if (uiInitialized) {
+        console.warn('[CREATE HTML] ⚠️ Already initialized, skipping (reason: ' + reason + ')');
+        return;
+      }
+      
+      uiInitialized = true;
+      const elapsedTime = Date.now() - splashShownTime;
+      console.log(`[CREATE HTML] ✅ Showing create page (after ${elapsedTime}ms, reason: ${reason})`);
+      
       const splash = document.getElementById('splashScreen');
       const createPage = document.getElementById('createPage');
+      
+      console.log('[CREATE HTML] 🎯 Elements:');
+      console.log('  splash:', splash ? '✅' : '❌');
+      console.log('  createPage:', createPage ? '✅' : '❌');
+      
       if (splash) {
         splash.classList.add('hidden');
         splash.style.pointerEvents = 'none';
+        splash.style.display = 'none';
+        console.log('[CREATE HTML] ✅ Splash hidden');
       }
+      
       if (createPage) {
         createPage.classList.remove('hidden-content');
         createPage.style.pointerEvents = 'auto';
+        createPage.style.opacity = '1';
+        createPage.style.visibility = 'visible';
+        console.log('[CREATE HTML] ✅ Create page shown');
       }
-      uiInitialized = true;
-      // Re-initialize UI after page becomes visible
-      if (window.reinitializeUI) window.reinitializeUI();
+      
+      // Trigger UI initialization in the script module
+      if (window.reinitializeUI) {
+        console.log('[CREATE HTML] 📞 Calling window.reinitializeUI()...');
+        window.reinitializeUI();
+      } else {
+        console.warn('[CREATE HTML] ⚠️ window.reinitializeUI not available yet');
+      }
     }
     
-    window.addEventListener('DOMContentLoaded', () => {
-      // Show page after splash animation (2.4s) or timeout
-      setTimeout(showCreatePage, 2500);
-      // Also show on any user interaction (for faster mobile response)
-      document.addEventListener('click', () => { if (!uiInitialized) showCreatePage(); }, { once: true });
-      document.addEventListener('touchstart', () => { if (!uiInitialized) showCreatePage(); }, { once: true });
-    });
+    console.log('[CREATE HTML] 📅 Window loaded, setting timing logic...');
+    
+    // Show page after splash animation (2.4s) but can be triggered earlier
+    const splashTimeout = setTimeout(() => {
+      console.log('[CREATE HTML] ⏱️ Timeout reached (2.5s), calling showCreatePage...');
+      showCreatePage('timeout');
+    }, 2500);
+    
+    // Also show on any user interaction (for faster mobile response)
+    const handleInteraction = (e) => {
+      console.log('[CREATE HTML] 👆 User interaction:', e.type);
+      clearTimeout(splashTimeout);
+      showCreatePage('user-' + e.type);
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
+    
+    document.addEventListener('click', handleInteraction, { once: false, passive: true });
+    document.addEventListener('touchstart', handleInteraction, { once: false, passive: true });
+    document.addEventListener('keydown', handleInteraction, { once: false, passive: true });
+    
+    console.log('[CREATE HTML] ✅ Splash screen logic loaded!');
   </script>
   <script type="module" src="script.js"></script>
 </body>
