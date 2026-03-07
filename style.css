@@ -181,8 +181,169 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================
-   GLOBAL SCROLLBAR STYLING
+/* NAVIGATION AND PUBLIC PAGES */
+.site-header {
+  background: var(--bg-secondary);
+  border-bottom: var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.site-header .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.site-header .logo {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.main-nav {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+}
+
+.main-nav a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--font-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.btn-login {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* hero area */
+.hero {
+  padding: 4rem 1rem;
+  background: var(--bg-primary);
+  text-align: center;
+}
+
+.hero .container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: var(--font-2xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.hero p {
+  font-size: var(--font-md);
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-secondary);
+}
+
+.services-list {
+  list-style: disc inside;
+  text-align: left;
+  max-width: 400px;
+  margin: 0 auto var(--spacing-lg);
+  color: var(--text-secondary);
+}
+
+.btn-contact {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* content pages */
+.content {
+  padding: 2rem 1rem;
+  background: var(--bg-primary);
+}
+
+.content h1 {
+  font-size: var(--font-2xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+.content p, .content ul {
+  font-size: var(--font-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.content ul {
+  list-style: disc inside;
+}
+
+.email-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-form {
+  margin-top: var(--spacing-lg);
+  display: grid;
+  gap: var(--spacing-md);
+  max-width: 400px;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.contact-form label {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.btn-submit {
+  background: var(--accent);
+  color: #fff;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .site-header .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .main-nav {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* GLOBAL SCROLLBAR STYLING
    ============================================ */
 ::-webkit-scrollbar {
   width: 8px;

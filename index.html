@@ -54,22 +54,41 @@
   </script>
 </head>
 <body>
+  <!-- login redirect removed to keep homepage public -->
   <script>
-    (function(){
-      try {
-        var id = localStorage.getItem('devcenter_user_id');
-        var isLogged = localStorage.getItem('devcenter_isLoggedIn');
-        // Only require a valid login flag and user id here.
-        // The user's display name can be fetched asynchronously after page load.
-        if (!(isLogged === 'true' && id)) {
-          window.location.replace('agent.html');
-        }
-      } catch (e) {
-        console.error('Storage check failed', e);
-        window.location.replace('agent.html');
-      }
-    })();
+    function redirectToAgent() {
+      window.location.href = 'agent.html';
+    }
   </script>
+  <!-- SITE HEADER -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">DevCenterX</a>
+      <nav class="main-nav">
+        <a href="/">Inicio</a>
+        <a href="sobre-nosotros.html">Sobre nosotros</a>
+        <a href="servicios.html">Servicios</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="agent.html" class="btn-login" onclick="redirectToAgent()">Entrar</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO / ABOUT SECTION -->
+  <section class="hero">
+    <div class="container">
+      <h1>DevCenterX</h1>
+      <p>DevCenterX es un proyecto enfocado en el desarrollo de software, soluciones web y tecnología digital. Nuestro objetivo es crear herramientas modernas, eficientes y accesibles que ayuden a personas y empresas a aprovechar mejor la tecnología y mejorar su presencia digital.</p>
+      <ul class="services-list">
+        <li>Desarrollo de páginas web</li>
+        <li>Soluciones de software personalizadas</li>
+        <li>Integraciones tecnológicas</li>
+        <li>Proyectos digitales y automatización</li>
+      </ul>
+      <a href="mailto:justininventor.dev@gmail.com" class="btn-contact">Contactar</a>
+    </div>
+  </section>
+
   <!-- LOADING SCREEN -->
   <div id="loadingScreen" class="loading-screen" style="display: none;">
     <div class="loading-content">
