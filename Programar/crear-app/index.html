@@ -104,7 +104,7 @@
               type="text"
               id="appName"
               required
-              maxlength="100"
+              maxlength="15"
               placeholder="mi-aplicacion-increible"
               spellcheck="false"
             />
@@ -121,6 +121,7 @@
             <textarea
               id="appDesc"
               rows="4"
+              maxlength="500"
               placeholder="Qué hace esta app, por qué existe..."
               spellcheck="false"
             ></textarea>
@@ -140,12 +141,14 @@
               id="tagInput"
               placeholder="ej. react, api, mobile…"
               spellcheck="false"
+              aria-label="Agregar etiqueta"
             />
+            <button type="button" id="addTagBtn" class="tag-add-btn" aria-label="Agregar etiqueta">Agregar</button>
           </div>
         </div>
 
         <div class="form-footer">
-          <div class="char-count" id="charCount">0 / 100</div>
+          <div class="char-count" id="charCount">0 / 15</div>
           <button type="submit" class="submit-btn" id="submitBtn">
             <span class="btn-label">Crear proyecto</span>
             <span class="btn-icon">

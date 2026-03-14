@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Tag management ────────────────────────────────────────────────────────
   const tagInput     = document.getElementById('tagInput');
   const tagContainer = document.getElementById('tagContainer');
+  const addTagBtn    = document.getElementById('addTagBtn');
   let   currentTags  = [];
   const MAX_TAGS     = 5;
 
@@ -166,25 +167,44 @@ document.addEventListener('DOMContentLoaded', () => {
       tagContainer.insertBefore(chip, tagInput);
     });
 
-    // disable input at max
+    // disable input + button at max
+    const disabled = currentTags.length >= MAX_TAGS;
     if (tagInput) {
-      tagInput.disabled    = currentTags.length >= MAX_TAGS;
-      tagInput.placeholder = currentTags.length >= MAX_TAGS
+      tagInput.disabled    = disabled;
+      tagInput.placeholder = disabled
         ? 'máximo alcanzado'
         : 'ej. react, api, mobile…';
     }
+    if (addTagBtn) {
+      addTagBtn.disabled = disabled;
+    }
+  }
+
+  function tryAddTag() {
+    if (!tagInput) return;
+    const val = tagInput.value.trim().replace(/,/g, '').toLowerCase();
+    if (!val) return;
+
+    if (currentTags.length >= MAX_TAGS) {
+      showToast(`Solo puedes agregar hasta ${MAX_TAGS} etiquetas.`, 'error');
+      return;
+    }
+    if (currentTags.includes(val)) {
+      showToast('Etiqueta ya agregada.', 'error');
+      tagInput.value = '';
+      return;
+    }
+
+    currentTags.push(val);
+    tagInput.value = '';
+    renderTags();
   }
 
   if (tagInput) {
     tagInput.addEventListener('keydown', e => {
       if ((e.key === 'Enter' || e.key === ',') && tagInput.value.trim()) {
         e.preventDefault();
-        const val = tagInput.value.trim().replace(/,/g, '').toLowerCase();
-        if (currentTags.length < MAX_TAGS && val && !currentTags.includes(val)) {
-          currentTags.push(val);
-          renderTags();
-        }
-        tagInput.value = '';
+        tryAddTag();
       }
       // delete last tag on Backspace when input empty
       if (e.key === 'Backspace' && tagInput.value === '' && currentTags.length) {
@@ -192,6 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTags();
       }
     });
+  }
+
+  if (addTagBtn) {
+    addTagBtn.addEventListener('click', tryAddTag);
   }
 
   // ── Form submit ───────────────────────────────────────────────────────────

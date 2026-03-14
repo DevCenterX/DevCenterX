@@ -533,3 +533,10 @@ body.auth-page {
   .create-card { padding: 1.25rem 1rem; }
   .card-title  { font-size: 1.4rem; }
 }
+
+/* Hide global landing header/footer to avoid overlapping the app builder UI */
+.landing-header,
+.landing-footer {
+  display: none !important;
+}
+
