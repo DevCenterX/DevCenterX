@@ -68,6 +68,7 @@ class ThemeManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.themeManager = new ThemeManager();
     initializeChatSystem();
+    loadGeneratedCode(); // Load code from sessionStorage if exists
 
     // Debug: Log current theme
     console.log('Tema inicial aplicado:', window.themeManager.getCurrentTheme());
@@ -3764,3 +3765,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialize app
 init();
+
+// Load generated code from sessionStorage (from Gemini AI chat)
+function loadGeneratedCode() {
+    try {
+        const generatedCode = sessionStorage.getItem('generatedCode');
+        if (!generatedCode) return;
+
+        const codeData = JSON.parse(generatedCode);
+        console.log('?? Código generado por Gemini AI detectado:', codeData.prompt);
+
+        // Load into editors
+        if (elements.htmlEditor && codeData.html) elements.htmlEditor.value = codeData.html;
+        if (elements.cssEditor && codeData.css) elements.cssEditor.value = codeData.css;
+        if (elements.jsEditor && codeData.js) elements.jsEditor.value = codeData.js;
+
+        // Update preview
+        updatePreview();
+
+        // Show success message in chat
+        const message = `? Código generado con éxito para: "${codeData.prompt}"
+
+He generado tu aplicación web con:
+• **HTML**: Estructura completa y semántica
+• **CSS**: Estilos modernos y responsive
+• **JavaScript**: Funcionalidades interactivas
+
+Puedes revisar el código en las pestañas de arriba o hacer cambios directamente. ¿Qué te gustaría modificar?`;
+
+        addChatMessage(message, 'ai');
+        startChat();
+
+        // Clear sessionStorage
+        sessionStorage.removeItem('generatedCode');
+
+        console.log('? Código cargado en editores');
+    } catch (error) {
+        console.error('Error cargando código generado:', error);
+    }
+}
