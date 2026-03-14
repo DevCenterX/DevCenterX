@@ -137,6 +137,50 @@ function showToast(message, type = 'success') {
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
+  // ── Recuperar idea de la IA desde el chat ─────────────────────────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const ideaFromUrl = urlParams.get('idea');
+  const ideaFromLS = localStorage.getItem('devcenter_app_idea');
+  const appIdea = ideaFromUrl || ideaFromLS;
+
+  if (appIdea) {
+    const descField = document.getElementById('appDesc');
+    if (descField) {
+      descField.value = appIdea;
+      // Mostrar notificación visual de que la idea fue detectada
+      const notificationDiv = document.createElement('div');
+      notificationDiv.style.cssText = `
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+      `;
+      notificationDiv.textContent = '✨ Idea del chat cargada!';
+      document.body.appendChild(notificationDiv);
+      
+      // Agregar animación CSS si no existe
+      if (!document.getElementById('notification-style')) {
+        const style = document.createElement('style');
+        style.id = 'notification-style';
+        style.textContent = `@keyframes slideInRight { from { transform: translateX(400px); } to { transform: translateX(0); } }`;
+        document.head.appendChild(style);
+      }
+      
+      // Remover notificación después de 3 segundos
+      setTimeout(() => notificationDiv.remove(), 3000);
+    }
+    
+    // Limpiar localStorage después de cargar
+    localStorage.removeItem('devcenter_app_idea');
+    localStorage.removeItem('devcenter_app_creation_time');
+  }
+
   // ── Tag management ────────────────────────────────────────────────────────
   const tagInput     = document.getElementById('tagInput');
   const tagContainer = document.getElementById('tagContainer');

@@ -1,7 +1,27 @@
 {
   "buildCommand": "echo 'Static HTML project'",
   "outputDirectory": ".",
+  "env": [
+    "GEMINI_API_KEY"
+  ],
   "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    },
     {
       "source": "/create/(.*)",
       "headers": [

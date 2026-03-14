@@ -411,3 +411,92 @@ window.addEventListener('resize', () => {
 });
 
 console.log('✅ Menu functions loaded');
+
+// ==================== GEMINI CHAT INTEGRATION ====================
+// Integración con Gemini 3.1 Flash Lite para el input de búsqueda
+
+document.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.getElementById('searchBox');
+  const startChatBtn = document.getElementById('startChatBtn');
+  
+  if (!searchBox || !startChatBtn) return;
+
+  // Enviar mensaje al presionar Enter o pulsar el botón
+  const sendMessage = async () => {
+    const message = searchBox.value.trim();
+    
+    if (!message) return;
+
+    // Limpiar el input
+    searchBox.value = '';
+
+    // Verificar si es el comando /PROGRAMAR
+    if (message.startsWith('/PROGRAMAR')) {
+      const appIdea = message.replace('/PROGRAMAR', '').trim();
+      
+      if (!appIdea) {
+        alert('Por favor, describe tu idea después de /PROGRAMAR\n\nEjemplo: /PROGRAMAR un blog con comentarios');
+        return;
+      }
+
+      // Guardar la idea en localStorage
+      localStorage.setItem('devcenter_app_idea', appIdea);
+      localStorage.setItem('devcenter_app_creation_time', new Date().toISOString());
+
+      // Redirigir a crear app
+      window.location.href = '/Programar/crear-app?idea=' + encodeURIComponent(appIdea);
+      return;
+    }
+
+    // Para mensajes normales, hacer una solicitud a Gemini
+    try {
+      startChatBtn.disabled = true;
+      const originalText = startChatBtn.innerHTML;
+      startChatBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s infinite;">⚙️</span> Procesando...';
+
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: message,
+          conversationHistory: [],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert('Error: ' + (data.error || 'Error desconocido'));
+      } else {
+        // Mostrar respuesta en alerta
+        alert('Respuesta de IA:\n\n' + data.reply);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar: ' + error.message);
+    } finally {
+      startChatBtn.disabled = false;
+      startChatBtn.innerHTML = originalText;
+      searchBox.focus();
+    }
+  };
+
+  // Click en botón Iniciar chat
+  startChatBtn.addEventListener('click', sendMessage);
+
+  // Enter en el textarea
+  searchBox.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+});
+
+console.log('✅ Gemini chat integration loaded');
