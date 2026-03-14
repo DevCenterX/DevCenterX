@@ -594,8 +594,15 @@ body.light-theme .landing-logo-svg {
 html.light-theme .footer-description,
 body.light-theme .footer-description,
 html.light-theme .footer-bottom p,
-body.light-theme .footer-bottom p {
+body.light-theme .footer-bottom p,
+html.light-theme .footer-contact p,
+body.light-theme .footer-contact p {
   color: var(--text-secondary);
+}
+
+html.light-theme .footer-contact a,
+body.light-theme .footer-contact a {
+  color: var(--accent);
 }
 
 /* Make CTA and small buttons look consistent in light */
@@ -793,6 +800,75 @@ body.light-theme .trusted-logo svg {
 html.light-theme .trusted-text,
 body.light-theme .trusted-text {
   color: var(--text-secondary);
+}
+
+/* About Section */
+.landing-about-section {
+  padding: 4rem 2rem;
+  background: linear-gradient(180deg, rgba(14, 21, 37, 0.5) 0%, transparent 100%);
+  text-align: center;
+}
+
+.about-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.about-content p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.about-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.service-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.service-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.service-item h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Light theme for about section */
+html.light-theme .landing-about-section,
+body.light-theme .landing-about-section {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, transparent 100%);
+}
+
+html.light-theme .service-item,
+body.light-theme .service-item {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light-theme .service-item:hover,
+body.light-theme .service-item:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Features Section */
@@ -1012,7 +1088,7 @@ body.light-theme .trusted-text {
 
 .footer-main {
   display: grid;
-  grid-template-columns: 1.5fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 4rem;
   max-width: 1200px;
   margin: 0 auto 3rem;
@@ -1020,6 +1096,34 @@ body.light-theme .trusted-text {
 
 .footer-brand {
   max-width: 300px;
+}
+
+.footer-contact {
+  max-width: 300px;
+}
+
+.footer-contact h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.footer-contact p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.footer-contact a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-contact a:hover {
+  text-decoration: underline;
 }
 
 .footer-logo {
