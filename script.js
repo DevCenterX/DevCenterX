@@ -462,9 +462,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Para mensajes normales, hacer una solicitud a Gemini
+    let originalText = ''; // Declarar fuera del try
+    
     try {
       startChatBtn.disabled = true;
-      const originalText = startChatBtn.innerHTML;
+      originalText = startChatBtn.innerHTML;
       startChatBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s infinite;">⚙️</span> Procesando...';
 
       console.log('📡 Contacting /api/gemini...');
@@ -482,20 +484,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log('📥 Response status:', response.status);
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ HTTP Error:', response.status, errorText);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
       
       console.log('📦 Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || `Error ${response.status}: ${response.statusText}`);
-      }
 
       if (data.error) {
         throw new Error(data.error);
       }
 
       if (!data.reply) {
-        throw new Error('No response from Gemini');
+        throw new Error('Sin respuesta de Gemini');
       }
 
       console.log('✅ Got response:\n', data.reply);
@@ -508,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
     } finally {
       startChatBtn.disabled = false;
-      startChatBtn.innerHTML = originalText;
+      if (originalText) startChatBtn.innerHTML = originalText;
       searchBox.focus();
     }
   };
