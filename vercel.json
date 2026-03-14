@@ -1,9 +1,6 @@
 {
   "buildCommand": "echo 'Static HTML project'",
   "outputDirectory": ".",
-  "env": [
-    "GEMINI_API_KEY"
-  ],
   "headers": [
     {
       "source": "/api/(.*)",

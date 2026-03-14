@@ -413,19 +413,29 @@ window.addEventListener('resize', () => {
 console.log('✅ Menu functions loaded');
 
 // ==================== GEMINI CHAT INTEGRATION ====================
-// Integración con Gemini 3.1 Flash Lite para el input de búsqueda
+// Integración con Gemini 1.5 Flash para el input de búsqueda
 
 document.addEventListener('DOMContentLoaded', () => {
   const searchBox = document.getElementById('searchBox');
   const startChatBtn = document.getElementById('startChatBtn');
   
-  if (!searchBox || !startChatBtn) return;
+  if (!searchBox || !startChatBtn) {
+    console.log('⚠️ Chat elements not found');
+    return;
+  }
+
+  console.log('✅ Gemini chat elements loaded');
 
   // Enviar mensaje al presionar Enter o pulsar el botón
   const sendMessage = async () => {
     const message = searchBox.value.trim();
     
-    if (!message) return;
+    if (!message) {
+      console.log('⚠️ Empty message');
+      return;
+    }
+
+    console.log('📤 Sending message:', message.substring(0, 50) + '...');
 
     // Limpiar el input
     searchBox.value = '';
@@ -435,9 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const appIdea = message.replace('/PROGRAMAR', '').trim();
       
       if (!appIdea) {
+        console.warn('❌ /PROGRAMAR command but no idea provided');
         alert('Por favor, describe tu idea después de /PROGRAMAR\n\nEjemplo: /PROGRAMAR un blog con comentarios');
         return;
       }
+
+      console.log('✨ Creating app with idea:', appIdea);
 
       // Guardar la idea en localStorage
       localStorage.setItem('devcenter_app_idea', appIdea);
@@ -454,6 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalText = startChatBtn.innerHTML;
       startChatBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s infinite;">⚙️</span> Procesando...';
 
+      console.log('📡 Contacting /api/gemini...');
+
       const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: {
@@ -465,21 +480,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
+      console.log('📥 Response status:', response.status);
 
       const data = await response.json();
+      
+      console.log('📦 Response data:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || `Error ${response.status}: ${response.statusText}`);
+      }
 
       if (data.error) {
-        alert('Error: ' + (data.error || 'Error desconocido'));
-      } else {
-        // Mostrar respuesta en alerta
-        alert('Respuesta de IA:\n\n' + data.reply);
+        throw new Error(data.error);
       }
+
+      if (!data.reply) {
+        throw new Error('No response from Gemini');
+      }
+
+      console.log('✅ Got response:\n', data.reply);
+      
+      // Mostrar respuesta en alerta
+      alert('Respuesta de IA:\n\n' + data.reply);
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al procesar: ' + error.message);
+      console.error('❌ Error:', error.message);
+      console.error('Stack:', error);
+      alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
     } finally {
       startChatBtn.disabled = false;
       startChatBtn.innerHTML = originalText;
@@ -488,15 +514,18 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Click en botón Iniciar chat
-  startChatBtn.addEventListener('click', sendMessage);
+  startChatBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    sendMessage();
+  });
 
-  // Enter en el textarea
+  // Enter en el textarea (pero no Shift+Enter)
   searchBox.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   });
-});
 
-console.log('✅ Gemini chat integration loaded');
+  console.log('✅ Gemini chat integration ready');
+});
