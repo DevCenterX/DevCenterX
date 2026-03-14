@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear App — DevCenterX</title>
+  <link rel="shortcut icon" href="../../Images/Agent.webp" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('devcenter_theme');
+        if (theme === 'light') {
+          document.documentElement.style.colorScheme = 'light';
+          var s = document.createElement('style');
+          s.textContent = 'body{background:#f0f2f7!important;color:#0b1220!important;}';
+          document.head.appendChild(s);
+        }
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body class="auth-page">
+
+  <!-- Canvas for particle mesh -->
+  <canvas id="meshCanvas"></canvas>
+
+  <!-- Corner decorations -->
+  <div class="corner corner--tl"></div>
+  <div class="corner corner--br"></div>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <main class="main-content">
+
+    <button class="back-btn" id="backBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 13L5 8l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Volver
+    </button>
+
+    <div class="create-card" id="createCard">
+
+      <!-- Card header -->
+      <div class="card-header">
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">NEW_INSTANCE</span>
+        </div>
+        <h1 class="card-title">Crear aplicación</h1>
+        <p class="card-subtitle">Inicializa un nuevo proyecto en tu espacio de desarrollo.</p>
+      </div>
+
+      <!-- Divider -->
+      <div class="card-divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+            <rect x="6" y="0" width="2" height="14" rx="1"/>
+            <rect x="0" y="6" width="14" height="2" rx="1"/>
+          </svg>
+        </span>
+        <span class="divider-line"></span>
+      </div>
+
+      <!-- Form -->
+      <form id="createAppForm" class="create-app-form" autocomplete="off">
+
+        <div class="field-group">
+          <label class="field-label" for="appName">
+            <span class="label-index">01</span>
+            Nombre de la app
+          </label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="appName"
+              required
+              maxlength="100"
+              placeholder="mi-aplicacion-increible"
+              spellcheck="false"
+            />
+            <div class="input-glow"></div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="appDesc">
+            <span class="label-index">02</span>
+            Descripción
+          </label>
+          <div class="input-wrapper">
+            <textarea
+              id="appDesc"
+              rows="4"
+              placeholder="Qué hace esta app, por qué existe..."
+              spellcheck="false"
+            ></textarea>
+            <div class="input-glow"></div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="tagInput">
+            <span class="label-index">03</span>
+            Etiquetas
+            <span class="label-hint">máx. 5 · Enter para agregar</span>
+          </label>
+          <div class="tag-input-container" id="tagContainer">
+            <input
+              type="text"
+              id="tagInput"
+              placeholder="ej. react, api, mobile…"
+              spellcheck="false"
+            />
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <div class="char-count" id="charCount">0 / 100</div>
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="btn-label">Crear proyecto</span>
+            <span class="btn-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="btn-shimmer"></div>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span class="status-item">
+        <span class="status-dot status-dot--green"></span>
+        FIREBASE CONNECTED
+      </span>
+      <span class="status-sep">·</span>
+      <span class="status-item" id="statusTime">--:--:--</span>
+      <span class="status-sep">·</span>
+      <span class="status-item">DevCenterX v2</span>
+    </div>
+
+  </main>
+
+  <script type="module" src="script.js"></script>
+
+  <script>
+    /* ── Mesh canvas ── */
+    (function() {
+      const canvas = document.getElementById('meshCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, pts;
+      const N = 55;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        init();
+      }
+
+      function init() {
+        pts = Array.from({length: N}, () => ({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        pts.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+        });
+        for (let i = 0; i < N; i++) {
+          for (let j = i+1; j < N; j++) {
+            const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d < 150) {
+              ctx.beginPath();
+              ctx.moveTo(pts[i].x, pts[i].y);
+              ctx.lineTo(pts[j].x, pts[j].y);
+              ctx.strokeStyle = `rgba(99,102,241,${0.18 * (1 - d/150)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+        pts.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+          ctx.fillStyle = 'rgba(139,92,246,0.5)';
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+
+    /* ── Status clock ── */
+    (function() {
+      const el = document.getElementById('statusTime');
+      function tick() {
+        const d = new Date();
+        el.textContent = d.toTimeString().slice(0,8);
+      }
+      setInterval(tick, 1000);
+      tick();
+    })();
+
+    /* ── Char counter ── */
+    (function() {
+      const input = document.getElementById('appName');
+      const counter = document.getElementById('charCount');
+      if (!input || !counter) return;
+      input.addEventListener('input', () => {
+        const len = input.value.length;
+        counter.textContent = `${len} / 100`;
+        counter.style.color = len > 80 ? '#f87171' : '';
+      });
+    })();
+
+    /* ── 3D card tilt ── */
+    (function() {
+      const card = document.getElementById('createCard');
+      if (!card) return;
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width - 0.5) * 12;
+        const y = ((e.clientY - r.top) / r.height - 0.5) * 12;
+        card.style.transform = `perspective(900px) rotateY(${x}deg) rotateX(${-y}deg) translateZ(4px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateZ(0)';
+      });
+    })();
+  </script>
+</body>
+</html>
