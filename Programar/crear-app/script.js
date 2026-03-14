@@ -218,6 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
     addTagBtn.addEventListener('click', tryAddTag);
   }
 
+  // ── Name character counter / limits ────────────────────────────────────────
+  const nameInput = document.getElementById('appName');
+  const charCount = document.getElementById('charCount');
+  const MAX_NAME_LENGTH = 15;
+
+  function updateCharCount() {
+    if (!nameInput || !charCount) return;
+    if (nameInput.value.length > MAX_NAME_LENGTH) {
+      nameInput.value = nameInput.value.slice(0, MAX_NAME_LENGTH);
+    }
+    charCount.textContent = `${nameInput.value.length} / ${MAX_NAME_LENGTH}`;
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener('input', updateCharCount);
+    updateCharCount();
+  }
+
   // ── Form submit ───────────────────────────────────────────────────────────
   const form      = document.getElementById('createAppForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -232,6 +250,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!name) {
       showToast('El nombre de la aplicación es obligatorio.', 'error');
       document.getElementById('appName')?.focus();
+      return;
+    }
+
+    if (name.length > 15) {
+      showToast('El nombre no puede superar los 15 caracteres.', 'error');
+      document.getElementById('appName')?.focus();
+      return;
+    }
+
+    if (desc && desc.length > 500) {
+      showToast('La descripción no puede superar los 500 caracteres.', 'error');
+      document.getElementById('appDesc')?.focus();
       return;
     }
 

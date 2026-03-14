@@ -133,7 +133,7 @@
           <label class="field-label" for="tagInput">
             <span class="label-index">03</span>
             Etiquetas
-            <span class="label-hint">máx. 5 · Enter para agregar</span>
+            <span class="label-hint">máx. 5 · Enter / Agregar</span>
           </label>
           <div class="tag-input-container" id="tagContainer">
             <input
@@ -161,6 +161,24 @@
         </div>
 
       </form>
+
+      <!-- AI Generator -->
+      <section class="ai-zone">
+        <h2>Generador de HTML con IA</h2>
+        <p class="ai-subtitle">Escribe tu idea y la IA generará el código HTML. Usa el botón "Agregar" para etiquetar y luego genera el resultado.</p>
+
+        <textarea id="aiPrompt" class="ai-prompt" rows="4" placeholder="Describe tu página o componente..."></textarea>
+
+        <div class="ai-actions">
+          <button type="button" id="aiGenerateBtn" class="submit-btn">Generar HTML</button>
+          <button type="button" id="aiCopyBtn" class="submit-btn">Copiar</button>
+          <button type="button" id="aiPreviewBtn" class="submit-btn">Vista previa</button>
+        </div>
+
+        <textarea id="aiOutput" class="ai-output" readonly rows="10" placeholder="El HTML generado aparecerá aquí..."></textarea>
+        <div id="aiPreview" class="ai-preview" style="display:none;"></div>
+      </section>
+
     </div>
 
     <!-- Status bar -->

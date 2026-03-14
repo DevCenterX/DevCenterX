@@ -376,6 +376,26 @@ body.auth-page {
   border: none;
   font-size: 0.85rem;
 }
+.tag-add-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.12);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.tag-add-btn:hover {
+  background: rgba(99,102,241,0.2);
+  border-color: rgba(99,102,241,0.55);
+}
+.tag-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .tag-input-container input:hover,
 .tag-input-container input:focus {
   background: transparent;
