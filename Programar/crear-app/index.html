@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crear App — DevCenterX</title>
   <link rel="shortcut icon" href="../../Images/Agent.webp" type="image/x-icon">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../style.css">
   <link rel="stylesheet" href="style.css">
   <script>
@@ -15,16 +13,40 @@
       try {
         var theme = localStorage.getItem('devcenter_theme');
         if (theme === 'light') {
-          document.documentElement.style.colorScheme = 'light';
-          var s = document.createElement('style');
-          s.textContent = 'body{background:#f0f2f7!important;color:#0b1220!important;}';
-          document.head.appendChild(s);
+          document.body.classList.add('light-theme');
+        } else {
+          document.body.classList.add('dark-theme');
         }
-      } catch(e) {}
+      } catch (e) {}
     })();
   </script>
 </head>
-<body class="auth-page">
+<body>
+  <!-- Header Navigation -->
+  <header class="landing-header">
+    <div class="landing-header-left">
+      <a href="/" class="landing-logo">
+        <svg class="landing-logo-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+        </svg>
+        <span style="margin-left: 8px;">DevCenterX</span>
+      </a>
+      <nav class="landing-nav">
+        <a href="/" class="landing-nav-link">Productos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a href="/" class="landing-nav-link">Para Empresas <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a href="/" class="landing-nav-link">Recursos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a href="/" class="landing-nav-link">Precios</a>
+        <a href="/" class="landing-nav-link">Empleos</a>
+        <a href="/" class="landing-nav-link landing-nav-highlight">Agent <span class="agent-badge">3</span></a>
+      </nav>
+    </div>
+    <div class="landing-header-right">
+      <a href="#contact" class="landing-contact-link">Contacto</a>
+      <a href="/login" class="landing-login-link">Iniciar sesion</a>
+      <a href="/create" class="landing-signup-btn">Registrarse</a>
+    </div>
+  </header>
 
   <!-- Canvas for particle mesh -->
   <canvas id="meshCanvas"></canvas>
@@ -151,6 +173,30 @@
     </div>
 
   </main>
+
+  <!-- Footer -->
+  <footer class="landing-footer" id="contact">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+          <span>DevCenterX</span>
+        </div>
+        <p class="footer-description">La plataforma mas facil para convertir tus ideas en aplicaciones web funcionales usando inteligencia artificial.</p>
+      </div>
+      <div class="footer-contact">
+        <h3>Contacto</h3>
+        <p>¿Tienes preguntas? Contáctanos:</p>
+        <a href="mailto:justininventor.dev@gmail.com">justininventor.dev@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>2025 DevCenterX. Todos los derechos reservados.</p>
+    </div>
+  </footer>
 
   <script type="module" src="script.js"></script>
 
