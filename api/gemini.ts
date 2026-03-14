@@ -1,10 +1,11 @@
 /**
  * API Route para integración con Google Gemini
- * Endpoint: /api/gemini
- * Variable de entorno: GEMINI_API_KEY
+ * TypeScript version para Vercel
  */
 
-module.exports = async (request, response) => {
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async (request: VercelRequest, response: VercelResponse) => {
   // Configurar CORS
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -23,52 +24,50 @@ module.exports = async (request, response) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     
-    console.log('[API] Request received');
-
     if (!apiKey) {
-      console.error('[API] GEMINI_API_KEY not configured');
       return response.status(500).json({ 
-        error: 'API key no configurada' 
+        error: 'GEMINI_API_KEY no está configurada' 
       });
     }
 
-    const { message, conversationHistory = [] } = request.body || {};
+    const { message, conversationHistory = [] } = request.body;
 
     if (!message) {
       return response.status(400).json({ error: 'Mensaje requerido' });
     }
 
-    console.log('[API] Processing message:', message.substring(0, 50));
+    console.log('[API] Mensaje recibido:', message.substring(0, 50));
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-    const contents = [];
+    // Preparar contenido
+    const contents: any[] = [];
     
-    // Agregar historial
-    for (const msg of conversationHistory) {
-      if (msg.role && msg.content) {
-        contents.push({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }],
-        });
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      for (const msg of conversationHistory) {
+        if (msg.role && msg.content) {
+          contents.push({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content }],
+          });
+        }
       }
     }
 
-    // Mensaje actual
     contents.push({
       role: 'user',
       parts: [{ text: message }],
     });
 
     const geminiRequest = {
-      contents: contents,
+      contents,
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1024,
       },
     };
 
-    console.log('[API] Calling Gemini...');
+    console.log('[API] Llamando a Gemini...');
 
     const geminiResponse = await fetch(geminiUrl, {
       method: 'POST',
@@ -78,38 +77,38 @@ module.exports = async (request, response) => {
       body: JSON.stringify(geminiRequest),
     });
 
-    console.log('[API] Gemini response:', geminiResponse.status);
+    console.log('[API] Gemini respondió:', geminiResponse.status);
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      console.error('[API] Gemini error:', errorText);
+      console.error('[API] Error de Gemini:', errorText);
       
       return response.status(geminiResponse.status).json({ 
         error: 'Error en Gemini API',
-        status: geminiResponse.status
+        details: errorText
       });
     }
 
     const data = await geminiResponse.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     if (!reply) {
-      console.error('[API] No reply from Gemini');
+      console.error('[API] Sin respuesta de Gemini');
       return response.status(500).json({ error: 'Sin respuesta de Gemini' });
     }
 
-    console.log('[API] Success! Reply:', reply.substring(0, 50));
+    console.log('[API] ✅ Éxito!');
 
     return response.status(200).json({
       success: true,
-      reply: reply,
+      reply,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Error:', error.message);
     
     return response.status(500).json({ 
-      error: error.message
+      error: error.message || 'Error desconocido'
     });
   }
 };
