@@ -1,12 +1,387 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=crear-app/">
-  <title>Redirecting to Crear App...</title>
-</head>
-<body>
-  <p>Redirecting to <a href="crear-app/">Crear App</a>...</p>
-</body>
-</html></content>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    overflow: hidden;
+}
+
+/* VS Code Container */
+.vs-code-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 50px;
+    background-color: #333333;
+    border-right: 1px solid #3e3e42;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    user-select: none;
+}
+
+.sidebar-header {
+    padding: 10px 0;
+    border-bottom: 1px solid #3e3e42;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007acc;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 2px;
+}
+
+.sidebar-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.menu-item {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+    font-size: 11px;
+    text-align: center;
+    padding: 4px;
+    color: #858585;
+}
+
+.menu-item:hover {
+    background-color: #2d2d30;
+    color: #d4d4d4;
+}
+
+.menu-item.active {
+    border-left-color: #007acc;
+    background-color: #2d2d30;
+    color: #d4d4d4;
+}
+
+.menu-item .icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.sidebar-footer {
+    padding: 8px 0;
+    border-top: 1px solid #3e3e42;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.settings-icon {
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-icon:hover {
+    color: #d4d4d4;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1e1e1e;
+}
+
+/* Toolbar */
+.toolbar {
+    height: 50px;
+    background-color: #2d2d30;
+    border-bottom: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-name {
+    color: #d4d4d4;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.toolbar-right {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-generate,
+.btn-secondary,
+.btn-refresh,
+.btn-copy {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-generate {
+    background-color: #007acc;
+    color: white;
+}
+
+.btn-generate:hover {
+    background-color: #005a9e;
+}
+
+.btn-generate:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.btn-secondary,
+.btn-refresh,
+.btn-copy {
+    background-color: #3e3e42;
+    color: #d4d4d4;
+}
+
+.btn-secondary:hover,
+.btn-refresh:hover,
+.btn-copy:hover {
+    background-color: #4e4e54;
+}
+
+.btn-secondary:active,
+.btn-refresh:active,
+.btn-copy:active {
+    background-color: #5e5e64;
+}
+
+.icon {
+    font-size: 13px;
+}
+
+/* Content Panels */
+.content-panels {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    background-color: #1e1e1e;
+    border-right: 1px solid #3e3e42;
+}
+
+.panel.active {
+    display: flex;
+}
+
+.panel-header {
+    height: 35px;
+    background-color: #2d2d30;
+    border-bottom: 1px solid #3e3e42;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.panel-header h3 {
+    font-size: 13px;
+    font-weight: 500;
+    color: #d4d4d4;
+}
+
+.char-count {
+    font-size: 11px;
+    color: #858585;
+}
+
+/* Editor */
+.prompt-editor {
+    flex: 1;
+    background-color: #252526;
+    color: #d4d4d4;
+    border: none;
+    padding: 16px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+}
+
+.prompt-editor::placeholder {
+    color: #6a9955;
+}
+
+.editor-footer {
+    height: 25px;
+    background-color: #2d2d30;
+    border-top: 1px solid #3e3e42;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: #858585;
+}
+
+/* Preview */
+.preview-frame {
+    flex: 1;
+    border: none;
+    background-color: #ffffff;
+}
+
+/* Code Output */
+.code-output {
+    flex: 1;
+    background-color: #252526;
+    color: #ce9178;
+    padding: 16px;
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    border: none;
+    margin: 0;
+}
+
+.code-output code {
+    color: #d4d4d4;
+}
+
+/* Status Bar */
+.status-bar {
+    height: 24px;
+    background-color: #007acc;
+    border-top: 1px solid #3e3e42;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.status-left,
+.status-right {
+    display: flex;
+    gap: 16px;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    gap: 16px;
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+.spinner {
+    border: 3px solid #3e3e42;
+    border-top: 3px solid #007acc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: #d4d4d4;
+    font-size: 14px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #464647;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5e5e5e;
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 40px;
+    }
+
+    .menu-item {
+        width: 40px;
+        height: 40px;
+        font-size: 10px;
+    }
+
+    .toolbar-right {
+        flex-wrap: wrap;
+    }
+}</content>
 <parameter name="filePath">c:\Users\Justin\OneDrive\Documents\GitHub\DevCenterX\Programar\index.html

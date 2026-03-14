@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCenterX IDE - Gemini HTML Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="vs-code-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">DCX IDE</div>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-tab="editor">
+                    <span class="icon">✎</span>
+                    <span>Editor</span>
+                </div>
+                <div class="menu-item" data-tab="preview">
+                    <span class="icon">◉</span>
+                    <span>Preview</span>
+                </div>
+                <div class="menu-item" data-tab="code">
+                    <span class="icon">&lt;&gt;</span>
+                    <span>Código</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="settings-icon">⚙️</div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <span class="file-name">workspace.html</span>
+                </div>
+                <div class="toolbar-right">
+                    <button id="generateBtn" class="btn-generate">
+                        <span class="icon">✨</span> Generar con IA
+                    </button>
+                    <button id="clearBtn" class="btn-secondary">
+                        <span class="icon">🗑️</span> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Panels -->
+            <div class="content-panels">
+                <!-- Editor Panel -->
+                <div class="panel active" id="editor-panel" data-panel="editor">
+                    <div class="panel-header">
+                        <h3>Prompt para la IA</h3>
+                        <span class="char-count">0/2000</span>
+                    </div>
+                    <textarea 
+                        id="promptInput" 
+                        class="prompt-editor" 
+                        placeholder="Escribe lo que quieres que la IA genere...&#10;&#10;Ejemplo: Crea una página de login moderna con colores azules"
+                    ></textarea>
+                    <div class="editor-footer">
+                        <span class="status">Listo</span>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="panel" id="preview-panel" data-panel="preview">
+                    <div class="panel-header">
+                        <h3>Preview en Vivo</h3>
+                        <button class="btn-refresh" id="refreshBtn">🔄</button>
+                    </div>
+                    <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+
+                <!-- Code Panel -->
+                <div class="panel" id="code-panel" data-panel="code">
+                    <div class="panel-header">
+                        <h3>HTML Generado</h3>
+                        <button class="btn-copy" id="copyBtn">📋 Copiar</button>
+                    </div>
+                    <pre id="codeOutput" class="code-output"><code></code></pre>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span id="statusMessage">Esperando input...</span>
+                </div>
+                <div class="status-right">
+                    <span id="tokenCount">Tokens: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p>Generando código con IA...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
