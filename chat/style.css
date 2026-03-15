@@ -132,24 +132,71 @@ html, body {
 }
 
 .chat-item {
-  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
   background: transparent;
   border: none;
   color: var(--text-secondary);
   text-align: left;
   font-size: 13px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.2s;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  position: relative;
+  group: hover;
 }
 
 .chat-item:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+.chat-item-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.chat-item-actions {
+  display: none;
+  gap: 4px;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+.chat-item:hover .chat-item-actions {
+  display: flex;
+}
+
+.chat-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.chat-item-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent);
+}
+
+.chat-item-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
 }
 
 .chat-sidebar-footer {
