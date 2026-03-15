@@ -35,12 +35,38 @@ export default async function handler(request, response) {
       contents: [
         {
           role: 'user',
-          parts: [{ text: message }],
+          parts: [{ text: `Genera un código HTML5 completo y listo para usar basado en esto: "${message}". 
+          
+          IMPORTANTE: 
+          - Incluye HTML, CSS y JavaScript en un solo archivo
+          - El HTML debe estar dentro de un bloque \`\`\`html
+          - El CSS debe estar dentro de un bloque \`\`\`css
+          - El JavaScript debe estar dentro de un bloque \`\`\`javascript
+          - Usa emojis y colores vibrantes
+          - Hazlo completamente funcional
+          - No expliques nada, solo genera el código
+          
+          Ejemplo de formato:
+          \`\`\`html
+          <!DOCTYPE html>
+          <html>
+          ...
+          </html>
+          \`\`\`
+          
+          \`\`\`css
+          /* estilos aquí */
+          \`\`\`
+          
+          \`\`\`javascript
+          // código aquí
+          \`\`\`
+          ` }],
         },
       ],
       generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
+        temperature: 0.9,
+        maxOutputTokens: 4096,
       },
     };
 

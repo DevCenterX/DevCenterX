@@ -467,7 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       startChatBtn.disabled = true;
       originalText = startChatBtn.innerHTML;
-      startChatBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s infinite;">⚙️</span> Procesando...';
+      
+      // Mostrar barra de progreso épica
+      showEpicProgressBar();
 
       console.log('📡 Contacting /api/gemini...');
 
@@ -487,6 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ HTTP Error:', response.status, errorText);
+        closeProgressBar();
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
@@ -495,17 +498,29 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('📦 Response data:', data);
 
       if (data.error) {
+        closeProgressBar();
         throw new Error(data.error);
       }
 
       if (!data.reply) {
+        closeProgressBar();
         throw new Error('Sin respuesta de Gemini');
       }
 
       console.log('✅ Got response:\n', data.reply);
       
-      // Mostrar respuesta en alerta
-      alert('Respuesta de IA:\n\n' + data.reply);
+      // Detectar y procesar código en la respuesta
+      const codeBlocks = detectCodeBlocks(data.reply);
+      
+      if (codeBlocks.html) {
+        // Hay código - guardar y redirigir
+        console.log('✨ Código HTML detectado, guardando...');
+        saveAndOpenCode(codeBlocks);
+        // La redirección ocurre en saveAndOpenCode
+      } else {
+        closeProgressBar();
+        alert('⚠️ No se detectó código HTML en la respuesta.\n\nIntenta ser más específico.');
+      }
     } catch (error) {
       console.error('❌ Error:', error.message);
       console.error('Stack:', error);
@@ -516,6 +531,241 @@ document.addEventListener('DOMContentLoaded', () => {
       searchBox.focus();
     }
   };
+
+  // Función para mostrar barra de progreso épica
+  function showEpicProgressBar() {
+    const progressHTML = `
+      <div id="epicProgress" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+      ">
+        <div style="text-align: center;">
+          <h1 style="
+            color: white;
+            font-size: 48px;
+            margin: 0 0 30px 0;
+            animation: pulse 2s infinite;
+          ">✨ Generando tu código...</h1>
+          
+          <div style="
+            width: 300px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+          ">
+            <div id="progressBar" style="
+              width: 0%;
+              height: 100%;
+              background: linear-gradient(90deg, #4CAF50, #45a049, #4CAF50);
+              background-size: 200% 200%;
+              animation: moveGradient 2s infinite, fillProgress 8s ease-in-out forwards;
+            "></div>
+          </div>
+
+          <p style="
+            color: white;
+            font-size: 18px;
+            margin: 0;
+            animation: fadeInOut 3s infinite;
+          ">Espera mientras la IA crea magia... 🚀</p>
+        </div>
+
+        <style>
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+          }
+          
+          @keyframes fillProgress {
+            0% { width: 0%; }
+            90% { width: 90%; }
+            100% { width: 100%; }
+          }
+          
+          @keyframes moveGradient {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+          }
+          
+          @keyframes fadeInOut {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+          }
+        </style>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', progressHTML);
+  }
+
+  // Función para cerrar la barra de progreso
+  function closeProgressBar() {
+    const progress = document.getElementById('epicProgress');
+    if (progress) {
+      progress.style.animation = 'fadeOut 0.5s ease forwards';
+      setTimeout(() => progress.remove(), 500);
+    }
+  }
+
+  // Función para detectar bloques de código
+  function detectCodeBlocks(text) {
+    const codeBlocks = {
+      html: '',
+      css: '',
+      javascript: ''
+    };
+
+    // Detectar HTML
+    const htmlMatch = text.match(/```html\n([\s\S]*?)\n```/);
+    if (htmlMatch) codeBlocks.html = htmlMatch[1].trim();
+
+    // Detectar CSS
+    const cssMatch = text.match(/```css\n([\s\S]*?)\n```/);
+    if (cssMatch) codeBlocks.css = cssMatch[1].trim();
+
+    // Detectar JavaScript
+    const jsMatch = text.match(/```(?:javascript|js)\n([\s\S]*?)\n```/);
+    if (jsMatch) codeBlocks.javascript = jsMatch[1].trim();
+
+    return codeBlocks;
+  }
+
+  // Función para mostrar modal con código
+  function showCodeModal(codeBlocks, fullResponse) {
+    // Crear HTML del modal
+    const modalHTML = `
+      <div id="codeModal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      ">
+        <div style="
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 800px;
+          width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        ">
+          <h2 style="margin-top: 0; color: #333;">Código generado</h2>
+          
+          <div style="margin-bottom: 20px; padding: 12px; background: #f5f5f5; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+            <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${fullResponse}</p>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button id="usecodeBtn" style="
+              flex: 1;
+              padding: 10px 16px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+              font-weight: 600;
+            ">Usar en Programar</button>
+            
+            <button id="closeModalBtn" style="
+              flex: 1;
+              padding: 10px 16px;
+              background: #ddd;
+              color: #333;
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+              font-weight: 600;
+            ">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Insertar modal
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Event listeners
+    document.getElementById('usecodeBtn').addEventListener('click', () => {
+      saveAndOpenCode(codeBlocks);
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('codeModal').remove();
+    });
+
+    // Cerrar al hacer clic fuera del modal
+    document.getElementById('codeModal').addEventListener('click', (e) => {
+      if (e.target.id === 'codeModal') {
+        document.getElementById('codeModal').remove();
+      }
+    });
+  }
+
+  // Función para guardar código y abrir en Programar
+  function saveAndOpenCode(codeBlocks) {
+    // Guardar en localStorage
+    const codeData = {
+      html: codeBlocks.html || '',
+      css: codeBlocks.css || '',
+      javascript: codeBlocks.javascript || '',
+      timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('devcenter_generated_code', JSON.stringify(codeData));
+    console.log('✅ Código guardado correctamente');
+
+    // Esperar un poco y luego redirigir con animación
+    setTimeout(() => {
+      closeProgressBar();
+      
+      // Crear animación de transición
+      const transitionDiv = document.createElement('div');
+      transitionDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 99998;
+        animation: slideOut 0.6s ease-in forwards;
+      `;
+      document.body.appendChild(transitionDiv);
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideOut {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(-100vh); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Redirigir después de la animación
+      setTimeout(() => {
+        window.location.href = '/Programar?generated=true';
+      }, 600);
+    }, 500);
+  }
 
   // Click en botón Iniciar chat
   startChatBtn.addEventListener('click', (e) => {
