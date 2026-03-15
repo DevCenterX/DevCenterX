@@ -1,4 +1,4 @@
-﻿//====================================================== Configuración ======================================================
+//====================================================== Configuración ======================================================
 
 // ================= LIMITE DE MESAJES Y TIEMPO POR CHAT =====================
 let MAX_MESSAGES_PER_CHAT = 70; // <--- Cambia este valor para ajustar el límite
@@ -32,7 +32,7 @@ let MAX_OUTPUT_TOKENS_IMAGE = 4000;    // Modo Generar Imágenes - Descripciones
 // API Key específica para generación de imágenes
 // Si dejas esto en null, usará la API key del modelo de IA activo
 // Si pones una API key aquí, SIEMPRE usará esta para generar imágenes
-let IMAGE_API_KEY = 'vercel-managed'; // <--- Cambia esto por tu API key si quieres usar una dedicada
+let IMAGE_API_KEY = 'AIzaSyAOIPk-4zfOQYN_ehFzTSKdYxnZNtfhQVY'; // <--- Cambia esto por tu API key si quieres usar una dedicada
 // Ejemplo: let IMAGE_API_KEY = 'AIzaSyC...tu-api-key-aqui';
 
 // Modelo de IA para generar imágenes
@@ -156,38 +156,38 @@ const DEFAULT_AI_CONFIGS = [
     {
         id: 'gemini-2.5-flash-lite',
         name: 'Gemini 2.5 Flash-Lite',
-        url: '/api/gemini',
-        apiKey: 'vercel-managed',
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
+        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
         rpm: 15, tpm: 250000, rpd: 1000
     },
    
     {
         id: 'gemini-2.5-pro',
         name: 'Gemini 2.5 Pro',
-        url: '/api/gemini',
-        apiKey: 'vercel-managed',
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent',
+        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
         rpm: 5, tpm: 125000, rpd: 100
     },
     {
         id: 'gemini-2.5-flash',
         name: 'Gemini 2.5 Flash',
-        url: '/api/gemini',
-        apiKey: 'vercel-managed',
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
         rpm: 10, tpm: 250000, rpd: 250
     },
    
     {
         id: 'gemini-2.0-flash',
         name: 'Gemini 2.0 Flash',
-        url: '/api/gemini',
-        apiKey: 'vercel-managed',
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
         rpm: 15, tpm: 1000000, rpd: 200
     },
     {
         id: 'gemini-2.0-flash-lite',
         name: 'Gemini 2.0 Flash-Lite',
-        url: '/api/gemini',
-        apiKey: 'vercel-managed',
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent',
+        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
         rpm: 30, tpm: 1000000, rpd: 200
     }
 ];
@@ -447,6 +447,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updateCopyBtnVisibility();
         window.addEventListener('resize', updateCopyBtnVisibility);
+    }
+
+    // Manejar primer mensaje desde la página principal
+    const firstMessage = localStorage.getItem('devcenter_first_message');
+    if (firstMessage) {
+        console.log('💬 Primer mensaje detectado, enviando automáticamente...');
+        // Establecer el mensaje en el textarea
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.value = firstMessage;
+            adjustTextareaHeight();
+        }
+        // Limpiar el localStorage
+        localStorage.removeItem('devcenter_first_message');
+        // Enviar el mensaje automáticamente después de un breve retraso
+        setTimeout(() => {
+            sendMessage(firstMessage);
+        }, 500);
     }
 });
 
@@ -1092,9 +1110,7 @@ function setupEventListeners() {
     elements.suggestions.addEventListener('click', handleSuggestionClick);
 
     if (elements.backBtn) {
-        elements.backBtn.addEventListener('click', () => {
-            window.location.href = '/';
-        });
+        elements.backBtn.addEventListener('click', closePreview);
     }
     if (elements.downloadBtn) {
         elements.downloadBtn.addEventListener('click', downloadCode);
@@ -2041,14 +2057,9 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
         `;
     }
 
-    // Crear etiqueta de modelo y modo para mensajes de IA (SIEMPRE mostrar)
-    let modelAndModeLabel = '';
+    // Crear etiqueta de modo para mensajes de IA (solo modo, sin modelo)
+    let modeLabel = '';
     if (type === 'ai') {
-        // Nombre del modelo - siempre mostrar aunque sea desconocido
-        const modelName = aiModel 
-            ? aiModel.replace('Gemini ', '').replace(' Flash-Lite', '-Lite').replace(' Flash', '').replace(' Pro', ' Pro')
-            : (lastUsedAiModel ? lastUsedAiModel.replace('Gemini ', '').replace(' Flash-Lite', '-Lite').replace(' Flash', '').replace(' Pro', ' Pro') : 'IA');
-        
         // Nombre del modo - siempre mostrar aunque sea desconocido
         const modeNames = {
             'agent': 'Agente',
@@ -2060,14 +2071,14 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
         };
         const modeName = modeNames[messageMode] || modeNames[activeAbility] || 'Agente';
         
-        // SIEMPRE mostrar modelo y modo de forma clara
-        modelAndModeLabel = `<span class="model-mode-info"><span class="model-badge">${modelName}</span><span class="mode-badge">${modeName}</span></span>`;
+        // Solo mostrar modo, sin modelo
+        modeLabel = `<span class="mode-badge">${modeName}</span>`;
     }
     
     messageElement.innerHTML = `
         <div class="message-content">
             <div class="message-text">${type === 'ai' ? renderMarkdown(content) : escapeHtml(content)}</div>
-            <div class="message-time">${timeStr}${modelAndModeLabel}</div>
+            <div class="message-time">${timeStr} ${modeLabel}</div>
             ${actionButtonsHtml}
             ${generatedCode ? `
                 <div class="message-preview">
@@ -6854,222 +6865,6 @@ if (autoSavePromptToggle) {
         // Notificación desactivada por solicitud del usuario
     });
 }
-
-// =================== MEJORADOR DE PROMPTS ===================
-const improvePromptBtn = document.getElementById('improvePromptBtn');
-const rawPromptTextarea = document.getElementById('rawPromptTextarea');
-const improvedPromptContainer = document.getElementById('improvedPromptContainer');
-const improvedPromptTextarea = document.getElementById('improvedPromptTextarea');
-const copyImprovedPromptBtn = document.getElementById('copyImprovedPromptBtn');
-const useImprovedPromptBtn = document.getElementById('useImprovedPromptBtn');
-
-// Función para mejorar el prompt usando la IA
-async function improvePrompt() {
-    const rawPrompt = rawPromptTextarea.value.trim();
-    
-    if (!rawPrompt) {
-        alert('Por favor, escribe un prompt antes de mejorarlo');
-        return;
-    }
-    
-    // Deshabilitar botón y cambiar texto
-    improvePromptBtn.disabled = true;
-    improvePromptBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
-            <circle cx="12" cy="12" r="10"></circle>
-        </svg>
-        Mejorando prompt...
-    `;
-    
-    try {
-        // Cargar la guía de prompt engineering
-        const promptGuideResponse = await fetch('prompt-crear-prompts.txt');
-        const promptGuideText = await promptGuideResponse.text();
-        
-        // Crear el prompt para la IA
-        const systemPrompt = `${promptGuideText}
-
-TAREA ESPECÍFICA:
-El usuario te ha dado este prompt original:
-
-"""
-${rawPrompt}
-"""
-
-Tu trabajo es:
-1. Analizar el prompt original
-2. Identificar qué intenta lograr el usuario
-3. Reestructurar y mejorar el prompt siguiendo la PLANTILLA DE PROMPT PROFESIONAL
-4. Asegurarte de que incluya:
-   - Contexto y rol claro
-   - Objetivo específico
-   - Reglas obligatorias (con ✅ SIEMPRE)
-   - Restricciones (con ❌ NUNCA)
-   - Formato de salida
-   - Tono y estilo
-
-IMPORTANTE:
-- Responde SOLO con el prompt mejorado
-- NO agregues explicaciones adicionales
-- NO uses markdown para envolver el prompt
-- El prompt debe ser copyable y usable directamente
-- Sé profesional pero mantén la intención original del usuario
-- Hazlo POTENTE y COMPLETO`;
-
-        // Llamar a la API para mejorar el prompt
-        loadAiConfigs();
-        const apiCall = async (ai) => {
-            const response = await fetch(`${ai.url}?key=${ai.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: systemPrompt,
-                                },
-                            ],
-                        },
-                    ],
-                    generationConfig: {
-                        temperature: 0.8,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 8000,
-                    }
-                }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Error:', errorText);
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-            return text.trim();
-        };
-
-        const improvedPrompt = await makeApiCallWithFailover(apiCall, 3);
-        
-        // Mostrar el resultado
-        improvedPromptTextarea.value = improvedPrompt;
-        improvedPromptContainer.style.display = 'block';
-        
-        // Limpiar el campo de texto original
-        rawPromptTextarea.value = '';
-        
-        // Guardar automáticamente en el Prompt del Sistema
-        if (systemPromptTextarea) {
-            systemPromptTextarea.value = improvedPrompt;
-            updateCharCount();
-            localStorage.setItem('devCenter_systemPrompt', improvedPrompt);
-            
-            // Highlight temporal del textarea del sistema
-            systemPromptTextarea.style.border = '2px solid #10b981';
-            setTimeout(() => {
-                systemPromptTextarea.style.border = '';
-            }, 2000);
-        }
-        
-        // Scroll suave al resultado
-        improvedPromptContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Notificación desactivada por solicitud del usuario
-        
-    } catch (error) {
-        console.error('Error al mejorar prompt:', error);
-        alert('Hubo un error al mejorar el prompt. Por favor, intenta de nuevo.');
-    } finally {
-        // Restaurar botón
-        improvePromptBtn.disabled = false;
-        improvePromptBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-            Mejorar y Estructurar Prompt
-        `;
-    }
-}
-
-// Event listeners para el mejorador de prompts
-if (improvePromptBtn) {
-    improvePromptBtn.addEventListener('click', improvePrompt);
-}
-
-if (copyImprovedPromptBtn) {
-    copyImprovedPromptBtn.addEventListener('click', async () => {
-        const promptText = improvedPromptTextarea.value;
-        if (!promptText) return;
-        
-        try {
-            await navigator.clipboard.writeText(promptText);
-            
-            // Feedback visual
-            copyImprovedPromptBtn.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                ¡Copiado!
-            `;
-            
-            setTimeout(() => {
-                copyImprovedPromptBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Copiar
-                `;
-            }, 2000);
-        } catch (error) {
-            alert('No se pudo copiar al portapapeles');
-        }
-    });
-}
-
-if (useImprovedPromptBtn) {
-    useImprovedPromptBtn.addEventListener('click', () => {
-        const promptText = improvedPromptTextarea.value;
-        if (!promptText) return;
-        
-        // Colocar el prompt mejorado en el textarea del prompt del sistema
-        if (systemPromptTextarea) {
-            systemPromptTextarea.value = promptText;
-            updateCharCount();
-            localStorage.setItem('devCenter_systemPrompt', promptText);
-            
-            // Ocultar la vista previa
-            improvedPromptContainer.style.display = 'none';
-            
-            // Scroll al prompt del sistema
-            systemPromptTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Highlight temporal
-            systemPromptTextarea.style.border = '2px solid #10b981';
-            setTimeout(() => {
-                systemPromptTextarea.style.border = '';
-            }, 2000);
-            
-            // Notificación desactivada por solicitud del usuario
-        }
-    });
-}
-
-// Agregar animación de spin para el loading
-const style = document.createElement('style');
-style.textContent = `
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-`;
-document.head.appendChild(style);
 
 // =================== GENERADOR DE ICONOS ALEATORIOS ===================
 function generateRandomFavicon() {

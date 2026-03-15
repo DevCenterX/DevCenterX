@@ -32,7 +32,7 @@
             <div class="header-title">
 
                 <!-- Vercion -->
-                <h1>DevCenter For Justin</h1> 
+                <h1>DevCenter Agent</h1> 
                 <!-- Vercion -->
 
 
@@ -40,33 +40,12 @@
                 <!-- <p>AI Web Generator</p> -->
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
-                <div class="header-menu-container">
-                    <button class="header-menu-btn" id="headerMenuBtn" title="Archivo">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
-                    <div class="header-dropdown-menu" id="headerDropdownMenu" style="display: none;">
-                        <button class="header-menu-option" id="notasMenuOption">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                            </svg>
-                            <span>Notas</span>
-                        </button>
-                        <button class="header-menu-option" id="archivoMenuOption">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path>
-                                <polyline points="13 2 13 9 20 9"></polyline>
-                            </svg>
-                            <span>Archivo</span>
-                        </button>
-                    </div>
-                </div>
+                <a href="/" class="home-btn" title="Ir a página principal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </a>
                 <button class="new-chat-btn" id="newChatBtn">+</button>
             </div>
         </div>
@@ -77,12 +56,6 @@
         <div class="sidebar-header">
             <h2>Historial de Chats</h2>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="user-info-btn" id="aiConfigBtn" title="Configurar IAs">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M12 1v6m0 6v6m-5.2-9.2l4.2 4.2m3 3l4.2 4.2m-12.4 0l4.2-4.2m3-3l4.2-4.2"></path>
-                    </svg>
-                </button>
                 <button class="close-btn" id="closeSidebarBtn">×</button>
             </div>
         </div>
@@ -399,39 +372,6 @@
         </div>
     </div>
 
-    <!-- Modal para configuración de IAs -->
-    <div class="ai-config-modal" id="aiConfigModal" style="display:none;">
-        <div class="ai-config-overlay" id="aiConfigOverlay"></div>
-        <div class="ai-config-modal-content">
-            <div class="ai-config-header">
-                <h3>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M12 1v6m0 6v6m-5.2-9.2l4.2 4.2m3 3l4.2 4.2m-12.4 0l4.2-4.2m3-3l4.2-4.2"></path>
-                    </svg>
-                    Configuración de IAs
-                </h3>
-                <button class="ai-config-close" id="closeAiConfigModalX">×</button>
-            </div>
-            <form id="aiConfigForm">
-                <div class="ai-config-body">
-                    <div id="aiListContainer"></div>
-                    <button type="button" class="add-ai-btn" id="addAiBtn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Añadir IA
-                    </button>
-                </div>
-                <div class="ai-config-footer">
-                    <button type="button" class="btn-secondary" id="closeAiConfigModal">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Configuración</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Modal de Aviso -->
     <div class="aviso-modal" id="avisoModal" style="display:none;">
         <div class="aviso-overlay" id="avisoOverlay"></div>
@@ -449,170 +389,7 @@
         </div>
     </div>
 
-    <!-- Modal de Notas Guardadas -->
-    <div class="saved-notes-modal" id="savedNotesModal" style="display:none;">
-        <div class="saved-notes-overlay" id="savedNotesOverlay"></div>
-        <div class="saved-notes-content">
-            <div class="saved-notes-header">
-                <h2>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    Notas Guardadas
-                </h2>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button class="add-note-btn" id="addNoteBtn" title="Añadir nota manualmente">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                    <button class="saved-notes-close" id="savedNotesClose">×</button>
-                </div>
-            </div>
-            <div class="saved-notes-body" id="savedNotesBody">
-                <div class="no-notes">
-                    <div class="no-notes-icon">📭</div>
-                    <p>No hay notas guardadas aún</p>
-                    <small>Puedes añadir notas manualmente o la IA las guardará automáticamente usando {GUARDAR: ...}</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para añadir/editar nota -->
-    <div class="note-edit-modal" id="noteEditModal" style="display:none;">
-        <div class="note-edit-overlay" id="noteEditOverlay"></div>
-        <div class="note-edit-content">
-            <div class="note-edit-header">
-                <h3 id="noteEditTitle">✏️ Nueva Nota</h3>
-                <button class="note-edit-close" id="noteEditClose">×</button>
-            </div>
-            <div class="note-edit-body">
-                <textarea id="noteEditTextarea" placeholder="Escribe tu nota aquí..." rows="6"></textarea>
-            </div>
-            <div class="note-edit-footer">
-                <button class="btn-secondary" id="cancelNoteBtn">Cancelar</button>
-                <button class="btn-primary" id="saveNoteBtn">Guardar Nota</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Archivo - Prompts del Sistema -->
-    <div class="archivo-modal" id="archivoModal" style="display:none;">
-        <div class="archivo-overlay" id="archivoOverlay"></div>
-        <div class="archivo-content">
-            <div class="archivo-header">
-                <h2>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path>
-                        <polyline points="13 2 13 9 20 9"></polyline>
-                    </svg>
-                    Archivo - Prompts del Sistema
-                </h2>
-                <button class="archivo-close" id="archivoClose">×</button>
-            </div>
-            <div class="archivo-body">
-                <div class="archivo-info">
-                    <div class="auto-save-toggle-container">
-                        <div class="auto-save-toggle-content">
-                            <div class="auto-save-toggle-text">
-                                <div class="auto-save-toggle-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
-                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                                    </svg>
-                                    Guardado Automático
-                                </div>
-                                <div class="auto-save-toggle-desc">
-                                    Los cambios sugeridos por la IA se aplicarán automáticamente sin confirmación
-                                </div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoSavePromptToggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="archivo-editor">
-                    <label for="systemPromptTextarea">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                        </svg>
-                        Prompt del Sistema
-                    </label>
-                    <textarea id="systemPromptTextarea" placeholder="Ejemplo: Eres un asistente experto en desarrollo web. Siempre proporciona ejemplos de código completos y bien documentados..." rows="12"></textarea>
-                    <div class="archivo-stats">
-                        <span id="promptCharCount">0</span> caracteres
-                    </div>
-                </div>
-
-                <!-- Mejorador de Prompts -->
-                <div class="prompt-improver-section">
-                    <div class="prompt-improver-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; margin-right: 8px;">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        <h3>✨ Mejorador de Prompts</h3>
-                    </div>
-                    <p class="prompt-improver-description">Escribe tu prompt y la IA lo estructurará profesionalmente siguiendo las mejores prácticas</p>
-                    
-                    <label for="rawPromptTextarea">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        Tu prompt original
-                    </label>
-                    <textarea id="rawPromptTextarea" placeholder="Ejemplo: quiero que la IA me ayude a programar y sea amigable..." rows="6"></textarea>
-                    
-                    <button class="btn-improve-prompt" id="improvePromptBtn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        Mejorar y Estructurar Prompt
-                    </button>
-                    
-                    <div id="improvedPromptContainer" style="display: none;">
-                        <label for="improvedPromptTextarea">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                            Prompt mejorado
-                        </label>
-                        <textarea id="improvedPromptTextarea" rows="12" readonly></textarea>
-                        <div class="improved-prompt-actions">
-                            <button class="btn-secondary" id="copyImprovedPromptBtn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                                Copiar
-                            </button>
-                            <button class="btn-primary" id="useImprovedPromptBtn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                    <polyline points="7 3 7 8 15 8"></polyline>
-                                </svg>
-                                Usar como Prompt del Sistema
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="archivo-footer">
-                <button class="btn-secondary" id="clearPromptBtn">Limpiar</button>
-                <button class="btn-primary" id="savePromptBtn">Guardar Prompt</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de Notas Guardadas y Sistema de Archivo Eliminados -->
 
     <script src="script.js?v=10"></script>
 </body>
