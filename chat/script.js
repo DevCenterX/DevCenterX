@@ -1,8 +1,8 @@
 //====================================================== Configuración ======================================================
 
 // ================= LIMITE DE MESAJES Y TIEMPO POR CHAT =====================
-let MAX_MESSAGES_PER_CHAT = 70; // <--- Cambia este valor para ajustar el límite
-const RESET_LIMIT_MINUTES = 30; // Tiempo en minutos para restablecer el límite
+let MAX_MESSAGES_PER_CHAT = 30; // <--- Cambia este valor para ajustar el límite
+const RESET_LIMIT_MINUTES = 60; // Tiempo en minutos para restablecer el límite
 // ===========================================================================
 
 // ======================== SISTEMA DE AVISOS ===============================
@@ -1315,7 +1315,13 @@ function setupEventListeners() {
         });
     }
 
-    // Event listeners para menú de habilidades
+    // Botón para cambiar modelo (abre modal de configuración) - INACTIVO
+    // const modelChangeBtn = document.getElementById('modelChangeBtn');
+    // if (modelChangeBtn) {
+    //     modelChangeBtn.addEventListener('click', showSimpleConfigModal);
+    // }
+
+    // Event listeners para menú de habilidades (modos)
     const abilitiesMenuBtn = document.getElementById('abilitiesMenuBtn');
     const abilitiesMenu = document.getElementById('abilitiesMenu');
     
@@ -1347,70 +1353,19 @@ function setupEventListeners() {
         });
     }
 
-    // Navegación rápida entre modos con teclas
-    const modes = ['agent', 'info', 'memory', 'program', 'image'];
-    
-    // Cambiar de modo con tecla Shift (solo en desktop/computadora)
-    let shiftPressTime = 0;
-    document.addEventListener('keydown', (e) => {
-        // Solo funcionar en desktop (ancho > 768px)
-        if (window.innerWidth <= 768) return;
-        
-        if (e.key === 'Shift' && !e.repeat) {
-            const now = Date.now();
-            // Evitar múltiples activaciones
-            if (now - shiftPressTime < 300) return;
-            shiftPressTime = now;
-            
-            e.preventDefault();
-            const currentIndex = modes.indexOf(activeAbility);
-            const newIndex = (currentIndex + 1) % modes.length;
-            applyAbility(modes[newIndex]);
-            
-            // Mostrar feedback visual sutil
-            showModeChangeNotification(modes[newIndex]);
-        }
-    });
-    
-    // Cambiar de modo con teclas arriba/abajo (cuando el input está vacío)
-    document.addEventListener('keydown', (e) => {
-        const messageInput = document.getElementById('messageInput');
-        const isInputFocused = messageInput && document.activeElement === messageInput;
-        
-        // Solo activar si el input está enfocado y no hay texto seleccionado
-        if (isInputFocused && messageInput.selectionStart === messageInput.selectionEnd) {
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                // Solo prevenir el comportamiento por defecto si el cursor está al inicio/final
-                const cursorAtStart = messageInput.selectionStart === 0;
-                const cursorAtEnd = messageInput.selectionStart === messageInput.value.length;
-                
-                if ((e.key === 'ArrowUp' && cursorAtStart && messageInput.value.length === 0) || 
-                    (e.key === 'ArrowDown' && cursorAtEnd && messageInput.value.length === 0)) {
-                    e.preventDefault();
-                    
-                    const currentIndex = modes.indexOf(activeAbility);
-                    let newIndex;
-                    
-                    if (e.key === 'ArrowUp') {
-                        newIndex = (currentIndex - 1 + modes.length) % modes.length;
-                    } else {
-                        newIndex = (currentIndex + 1) % modes.length;
-                    }
-                    
-                    applyAbility(modes[newIndex]);
-                    // Notificación desactivada por solicitud del usuario
-                    // showModeChangeNotification(modes[newIndex]);
-                }
-            }
-        }
-    });
+    // Atajos de teclado desactivados para cambiar modo
+    // Los usuarios pueden usar el dropdown de la izquierda para cambiar de modo
 }
+
 
 // Función para cargar el modo activo guardado
 function loadActiveAbility() {
     // Cargar desde localStorage o usar 'agent' por defecto
     const savedAbility = localStorage.getItem('devCenter_activeAbility');
     activeAbility = savedAbility || 'agent';
+    
+    // Actualizar icono del botón
+    updateModeIcon(activeAbility);
     
     // Activar visualmente la opción correspondiente
     const abilityOptions = document.querySelectorAll('.ability-option');
@@ -1434,9 +1389,29 @@ function loadActiveAbility() {
 }
 
 // Función para aplicar habilidades especiales
+function updateModeIcon(ability) {
+    const modeIcon = document.querySelector('.mode-icon');
+    if (!modeIcon) return;
+    
+    // Iconos SVG para cada modo
+    const icons = {
+        agent: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>',
+        info: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
+        memory: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M9 10h6M9 14h6"></path>',
+        program: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line>',
+        image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'
+    };
+    
+    // Actualizar el contenido del SVG
+    modeIcon.innerHTML = icons[ability] || icons.agent;
+}
+
 function applyAbility(ability) {
     // Cambiar el modo activo
     activeAbility = ability;
+    
+    // Actualizar icono del botón
+    updateModeIcon(ability);
     
     // Actualizar estilos visuales
     const abilityOptions = document.querySelectorAll('.ability-option');
@@ -2328,6 +2303,12 @@ function showUserInfoModal() {
 function hideUserInfoModal() {
     document.getElementById('userInfoModal').style.display = 'none';
 }
+
+// =================== FUNCIONES DE CONFIGURACIÓN SIMPLIFICADA ===================
+
+// =================== FUNCIONES DE MODAL SIMPLE CONFIG (DESACTIVADAS) ===================
+// Estas funciones fueron removidas según solicitud del usuario
+// El cambio de modelo se realiza completamente a través del dropdown de modos
 
 // =================== FUNCIONES DE AVISO ===================
 function mostrarAviso() {

@@ -91,10 +91,10 @@
 
             <div class="input-area">
                 <div class="input-container">
-                    <button class="abilities-menu-btn" id="abilitiesMenuBtn" title="Habilidades especiales">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                    <button class="abilities-menu-btn" id="abilitiesMenuBtn" title="Cambiar modo">
+                        <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                        </svg>
                     </button>
                     <textarea id="messageInput" placeholder="Pregúntame algo..."
                         rows="1"></textarea>
@@ -104,27 +104,43 @@
                         </svg>
                     </button>
                 </div>
-                <!-- Menú de habilidades -->
+                <!-- Menú de habilidades (modos) -->
                 <div class="abilities-menu" id="abilitiesMenu" style="display: none;">
                     <button class="ability-option" data-ability="agent">
-                        <span class="ability-icon">🤖</span>
-                        <span class="ability-text">Modo Agente</span>
+                        <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                        </svg>
+                        <span class="ability-text">Agente</span>
                     </button>
                     <button class="ability-option" data-ability="info">
-                        <span class="ability-icon">ℹ️</span>
-                        <span class="ability-text">Información DevCenter</span>
+                        <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span class="ability-text">Normal</span>
                     </button>
                     <button class="ability-option" data-ability="memory">
-                        <span class="ability-icon">🧠</span>
-                        <span class="ability-text">Memoria Extendida</span>
+                        <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            <path d="M9 10h6M9 14h6"></path>
+                        </svg>
+                        <span class="ability-text">Analizador</span>
                     </button>
                     <button class="ability-option" data-ability="program">
-                        <span class="ability-icon">💻</span>
-                        <span class="ability-text">Programar Web</span>
+                        <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="2" y1="20" x2="22" y2="20"></line>
+                        </svg>
+                        <span class="ability-text">Programador</span>
                     </button>
                     <button class="ability-option" data-ability="image">
-                        <span class="ability-icon">🎨</span>
-                        <span class="ability-text">Generar Imágenes</span>
+                        <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <span class="ability-text">Generador</span>
                     </button>
                 </div>
                 <div class="suggestions" id="suggestions">
@@ -370,6 +386,59 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Modal de Configuración Simplificada -->
+    <div class="simple-config-modal" id="simpleConfigModal" style="display:none;">
+        <div class="simple-config-content">
+            <div class="simple-config-header">
+                <h3>⚙️ Configuración API</h3>
+                <button type="button" class="config-close-btn" id="closeConfigBtn">×</button>
+            </div>
+            
+            <div class="config-form">
+                <!-- API Key para Imágenes -->
+                <div class="config-group">
+                    <label for="imageApiKey">
+                        <span class="config-icon">🎨</span>
+                        API Key para generar imágenes
+                    </label>
+                    <input type="text" id="imageApiKey" placeholder="Ingresa tu API Key para imágenes" autocomplete="off">
+                    <small>Dejalo vacío para usar la API Key principal</small>
+                </div>
+
+                <!-- Selector de Modelo Gemini -->
+                <div class="config-group">
+                    <label>
+                        <span class="config-icon">🤖</span>
+                        Modelo Gemini por defecto
+                    </label>
+                    <div class="model-selector">
+                        <label class="model-option">
+                            <input type="radio" name="geminiModel" value="gemini-2.5-flash-lite" id="modelLite">
+                            <span class="model-label">
+                                <strong>2.5 Flash-Lite</strong>
+                                <small>Mejor para respuestas rápidas</small>
+                            </span>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="geminiModel" value="gemini-2.5-flash" id="modelFlash">
+                            <span class="model-label">
+                                <strong>2.5 Flash</strong>
+                                <small>Balance velocidad y calidad</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="config-actions">
+                    <button type="button" class="btn-secondary" id="closeConfigBtnBottom">Cancelar</button>
+                    <button type="button" class="btn-primary" id="saveConfigBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+        <div class="config-overlay" id="configOverlay"></div>
     </div>
 
     <!-- Modal de Aviso -->
