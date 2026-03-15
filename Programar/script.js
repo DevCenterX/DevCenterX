@@ -3769,38 +3769,54 @@ init();
 // Load generated code from sessionStorage (from Gemini AI chat)
 function loadGeneratedCode() {
     try {
-        const generatedCode = sessionStorage.getItem('generatedCode');
+        // Try localStorage first (from main index.html Gemini integration)
+        let generatedCode = localStorage.getItem('devcenter_generated_code');
+        let isFromLocalStorage = true;
+        
+        // Fallback to sessionStorage (legacy support)
+        if (!generatedCode) {
+            generatedCode = sessionStorage.getItem('generatedCode');
+            isFromLocalStorage = false;
+        }
+        
         if (!generatedCode) return;
 
         const codeData = JSON.parse(generatedCode);
-        console.log('?? Código generado por Gemini AI detectado:', codeData.prompt);
+        console.log('âœ¨ CÃ³digo generado por Gemini AI detectado:', codeData.prompt || 'Sin descripciÃ³n');
 
-        // Load into editors
+        // Load into editors (use 'javascript' property from detectCodeBlocks)
         if (elements.htmlEditor && codeData.html) elements.htmlEditor.value = codeData.html;
         if (elements.cssEditor && codeData.css) elements.cssEditor.value = codeData.css;
-        if (elements.jsEditor && codeData.js) elements.jsEditor.value = codeData.js;
+        if (elements.jsEditor && (codeData.javascript || codeData.js)) {
+            elements.jsEditor.value = codeData.javascript || codeData.js;
+        }
 
         // Update preview
         updatePreview();
 
         // Show success message in chat
-        const message = `? Código generado con éxito para: "${codeData.prompt}"
+        const prompt = codeData.prompt || 'tu aplicaciÃ³n';
+        const message = `âœ¨ CÃ³digo generado con Ã©xito para: "${prompt}"
 
-He generado tu aplicación web con:
-• **HTML**: Estructura completa y semántica
-• **CSS**: Estilos modernos y responsive
-• **JavaScript**: Funcionalidades interactivas
+He generado tu aplicaciÃ³n web con:
+âœ“ **HTML**: Estructura completa y semÃ¡ntica
+âœ“ **CSS**: Estilos modernos y responsive
+âœ“ **JavaScript**: Funcionalidades interactivas
 
-Puedes revisar el código en las pestañas de arriba o hacer cambios directamente. ¿Qué te gustaría modificar?`;
+Puedes revisar el cÃ³digo en las pestaÃ±as de arriba o hacer cambios directamente. Â¿QuÃ© te gustarÃ­a modificar?`;
 
         addChatMessage(message, 'ai');
         startChat();
 
-        // Clear sessionStorage
-        sessionStorage.removeItem('generatedCode');
+        // Clear storage
+        if (isFromLocalStorage) {
+            localStorage.removeItem('devcenter_generated_code');
+        } else {
+            sessionStorage.removeItem('generatedCode');
+        }
 
-        console.log('? Código cargado en editores');
+        console.log('âœ“ CÃ³digo cargado en editores');
     } catch (error) {
-        console.error('Error cargando código generado:', error);
+        console.error('Error cargando cÃ³digo generado:', error);
     }
 }

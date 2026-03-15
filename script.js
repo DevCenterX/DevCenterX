@@ -515,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (codeBlocks.html) {
         // Hay código - guardar y redirigir
         console.log('✨ Código HTML detectado, guardando...');
-        saveAndOpenCode(codeBlocks);
+        saveAndOpenCode(codeBlocks, message);
         // La redirección ocurre en saveAndOpenCode
       } else {
         closeProgressBar();
@@ -641,92 +641,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return codeBlocks;
   }
 
-  // Función para mostrar modal con código
-  function showCodeModal(codeBlocks, fullResponse) {
-    // Crear HTML del modal
-    const modalHTML = `
-      <div id="codeModal" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      ">
-        <div style="
-          background: white;
-          border-radius: 12px;
-          padding: 24px;
-          max-width: 800px;
-          width: 90%;
-          max-height: 80vh;
-          overflow-y: auto;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        ">
-          <h2 style="margin-top: 0; color: #333;">Código generado</h2>
-          
-          <div style="margin-bottom: 20px; padding: 12px; background: #f5f5f5; border-radius: 8px; max-height: 200px; overflow-y: auto;">
-            <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${fullResponse}</p>
-          </div>
-
-          <div style="display: flex; gap: 12px;">
-            <button id="usecodeBtn" style="
-              flex: 1;
-              padding: 10px 16px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              border: none;
-              border-radius: 8px;
-              cursor: pointer;
-              font-weight: 600;
-            ">Usar en Programar</button>
-            
-            <button id="closeModalBtn" style="
-              flex: 1;
-              padding: 10px 16px;
-              background: #ddd;
-              color: #333;
-              border: none;
-              border-radius: 8px;
-              cursor: pointer;
-              font-weight: 600;
-            ">Cerrar</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Insertar modal
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Event listeners
-    document.getElementById('usecodeBtn').addEventListener('click', () => {
-      saveAndOpenCode(codeBlocks);
-    });
-
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
-      document.getElementById('codeModal').remove();
-    });
-
-    // Cerrar al hacer clic fuera del modal
-    document.getElementById('codeModal').addEventListener('click', (e) => {
-      if (e.target.id === 'codeModal') {
-        document.getElementById('codeModal').remove();
-      }
-    });
-  }
-
   // Función para guardar código y abrir en Programar
-  function saveAndOpenCode(codeBlocks) {
+  function saveAndOpenCode(codeBlocks, prompt = '') {
     // Guardar en localStorage
     const codeData = {
       html: codeBlocks.html || '',
       css: codeBlocks.css || '',
       javascript: codeBlocks.javascript || '',
+      prompt: prompt,
       timestamp: new Date().toISOString()
     };
 
