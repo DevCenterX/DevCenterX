@@ -1414,24 +1414,24 @@ body.light-theme .sidebar .sidebar-footer .stat-value {
   color: #60a5fa;
 }
 
-/* Mode Selector Buttons */
+/* Mode Selector Buttons - Icon Only */
 .mode-selector {
   background: rgba(37, 99, 235, 0.08);
   border: 1px solid rgba(37, 99, 235, 0.25);
   color: rgba(148, 163, 184, 0.9);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 0;
   transition: all 0.2s ease;
   position: relative;
   white-space: nowrap;
   flex-shrink: 0;
   min-height: 34px;
+  min-width: 34px;
 }
 
 .mode-selector:hover {
@@ -1455,13 +1455,13 @@ body.light-theme .sidebar .sidebar-footer .stat-value {
   box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
 }
 
-.mode-selector .mode-icon {
-  font-size: 14px;
-  display: inline-block;
+.mode-selector svg {
+  stroke-width: 2;
+  opacity: 0.8;
 }
 
-.mode-selector .mode-label {
-  display: inline-block;
+.mode-selector.active svg {
+  opacity: 1;
 }
 
 /* Light theme overrides for mode selector */
@@ -1473,7 +1473,7 @@ body.light-theme #home-section .mode-selector {
 
 body.light-theme #home-section .mode-selector:hover {
   background: #e9f0ff;
-  color: #0b1220;
+  color: #0066ff;
   border-color: rgba(6, 78, 181, 0.12);
   box-shadow: 0 6px 18px rgba(6, 78, 181, 0.06);
 }

@@ -418,11 +418,7 @@ console.log('✅ Menu functions loaded');
 // Prompts personalizados para cada modo
 const modePrompts = {
   chat: '',
-  web: 'Eres un experto en desarrollo web. Genera un código HTML5 completo y profesional para: ',
-  datos: 'Eres un experto en aplicaciones de datos. Crea una aplicación web para visualizar y analizar datos para: ',
-  game: 'Eres un experto en juegos 3D con JavaScript. Crea un juego 3D interactivo completo para: ',
-  general: 'Eres un asistente de programación general. Genera un código ',
-  programar: 'Eres un experto programador. Genera código completo y funcional para: '
+  programar: 'Eres un experto programador fullstack. Genera un código HTML5 completo, funcional y moderno para: '
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -461,14 +457,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Función para actualizar el placeholder
   function updatePlaceholder(mode) {
     const placeholders = {
-      chat: 'Escribe tu pregunta aquí...',
-      web: 'Describe la aplicación web que quieres crear...',
-      datos: 'Describe tu app de datos...',
-      game: 'Describe el juego que quieres crear...',
-      general: 'Describe tu idea...',
+      chat: 'Escribe tu pregunta o idea...',
       programar: 'Describe el código que necesitas...'
     };
-    searchBox.placeholder = placeholders[mode] || 'Describe tu idea...';
+    searchBox.placeholder = placeholders[mode] || 'Escribe tu idea...';
   }
 
   // Enviar mensaje al presionar Enter o pulsar el botón
