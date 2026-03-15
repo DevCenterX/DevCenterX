@@ -481,7 +481,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedMode === 'chat') {
       console.log('💬 Redirigiendo a Chat...');
       localStorage.setItem('devcenter_first_message', message);
-      window.location.href = '/chat';
+      // Usar setTimeout para asegurar que localStorage se guarde antes de redirigir
+      setTimeout(() => {
+        window.location.href = '/chat/';
+      }, 100);
       return;
     }
 
