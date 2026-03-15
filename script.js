@@ -463,6 +463,21 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.placeholder = placeholders[mode] || 'Escribe tu idea...';
   }
 
+  // Event listener en el botón "Iniciar Chat" - Forzar modo chat
+  if (startChatBtn) {
+    startChatBtn.addEventListener('click', () => {
+      selectedMode = 'chat'; // Forzar modo chat
+      console.log('🎯 Botón Iniciar Chat: Modo forzado a chat');
+      // Marcar el botón chat como activo
+      const chatModeBtn = document.querySelector('.mode-selector[data-mode="chat"]');
+      if (chatModeBtn) {
+        modeSelectors.forEach(btn => btn.classList.remove('active'));
+        chatModeBtn.classList.add('active');
+      }
+      sendMessage();
+    });
+  }
+
   // Enviar mensaje al presionar Enter o pulsar el botón
   const sendMessage = async () => {
     const message = searchBox.value.trim();
@@ -473,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('📤 Sending message:', message.substring(0, 50) + '...');
+    console.log('🎯 Modo actual:', selectedMode);
 
     // Limpiar el input
     searchBox.value = '';
