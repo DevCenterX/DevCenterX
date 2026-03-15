@@ -519,7 +519,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // La redirección ocurre en saveAndOpenCode
       } else {
         closeProgressBar();
-        alert('⚠️ No se detectó código HTML en la respuesta.\n\nIntenta ser más específico.');
+        console.error('❌ No se detectó código HTML. Respuesta completa:', data.reply.substring(0, 200));
+        // Sin alert, simplemente intentar de nuevo
+        searchBox.value = message + ' (reintentando...)';
       }
     } catch (error) {
       console.error('❌ Error:', error.message);
@@ -626,18 +628,22 @@ document.addEventListener('DOMContentLoaded', () => {
       javascript: ''
     };
 
-    // Detectar HTML
-    const htmlMatch = text.match(/```html\n([\s\S]*?)\n```/);
+    // Detectar HTML (más flexible)
+    let htmlMatch = text.match(/```html\n([\s\S]*?)\n```/i);
+    if (!htmlMatch) htmlMatch = text.match(/```html([\s\S]*?)```/i);
     if (htmlMatch) codeBlocks.html = htmlMatch[1].trim();
 
-    // Detectar CSS
-    const cssMatch = text.match(/```css\n([\s\S]*?)\n```/);
+    // Detectar CSS (más flexible)
+    let cssMatch = text.match(/```css\n([\s\S]*?)\n```/i);
+    if (!cssMatch) cssMatch = text.match(/```css([\s\S]*?)```/i);
     if (cssMatch) codeBlocks.css = cssMatch[1].trim();
 
-    // Detectar JavaScript
-    const jsMatch = text.match(/```(?:javascript|js)\n([\s\S]*?)\n```/);
+    // Detectar JavaScript (más flexible)
+    let jsMatch = text.match(/```(?:javascript|js)\n([\s\S]*?)\n```/i);
+    if (!jsMatch) jsMatch = text.match(/```(?:javascript|js)([\s\S]*?)```/i);
     if (jsMatch) codeBlocks.javascript = jsMatch[1].trim();
 
+    console.log('🔍 Detectados bloques de código:', {html: !!codeBlocks.html, css: !!codeBlocks.css, js: !!codeBlocks.javascript});
     return codeBlocks;
   }
 
