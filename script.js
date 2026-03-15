@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('devcenter_first_message', message);
       // Usar setTimeout para asegurar que localStorage se guarde antes de redirigir
       setTimeout(() => {
-        window.location.href = '/chat/';
+        window.location.href = 'chat/'; // Ruta relativa para compatibilidad
       }, 100);
       return;
     }

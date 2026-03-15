@@ -14,6 +14,13 @@ const sendBtn = document.getElementById('sendBtn');
 
 // Initialize Chat
 document.addEventListener('DOMContentLoaded', () => {
+    // Enviar mensaje con Enter (sin Shift)
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
   console.log('✅ Chat system initialized');
   loadChatsFromStorage();
   loadChatFromURL();
@@ -79,10 +86,8 @@ function createNewChat() {
   allChats.push(newChat);
   currentChatId = allChats.length - 1;
   chatHistory = [];
-  
   // Update URL
   window.history.pushState({}, '', `/chat?id=${newChat.id}`);
-  
   saveChatsToStorage();
   renderMessages();
   updateChatList();
@@ -102,30 +107,26 @@ async function handleSendMessage(e) {
     content: message,
     timestamp: new Date().toISOString()
   });
-  
   // Update chat title if first message
   if (chatHistory.length === 1) {
     allChats[currentChatId].title = message.substring(0, 30) + (message.length > 30 ? '...' : '');
   }
-  
+  allChats[currentChatId].messages = chatHistory;
+  saveChatsToStorage();
   chatInput.value = '';
   chatInput.style.height = 'auto';
   renderMessages();
-  saveChatsToStorage();
-  
   // Disable button while loading
   sendBtn.disabled = true;
-  
   // Show typing indicator
   addTypingIndicator();
   
   try {
     // Build conversation history for API (excluding the current message)
     const conversationHistory = chatHistory.slice(0, -1).map(msg => ({
-      role: msg.role,
+      role: msg.role === 'ai' ? 'model' : msg.role,
       content: msg.content
     }));
-    
     const response = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -135,27 +136,22 @@ async function handleSendMessage(e) {
         conversationHistory: conversationHistory
       })
     });
-    
     if (!response.ok) {
       throw new Error(`Error ${response.status}`);
     }
-    
     const data = await response.json();
-    
     if (!data.reply) {
       throw new Error('No response from AI');
     }
-    
     // Remove typing indicator
     removeTypingIndicator();
-    
     // Add AI message
     chatHistory.push({
       role: 'ai',
       content: data.reply,
       timestamp: new Date().toISOString()
     });
-    
+    allChats[currentChatId].messages = chatHistory;
     saveChatsToStorage();
     renderMessages();
     scrollToBottom();
@@ -238,6 +234,7 @@ function updateChatList() {
       chatHistory = chat.messages || [];
       window.history.pushState({}, '', `/chat?id=${chat.id}`);
       renderMessages();
+      saveChatsToStorage();
       updateChatList();
       chatInput.focus();
     });
