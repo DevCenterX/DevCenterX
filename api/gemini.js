@@ -22,7 +22,7 @@ export default async function handler(request, response) {
       return;
     }
 
-    const { message, mode } = request.body;
+    const { message, mode, conversationHistory = [] } = request.body;
 
     if (!message) {
       response.status(400).json({ error: 'message required' });
@@ -45,13 +45,27 @@ IMPORTANTE PARA RESPUESTAS CON CÓDIGO:
 - No expliques nada, solo genera el código con esos 3 bloques
     ` : '';
 
+    // Build conversation history
+    const contents = [];
+    
+    // Add previous messages if in chat mode
+    if (mode === 'chat' && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      conversationHistory.forEach(msg => {
+        contents.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        });
+      });
+    }
+    
+    // Add current message
+    contents.push({
+      role: 'user',
+      parts: [{ text: systemMessage + message }]
+    });
+
     const payload = {
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: systemMessage + message }],
-        },
-      ],
+      contents: contents,
       generationConfig: {
         temperature: 0.9,
         maxOutputTokens: 4096,

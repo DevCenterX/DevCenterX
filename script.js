@@ -477,7 +477,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limpiar el input
     searchBox.value = '';
 
-    // Para mensajes normales, hacer una solicitud a Gemini
+    // Si es modo chat, redireccionar a la carpeta de chat
+    if (selectedMode === 'chat') {
+      console.log('💬 Redirigiendo a Chat...');
+      localStorage.setItem('devcenter_first_message', message);
+      window.location.href = '/chat';
+      return;
+    }
+
+    // Para mensajes de programación, hacer una solicitud a Gemini
     let originalText = ''; // Declarar fuera del try
     
     try {
