@@ -489,6 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showEpicProgressBar();
       }
 
+      console.log('🎯 Modo seleccionado:', selectedMode.toUpperCase());
+      console.log('📝 Prompt usado:', selectedMode === 'chat' ? 'Respuesta conversacional' : modePrompts[selectedMode]);
+
       console.log('📡 Contacting /api/gemini with mode:', selectedMode);
 
       // Construir el mensaje con el prompt del modo

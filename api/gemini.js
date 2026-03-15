@@ -22,22 +22,17 @@ export default async function handler(request, response) {
       return;
     }
 
-    const { message } = request.body;
+    const { message, mode } = request.body;
 
     if (!message) {
       response.status(400).json({ error: 'message required' });
       return;
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    // Determinar si el mensaje requiere instrucciones de código
-    const requiresCode = !message.toLowerCase().includes('responde') && (
-      message.includes('Eres un experto en desarrollo web') ||
-      message.includes('Crea una aplicación') ||
-      message.includes('Crea un juego') ||
-      message.includes('Genera código')
-    );
+    // Determinar si el mensaje requiere instrucciones de código basándose en el modo
+    const requiresCode = mode === 'programar';
 
     const systemMessage = requiresCode ? `
 IMPORTANTE PARA RESPUESTAS CON CÓDIGO: 
