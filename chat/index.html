@@ -1,79 +1,620 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Chat - DevCenterX</title>
-  <link rel="shortcut icon" href="/Images/Agent.webp" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/chat/style.css">
-  <script>
-    (function() {
-      try {
-        var theme = localStorage.getItem('devcenter_theme');
-        if (theme === 'light') {
-          document.body.classList.add('light-theme');
-        } else {
-          document.body.classList.add('dark-theme');
-        }
-      } catch (e) {}
-    })();
-  </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>DevCenter IA</title>
+    <meta name="description" content="DevCenter es tu asistente de IA para generar páginas web completas y funcionales">
+    <link rel="icon" href="favicon-new.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="DevCenter IA.png">
+    <link rel="stylesheet" href="style.css?v=15">
 </head>
+
 <body>
-  <div class="chat-container">
-    <!-- Sidebar Navigation -->
-    <aside class="chat-sidebar">
-      <div class="chat-sidebar-header">
-        <a href="/" class="logo-link">
-          <img src="/Images/Agent.webp" alt="DevCenterX" class="logo">
-          <span>DevCenterX</span>
-        </a>
-      </div>
-      
-      <nav class="chat-nav">
-        <div class="chat-nav-title">Chat</div>
-        <button class="chat-new-btn" id="newChatBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          Nuevo Chat
-        </button>
-        <div class="chat-history" id="chatHistory"></div>
-      </nav>
-      
-      <div class="chat-sidebar-footer">
-        <button class="back-btn" id="backBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Volver
-        </button>
-      </div>
-    </aside>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="menu-btn" id="menuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <button class="response-mode-btn" id="responseModeBtn" title="Modo de respuesta">
+                    <span id="responseModeIcon">S</span>
+                </button>
+            </div>
+            <div class="header-title">
 
-    <!-- Main Chat Area -->
-    <main class="chat-main">
-      <div class="chat-messages" id="chatMessages"></div>
-      
-      <div class="chat-input-area">
-        <form id="chatForm" class="chat-form">
-          <div class="input-wrapper">
-            <textarea id="chatInput" class="chat-input" placeholder="Escribe mensaje..." rows="3"></textarea>
-            <button type="submit" class="send-btn" id="sendBtn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-              </svg>
-            </button>
-          </div>
-        </form>
-      </div>
+                <!-- Vercion -->
+                <h1>DevCenter For Justin</h1> 
+                <!-- Vercion -->
+
+
+
+                <!-- <p>AI Web Generator</p> -->
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                <div class="header-menu-container">
+                    <button class="header-menu-btn" id="headerMenuBtn" title="Archivo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="header-dropdown-menu" id="headerDropdownMenu" style="display: none;">
+                        <button class="header-menu-option" id="notasMenuOption">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            <span>Notas</span>
+                        </button>
+                        <button class="header-menu-option" id="archivoMenuOption">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path>
+                                <polyline points="13 2 13 9 20 9"></polyline>
+                            </svg>
+                            <span>Archivo</span>
+                        </button>
+                    </div>
+                </div>
+                <button class="new-chat-btn" id="newChatBtn">+</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Historial de Chats</h2>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="user-info-btn" id="aiConfigBtn" title="Configurar IAs">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m-5.2-9.2l4.2 4.2m3 3l4.2 4.2m-12.4 0l4.2-4.2m3-3l4.2-4.2"></path>
+                    </svg>
+                </button>
+                <button class="close-btn" id="closeSidebarBtn">×</button>
+            </div>
+        </div>
+        <div class="sidebar-content" id="sidebarContent">
+            <div class="no-chats">
+                <p>No hay chats aún</p>
+                <small>Crea un nuevo chat para empezar</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Chat -->
+    <main class="main" id="main">
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                        </svg>
+                    </div>
+                <h3>¡Hola! Soy DevCenter</h3>
+                <p>Tu asistente de IA. Puedes preguntarme cualquier cosa o pedirme que genere una página web si lo necesitas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <button class="abilities-menu-btn" id="abilitiesMenuBtn" title="Habilidades especiales">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <textarea id="messageInput" placeholder="Pregúntame algo..."
+                        rows="1"></textarea>
+                    <button id="sendBtn" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Menú de habilidades -->
+                <div class="abilities-menu" id="abilitiesMenu" style="display: none;">
+                    <button class="ability-option" data-ability="agent">
+                        <span class="ability-icon">🤖</span>
+                        <span class="ability-text">Modo Agente</span>
+                    </button>
+                    <button class="ability-option" data-ability="info">
+                        <span class="ability-icon">ℹ️</span>
+                        <span class="ability-text">Información DevCenter</span>
+                    </button>
+                    <button class="ability-option" data-ability="memory">
+                        <span class="ability-icon">🧠</span>
+                        <span class="ability-text">Memoria Extendida</span>
+                    </button>
+                    <button class="ability-option" data-ability="program">
+                        <span class="ability-icon">💻</span>
+                        <span class="ability-text">Programar Web</span>
+                    </button>
+                    <button class="ability-option" data-ability="image">
+                        <span class="ability-icon">🎨</span>
+                        <span class="ability-text">Generar Imágenes</span>
+                    </button>
+                </div>
+                <div class="suggestions" id="suggestions">
+                    
+                </div>
+            </div>
+        </div>
     </main>
-  </div>
 
-  <script src="/chat/script.js"></script>
+    <!-- Notificaciones desactivadas por solicitud del usuario -->
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-header">
+            <button class="back-btn" id="backBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </button>
+            <div class="preview-title">
+                <h2>Vista Previa</h2>
+                <p id="previewSubtitle">Página Generada</p>
+            </div>
+            <div class="preview-actions">
+                <!-- Botones siempre visibles -->
+                <button class="action-btn" id="copyCodeBtn" title="Copiar código">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+                <button class="action-btn" id="downloadBtn" title="Descargar HTML">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                </button>
+                
+                <!-- Botones solo en desktop -->
+                <button class="action-btn desktop-only-btn" id="editCodeBtn" title="Ver y editar código">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
+                <button class="action-btn desktop-only-btn" id="shareBtn" title="Compartir código">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path
+                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z">
+                        </path>
+                    </svg>
+                </button>
+                
+                <!-- Botón hamburguesa solo en móvil -->
+                <button class="action-btn mobile-only-btn" id="previewMenuBtn" title="Más opciones">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="3" y1="6" x2="21" y2="6" stroke="#667eea"></line>
+                        <line x1="3" y1="12" x2="21" y2="12" stroke="#667eea"></line>
+                        <line x1="3" y1="18" x2="21" y2="18" stroke="#667eea"></line>
+                    </svg>
+                </button>
+                
+                <!-- Menú desplegable para móvil (solo Ver/Editar y Compartir) -->
+                <div class="preview-menu" id="previewMenu" style="display: none;">
+                    <button class="preview-menu-option" id="mobileEditCodeBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>Ver y editar código</span>
+                    </button>
+                    <button class="preview-menu-option" id="mobileShareBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                        </svg>
+                        <span>Compartir código</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="preview-content">
+            <iframe id="previewFrame" frameborder="0"></iframe>
+            <!-- Editor de código integrado -->
+            <div class="code-editor-panel" id="codeEditorPanel" style="display: none;">
+                <div class="code-editor-header">
+                    <h3>Editor de Código</h3>
+                    <div class="editor-actions">
+                        <button class="editor-btn" id="applyChangesBtn" title="Aplicar cambios">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Aplicar
+                        </button>
+                        <button class="editor-btn" id="closeEditorBtn" title="Cerrar editor">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="codeEditorTextarea" spellcheck="false"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="loading-content">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="loading-text" id="loadingText">Generando...</div>
+        </div>
+    </div>
+
+    <!-- Modal para datos de usuario -->
+    <div class="user-info-modal" id="userInfoModal" style="display:none;">
+        <div class="user-info-modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Configuración Personal</h3>
+                <p class="modal-subtitle">Personaliza tu experiencia con DevCenter IA</p>
+            </div>
+
+            <form id="userInfoForm">
+                <!-- Información Personal -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <span class="section-icon">👤</span>
+                        <h4>Información Personal</h4>
+                    </div>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="userName">Nombre</label>
+                            <input type="text" id="userName" autocomplete="off" placeholder="Tu nombre">
+                        </div>
+                        <div class="input-group">
+                            <label for="userBirth">Fecha de nacimiento</label>
+                            <input type="date" id="userBirth">
+                        </div>
+                        <div class="input-group full-width">
+                            <label for="userEmail">Correo electrónico</label>
+                            <input type="email" id="userEmail" autocomplete="off" placeholder="tu@email.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuraciones de IA -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <span class="section-icon">🤖</span>
+                        <h4>Preferencias de IA</h4>
+                    </div>
+                    <div class="ai-settings-grid">
+                        <div class="input-group">
+                            <label for="aiResponseStyle">
+                                <span class="label-icon">💬</span>
+                                Estilo de respuesta
+                            </label>
+                            <select id="aiResponseStyle">
+                                <option value="balanced">⚖️ Balanceado</option>
+                                <option value="casual">😊 Casual y amigable</option>
+                                <option value="formal">🎯 Formal y profesional</option>
+                                <option value="technical">🔧 Técnico y preciso</option>
+                                <option value="creative">✨ Creativo e innovador</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="detailLevel">
+                                <span class="label-icon">📊</span>
+                                Nivel de detalle
+                            </label>
+                            <select id="detailLevel">
+                                <option value="medium">📋 Medio (ideal)</option>
+                                <option value="concise">⚡ Conciso</option>
+                                <option value="detailed">📖 Detallado</option>
+                                <option value="comprehensive">📚 Exhaustivo</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="projectType">
+                                <span class="label-icon">🚀</span>
+                                Tipo de proyectos
+                            </label>
+                            <select id="projectType">
+                                <option value="general">🌐 General</option>
+                                <option value="web">💻 Desarrollo web</option>
+                                <option value="mobile">📱 Apps móviles</option>
+                                <option value="backend">⚙️ Backend y APIs</option>
+                                <option value="frontend">🎨 Frontend y UI/UX</option>
+                                <option value="fullstack">🔄 Full-stack</option>
+                                <option value="data">📊 Ciencia de datos</option>
+                                <option value="ai">🧠 Inteligencia artificial</option>
+                                <option value="game">🎮 Desarrollo de juegos</option>
+                                <option value="desktop">🖥️ Apps de escritorio</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferencias de Código -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <span class="section-icon">💾</span>
+                        <h4>Estilo de Código</h4>
+                    </div>
+                    <div class="input-group">
+                        <label for="codeStylePrefs">
+                            <span class="label-icon">📝</span>
+                            Convenciones y preferencias
+                        </label>
+                        <textarea id="codeStylePrefs" rows="2" 
+                                  placeholder="Ej: Funciones flecha, const/let, comentarios descriptivos, JSDoc..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <span class="section-icon">📝</span>
+                        <h4>Información Adicional</h4>
+                    </div>
+                    <div class="input-group">
+                        <label for="userCustom">Cuéntanos sobre ti</label>
+                        <textarea id="userCustom" rows="2"
+                                  placeholder="Ej: Soy desarrollador, me especializo en React, trabajo en startups..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="closeUserInfoModal">
+                        <span>❌</span> Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <span>✅</span> Guardar configuración
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para configuración de IAs -->
+    <div class="ai-config-modal" id="aiConfigModal" style="display:none;">
+        <div class="ai-config-overlay" id="aiConfigOverlay"></div>
+        <div class="ai-config-modal-content">
+            <div class="ai-config-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m-5.2-9.2l4.2 4.2m3 3l4.2 4.2m-12.4 0l4.2-4.2m3-3l4.2-4.2"></path>
+                    </svg>
+                    Configuración de IAs
+                </h3>
+                <button class="ai-config-close" id="closeAiConfigModalX">×</button>
+            </div>
+            <form id="aiConfigForm">
+                <div class="ai-config-body">
+                    <div id="aiListContainer"></div>
+                    <button type="button" class="add-ai-btn" id="addAiBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Añadir IA
+                    </button>
+                </div>
+                <div class="ai-config-footer">
+                    <button type="button" class="btn-secondary" id="closeAiConfigModal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Configuración</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Aviso -->
+    <div class="aviso-modal" id="avisoModal" style="display:none;">
+        <div class="aviso-overlay" id="avisoOverlay"></div>
+        <div class="aviso-content">
+            <div class="aviso-header">
+                <h2 id="avisoTitulo"></h2>
+                <button class="aviso-close" id="avisoClose">×</button>
+            </div>
+            <div class="aviso-body">
+                <p id="avisoDescripcion"></p>
+            </div>
+            <div class="aviso-footer">
+                <button class="aviso-btn" id="avisoEntendido">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Notas Guardadas -->
+    <div class="saved-notes-modal" id="savedNotesModal" style="display:none;">
+        <div class="saved-notes-overlay" id="savedNotesOverlay"></div>
+        <div class="saved-notes-content">
+            <div class="saved-notes-header">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Notas Guardadas
+                </h2>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="add-note-btn" id="addNoteBtn" title="Añadir nota manualmente">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button class="saved-notes-close" id="savedNotesClose">×</button>
+                </div>
+            </div>
+            <div class="saved-notes-body" id="savedNotesBody">
+                <div class="no-notes">
+                    <div class="no-notes-icon">📭</div>
+                    <p>No hay notas guardadas aún</p>
+                    <small>Puedes añadir notas manualmente o la IA las guardará automáticamente usando {GUARDAR: ...}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para añadir/editar nota -->
+    <div class="note-edit-modal" id="noteEditModal" style="display:none;">
+        <div class="note-edit-overlay" id="noteEditOverlay"></div>
+        <div class="note-edit-content">
+            <div class="note-edit-header">
+                <h3 id="noteEditTitle">✏️ Nueva Nota</h3>
+                <button class="note-edit-close" id="noteEditClose">×</button>
+            </div>
+            <div class="note-edit-body">
+                <textarea id="noteEditTextarea" placeholder="Escribe tu nota aquí..." rows="6"></textarea>
+            </div>
+            <div class="note-edit-footer">
+                <button class="btn-secondary" id="cancelNoteBtn">Cancelar</button>
+                <button class="btn-primary" id="saveNoteBtn">Guardar Nota</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Archivo - Prompts del Sistema -->
+    <div class="archivo-modal" id="archivoModal" style="display:none;">
+        <div class="archivo-overlay" id="archivoOverlay"></div>
+        <div class="archivo-content">
+            <div class="archivo-header">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path>
+                        <polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    Archivo - Prompts del Sistema
+                </h2>
+                <button class="archivo-close" id="archivoClose">×</button>
+            </div>
+            <div class="archivo-body">
+                <div class="archivo-info">
+                    <div class="auto-save-toggle-container">
+                        <div class="auto-save-toggle-content">
+                            <div class="auto-save-toggle-text">
+                                <div class="auto-save-toggle-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                    Guardado Automático
+                                </div>
+                                <div class="auto-save-toggle-desc">
+                                    Los cambios sugeridos por la IA se aplicarán automáticamente sin confirmación
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoSavePromptToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="archivo-editor">
+                    <label for="systemPromptTextarea">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                        Prompt del Sistema
+                    </label>
+                    <textarea id="systemPromptTextarea" placeholder="Ejemplo: Eres un asistente experto en desarrollo web. Siempre proporciona ejemplos de código completos y bien documentados..." rows="12"></textarea>
+                    <div class="archivo-stats">
+                        <span id="promptCharCount">0</span> caracteres
+                    </div>
+                </div>
+
+                <!-- Mejorador de Prompts -->
+                <div class="prompt-improver-section">
+                    <div class="prompt-improver-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; margin-right: 8px;">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <h3>✨ Mejorador de Prompts</h3>
+                    </div>
+                    <p class="prompt-improver-description">Escribe tu prompt y la IA lo estructurará profesionalmente siguiendo las mejores prácticas</p>
+                    
+                    <label for="rawPromptTextarea">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Tu prompt original
+                    </label>
+                    <textarea id="rawPromptTextarea" placeholder="Ejemplo: quiero que la IA me ayude a programar y sea amigable..." rows="6"></textarea>
+                    
+                    <button class="btn-improve-prompt" id="improvePromptBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        Mejorar y Estructurar Prompt
+                    </button>
+                    
+                    <div id="improvedPromptContainer" style="display: none;">
+                        <label for="improvedPromptTextarea">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Prompt mejorado
+                        </label>
+                        <textarea id="improvedPromptTextarea" rows="12" readonly></textarea>
+                        <div class="improved-prompt-actions">
+                            <button class="btn-secondary" id="copyImprovedPromptBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copiar
+                            </button>
+                            <button class="btn-primary" id="useImprovedPromptBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Usar como Prompt del Sistema
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="archivo-footer">
+                <button class="btn-secondary" id="clearPromptBtn">Limpiar</button>
+                <button class="btn-primary" id="savePromptBtn">Guardar Prompt</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=10"></script>
 </body>
+
 </html>
