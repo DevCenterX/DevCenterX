@@ -30,6 +30,7 @@ export default async function handler(request, response) {
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    //YA NO LO CAMBIES 
 
     const payload = {
       contents: [
