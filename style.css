@@ -1414,6 +1414,82 @@ body.light-theme .sidebar .sidebar-footer .stat-value {
   color: #60a5fa;
 }
 
+/* Mode Selector Buttons */
+.mode-selector {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: rgba(148, 163, 184, 0.9);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 34px;
+}
+
+.mode-selector:hover {
+  background: rgba(37, 99, 235, 0.15);
+  color: #e2e8f0;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.mode-selector.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.mode-selector.active:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+}
+
+.mode-selector .mode-icon {
+  font-size: 14px;
+  display: inline-block;
+}
+
+.mode-selector .mode-label {
+  display: inline-block;
+}
+
+/* Light theme overrides for mode selector */
+body.light-theme #home-section .mode-selector {
+  background: #f3f6fb;
+  border: 1px solid rgba(11, 18, 32, 0.06);
+  color: #0b1220;
+}
+
+body.light-theme #home-section .mode-selector:hover {
+  background: #e9f0ff;
+  color: #0b1220;
+  border-color: rgba(6, 78, 181, 0.12);
+  box-shadow: 0 6px 18px rgba(6, 78, 181, 0.06);
+}
+
+body.light-theme #home-section .mode-selector.active {
+  background: linear-gradient(135deg, #0066ff 0%, #004bb5 100%);
+  border-color: #003399;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(6, 78, 181, 0.2);
+}
+
+body.light-theme #home-section .mode-selector.active:hover {
+  background: linear-gradient(135deg, #004bb5 0%, #003399 100%);
+  box-shadow: 0 8px 25px rgba(6, 78, 181, 0.3);
+}
+
 .get-suggestions-btn {
   margin-top: var(--spacing-lg);
   background: transparent;

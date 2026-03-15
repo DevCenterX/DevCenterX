@@ -415,9 +415,20 @@ console.log('✅ Menu functions loaded');
 // ==================== GEMINI CHAT INTEGRATION ====================
 // Integración con Gemini 1.5 Flash para el input de búsqueda
 
+// Prompts personalizados para cada modo
+const modePrompts = {
+  chat: '',
+  web: 'Eres un experto en desarrollo web. Genera un código HTML5 completo y profesional para: ',
+  datos: 'Eres un experto en aplicaciones de datos. Crea una aplicación web para visualizar y analizar datos para: ',
+  game: 'Eres un experto en juegos 3D con JavaScript. Crea un juego 3D interactivo completo para: ',
+  general: 'Eres un asistente de programación general. Genera un código ',
+  programar: 'Eres un experto programador. Genera código completo y funcional para: '
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const searchBox = document.getElementById('searchBox');
   const startChatBtn = document.getElementById('startChatBtn');
+  let selectedMode = 'chat'; // Modo por defecto
   
   if (!searchBox || !startChatBtn) {
     console.log('⚠️ Chat elements not found');
@@ -425,6 +436,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   console.log('✅ Gemini chat elements loaded');
+
+  // Event listeners para los botones de modo selector
+  const modeSelectors = document.querySelectorAll('.mode-selector');
+  modeSelectors.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Remover clase active de todos los botones
+      modeSelectors.forEach(btn => btn.classList.remove('active'));
+      
+      // Agregar clase active al botón clickeado
+      button.classList.add('active');
+      
+      // Actualizar modo seleccionado
+      selectedMode = button.dataset.mode;
+      console.log('🎯 Modo seleccionado:', selectedMode);
+      
+      // Actualizar placeholder basado en el modo
+      updatePlaceholder(selectedMode);
+    });
+  });
+
+  // Función para actualizar el placeholder
+  function updatePlaceholder(mode) {
+    const placeholders = {
+      chat: 'Escribe tu pregunta aquí...',
+      web: 'Describe la aplicación web que quieres crear...',
+      datos: 'Describe tu app de datos...',
+      game: 'Describe el juego que quieres crear...',
+      general: 'Describe tu idea...',
+      programar: 'Describe el código que necesitas...'
+    };
+    searchBox.placeholder = placeholders[mode] || 'Describe tu idea...';
+  }
 
   // Enviar mensaje al presionar Enter o pulsar el botón
   const sendMessage = async () => {
@@ -440,27 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limpiar el input
     searchBox.value = '';
 
-    // Verificar si es el comando /PROGRAMAR
-    if (message.startsWith('/PROGRAMAR')) {
-      const appIdea = message.replace('/PROGRAMAR', '').trim();
-      
-      if (!appIdea) {
-        console.warn('❌ /PROGRAMAR command but no idea provided');
-        alert('Por favor, describe tu idea después de /PROGRAMAR\n\nEjemplo: /PROGRAMAR un blog con comentarios');
-        return;
-      }
-
-      console.log('✨ Creating app with idea:', appIdea);
-
-      // Guardar la idea en localStorage
-      localStorage.setItem('devcenter_app_idea', appIdea);
-      localStorage.setItem('devcenter_app_creation_time', new Date().toISOString());
-
-      // Redirigir a crear app
-      window.location.href = '/Programar/crear-app?idea=' + encodeURIComponent(appIdea);
-      return;
-    }
-
     // Para mensajes normales, hacer una solicitud a Gemini
     let originalText = ''; // Declarar fuera del try
     
@@ -468,10 +492,18 @@ document.addEventListener('DOMContentLoaded', () => {
       startChatBtn.disabled = true;
       originalText = startChatBtn.innerHTML;
       
-      // Mostrar barra de progreso épica
-      showEpicProgressBar();
+      // Mostrar barra de progreso épica solo si no es chat
+      if (selectedMode !== 'chat') {
+        showEpicProgressBar();
+      }
 
-      console.log('📡 Contacting /api/gemini...');
+      console.log('📡 Contacting /api/gemini with mode:', selectedMode);
+
+      // Construir el mensaje con el prompt del modo
+      let finalMessage = message;
+      if (selectedMode !== 'chat') {
+        finalMessage = modePrompts[selectedMode] + message;
+      }
 
       const response = await fetch('/api/gemini', {
         method: 'POST',
@@ -479,7 +511,8 @@ document.addEventListener('DOMContentLoaded', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: message,
+          message: finalMessage,
+          mode: selectedMode,
           conversationHistory: [],
         }),
       });
@@ -509,23 +542,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log('✅ Got response:\n', data.reply);
       
-      // Detectar y procesar código en la respuesta
-      const codeBlocks = detectCodeBlocks(data.reply);
-      
-      if (codeBlocks.html) {
-        // Hay código - guardar y redirigir
-        console.log('✨ Código HTML detectado, guardando...');
-        saveAndOpenCode(codeBlocks, message);
-        // La redirección ocurre en saveAndOpenCode
-      } else {
+      // Si es modo chat, mostrar respuesta y no buscar código
+      if (selectedMode === 'chat') {
         closeProgressBar();
-        console.error('❌ No se detectó código HTML. Respuesta completa:', data.reply.substring(0, 200));
-        // Sin alert, simplemente intentar de nuevo
-        searchBox.value = message + ' (reintentando...)';
+        // Mostrar respuesta en el UI (aquí podrías agregar un chat visual)
+        console.log('💬 Respuesta del chat:', data.reply);
+        searchBox.focus();
+      } else {
+        // Para otros modos, detectar y procesar código en la respuesta
+        const codeBlocks = detectCodeBlocks(data.reply);
+        
+        if (codeBlocks.html) {
+          // Hay código - guardar y redirigir
+          console.log('✨ Código HTML detectado, guardando...');
+          saveAndOpenCode(codeBlocks, message);
+          // La redirección ocurre en saveAndOpenCode
+        } else {
+          closeProgressBar();
+          console.error('❌ No se detectó código HTML. Respuesta completa:', data.reply.substring(0, 200));
+          // Sin alert, simplemente intentar de nuevo
+          searchBox.value = message + ' (reintentando...)';
+        }
       }
     } catch (error) {
       console.error('❌ Error:', error.message);
       console.error('Stack:', error);
+      closeProgressBar();
       alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
     } finally {
       startChatBtn.disabled = false;

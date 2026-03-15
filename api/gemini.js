@@ -29,39 +29,32 @@ export default async function handler(request, response) {
       return;
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`; 
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    // Determinar si el mensaje requiere instrucciones de código
+    const requiresCode = !message.toLowerCase().includes('responde') && (
+      message.includes('Eres un experto en desarrollo web') ||
+      message.includes('Crea una aplicación') ||
+      message.includes('Crea un juego') ||
+      message.includes('Genera código')
+    );
+
+    const systemMessage = requiresCode ? `
+IMPORTANTE PARA RESPUESTAS CON CÓDIGO: 
+- Incluye HTML, CSS y JavaScript separados
+- El HTML debe estar dentro de un bloque \`\`\`html ... \`\`\`
+- El CSS debe estar dentro de un bloque \`\`\`css ... \`\`\`
+- El JavaScript debe estar dentro de un bloque \`\`\`javascript ... \`\`\`
+- Usa emojis y colores vibrantes
+- Hazlo completamente funcional
+- No expliques nada, solo genera el código con esos 3 bloques
+    ` : '';
 
     const payload = {
       contents: [
         {
           role: 'user',
-          parts: [{ text: `Genera un código HTML5 completo y listo para usar basado en esto: "${message}". 
-          
-          IMPORTANTE: 
-          - Incluye HTML, CSS y JavaScript en un solo archivo
-          - El HTML debe estar dentro de un bloque \`\`\`html
-          - El CSS debe estar dentro de un bloque \`\`\`css
-          - El JavaScript debe estar dentro de un bloque \`\`\`javascript
-          - Usa emojis y colores vibrantes
-          - Hazlo completamente funcional
-          - No expliques nada, solo genera el código
-          
-          Ejemplo de formato:
-          \`\`\`html
-          <!DOCTYPE html>
-          <html>
-          ...
-          </html>
-          \`\`\`
-          
-          \`\`\`css
-          /* estilos aquí */
-          \`\`\`
-          
-          \`\`\`javascript
-          // código aquí
-          \`\`\`
-          ` }],
+          parts: [{ text: systemMessage + message }],
         },
       ],
       generationConfig: {
