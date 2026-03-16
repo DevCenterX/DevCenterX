@@ -154,6 +154,12 @@
 
     <!-- Preview Modal -->
     <div class="preview-modal" id="previewModal">
+        <!-- Botón de volver para fullscreen -->
+        <button class="fullscreen-back-btn" id="fullscreenBackBtn" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+        </button>
         <div class="preview-header">
             <button class="back-btn" id="backBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -177,6 +183,11 @@
                         <path
                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                         </path>
+                    </svg>
+                </button>
+                <button class="action-btn" id="fullscreenBtn" title="Pantalla completa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
                     </svg>
                 </button>
                 
@@ -439,23 +450,6 @@
             </div>
         </div>
         <div class="config-overlay" id="configOverlay"></div>
-    </div>
-
-    <!-- Modal de Aviso -->
-    <div class="aviso-modal" id="avisoModal" style="display:none;">
-        <div class="aviso-overlay" id="avisoOverlay"></div>
-        <div class="aviso-content">
-            <div class="aviso-header">
-                <h2 id="avisoTitulo"></h2>
-                <button class="aviso-close" id="avisoClose">×</button>
-            </div>
-            <div class="aviso-body">
-                <p id="avisoDescripcion"></p>
-            </div>
-            <div class="aviso-footer">
-                <button class="aviso-btn" id="avisoEntendido">Entendido</button>
-            </div>
-        </div>
     </div>
 
     <!-- Modal de Notas Guardadas y Sistema de Archivo Eliminados -->

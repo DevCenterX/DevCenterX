@@ -1,19 +1,83 @@
 //====================================================== Configuración ======================================================
 
+// ================= CONFIGURACIÓN DE GENERACIÓN DE IMÁGENES (NANO BANANA) ================
+let IMAGE_API_KEY = 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM';
+
+// Modelos disponibles de Nano Banana:
+// - 'gemini-3.1-flash-image-preview': Nano Banana 2 (Alta eficiencia, gran volumen)
+// - 'gemini-3-pro-image-preview': Nano Banana Pro (Producción profesional, textos precisos)
+// - 'gemini-2.5-flash-image': Nano Banana (Velocidad y eficiencia)
+const IMAGE_GENERATION_MODEL = 'gemini-2.5-flash-image';
+
+const IMAGE_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+const IMAGE_RESPONSE_MODALITIES = ["TEXT", "IMAGE"];
+
+const DEFAULT_IMAGE_ASPECT_RATIO = '1:1';
+// Opciones disponibles: '1:1', '3:2', '2:3', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'
+
+// Variable para almacenar imagen cargada para edición
+let uploadedImageData = null;
+let uploadedImageMimeType = 'image/png';
+// =======================================================================================
+
+// ================= CONFIGURACIÓN DE MODELOS POR MODO =======================
+// Cada modo puede tener su propio modelo de IA optimizado para la tarea específica
+// rpm = Requests Per Minute (peticiones por minuto)
+// tpm = Tokens Per Minute (tokens por minuto)
+// rpd = Requests Per Day (peticiones por día)
+
+const MODE_SPECIFIC_MODELS = {
+    // Modo PROGRAMADOR: Optimizado para generación de código extenso
+    program: {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
+        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
+        rpm: 30,        // 30 peticiones por minuto - Alta frecuencia para desarrollo rápido
+        tpm: 1000000,   // 1 millón de tokens por minuto - Capacidad masiva para código
+        rpd: 200        // 200 peticiones por día - Suficiente para desarrollo intensivo
+    },
+
+    // Modo MEMORIA EXTENDIDA: Optimizado para análisis contextual profundo
+    memory: {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
+        rpm: 5,         // 5 peticiones por minuto - Más lento pero más preciso
+        tpm: 125000,    // 125K tokens por minuto - Alto para análisis detallado
+        rpd: 100        // 100 peticiones por día - Moderado para análisis profundos
+    },
+
+    // Modo INFORMACIÓN: Optimizado para respuestas rápidas y útiles
+    info: {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
+        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
+        rpm: 15,        // 15 peticiones por minuto - Buen balance velocidad/precisión
+        tpm: 250000,    // 250K tokens por minuto - Suficiente para respuestas informativas
+        rpd: 1000       // 1000 peticiones por día - Alto volumen para consultas generales
+    },
+
+    // Modo GENERAR IMÁGENES: Optimizado para descripciones creativas
+    image: {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
+        rpm: 10,        // 10 peticiones por minuto - Moderado para generación creativa
+        tpm: 250000,    // 250K tokens por minuto - Bueno para descripciones detalladas
+        rpd: 250        // 250 peticiones por día - Suficiente para generación de imágenes
+    },
+
+    // Modo AGENTE (por defecto): Balance general entre velocidad y capacidad
+    agent: {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+        apiKey: 'AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY',
+        rpm: 15,        // 15 peticiones por minuto - Buen balance general
+        tpm: 1000000,   // 1 millón de tokens por minuto - Alta capacidad
+        rpd: 200        // 200 peticiones por día - Suficiente para uso general
+    }
+};
+// ===========================================================================
+
 // ================= LIMITE DE MESAJES Y TIEMPO POR CHAT =====================
 let MAX_MESSAGES_PER_CHAT = 30; // <--- Cambia este valor para ajustar el límite
 const RESET_LIMIT_MINUTES = 60; // Tiempo en minutos para restablecer el límite
-// ===========================================================================
-
-// ======================== SISTEMA DE AVISOS ===============================
-const AVISO_ACTIVO = true; // <--- Cambia a true para mostrar el aviso
-const AVISO_TITULO = "¡DevCenter For Justin!"; // <--- Título del aviso
-const AVISO_DESCRIPCION =
-    "🎉 Nuevas mejoras: IA más amigable y entusiasta, respuestas mejor estructuradas, Memoria Extendida guarda casi todo lo importante, y notificaciones eliminadas para una experiencia más limpia. ¡Disfruta DevCenter!"
-
-    ;
-
-const AVISO_VECES_MOSTRADAS = 1; // <--- Cuántas veces se mostrará el aviso al usuario (0 = infinitas veces)
 // ===========================================================================
 
 // ================= CONFIGURACIÓN DE GENERACIÓN INTELIGENTE ================
@@ -21,67 +85,47 @@ let TEMPERATURE = 1.0;        // Máxima creatividad para respuestas únicas y v
 let TOP_K = 50;               // Tokens candidatos amplios para mayor variación
 let TOP_P = 0.95;             // Probabilidad alta para máxima diversidad
 
-// ================= CONFIGURACIÓN DE TOKENS POR MODO =======================
-let MAX_OUTPUT_TOKENS_INFO = 7000;     // Modo Información - Respuestas informativas normales
-let MAX_OUTPUT_TOKENS_MEMORY = 8000;   // Modo Memoria Extendida - Mayor capacidad para análisis con historial
-let MAX_OUTPUT_TOKENS_PROGRAM = 90000; // Modo Programador - SÚPER ALTA CAPACIDAD para código extenso
-let MAX_OUTPUT_TOKENS_IMAGE = 4000;    // Modo Generar Imágenes - Descripciones detalladas de imágenes
+// ================= CONFIGURACIÓN DE TOKENS BASE POR MODO =======================
+// Configuración de tokens base para cada modo (antes de aplicar el multiplicador de modo de respuesta)
+const BASE_TOKENS_BY_MODE = {
+    info: 7000,      // Modo Información - Respuestas informativas normales
+    memory: 8000,    // Modo Memoria Extendida - Mayor capacidad para análisis con historial
+    program: 90000,  // Modo Programador - SÚPER ALTA CAPACIDAD para código extenso
+    image: 4000,     // Modo Generar Imágenes - Descripciones detalladas de imágenes
+    agent: 7000      // Modo Agente - Balance general
+};
 // ===========================================================================
 
-// ================= CONFIGURACIÓN DE GENERACIÓN DE IMÁGENES ================
-// API Key específica para generación de imágenes
-// Si dejas esto en null, usará la API key del modelo de IA activo
-// Si pones una API key aquí, SIEMPRE usará esta para generar imágenes
-let IMAGE_API_KEY = 'AIzaSyAOIPk-4zfOQYN_ehFzTSKdYxnZNtfhQVY'; // <--- Cambia esto por tu API key si quieres usar una dedicada
-// Ejemplo: let IMAGE_API_KEY = 'AIzaSyC...tu-api-key-aqui';
+// ================= SISTEMA DE MODO DE RESPUESTA ===========================
+// Sistema de aumento de tokens de respuesta
+// 'corta': tokens base del modo
+// 'media': tokens base + 250 tokens adicionales
+// 'larga': tokens base + 700 tokens adicionales
+let responseMode = localStorage.getItem('responseMode') || 'corta'; // 'corta', 'media', 'larga'
 
-// Modelo de IA para generar imágenes
-const IMAGE_GENERATION_MODEL = 'gemini-2.0-flash-preview-image-generation'; 
-// Opciones: 'gemini-2.0-flash-preview-image-generation' (antiguo, funcional hasta Oct 31, 2025)
-//           'gemini-2.5-flash-image' (nuevo, recomendado)
-
-// URL base de la API de generación de imágenes
-const IMAGE_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-
-// Modalidades de respuesta para el modelo de imágenes
-// Para gemini-2.0-flash-preview-image-generation: ["TEXT", "IMAGE"]
-// Para gemini-2.5-flash-image: ["IMAGE"]
-const IMAGE_RESPONSE_MODALITIES = ["TEXT", "IMAGE"];
-
-// Relación de aspecto por defecto para las imágenes generadas
-const DEFAULT_IMAGE_ASPECT_RATIO = '1:1';
-// Opciones disponibles: '1:1', '3:2', '2:3', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'
-// ===========================================================================
-
-// Función para obtener el límite de tokens según el modo activo
-function getCurrentMaxTokens() {
-    switch(activeAbility) {
-        case 'info':
-            return MAX_OUTPUT_TOKENS_INFO;
-        case 'memory':
-            return MAX_OUTPUT_TOKENS_MEMORY;
-        case 'program':
-            // En modo programador, ajustar tokens según el modo de respuesta
-            switch(responseMode) {
-                case 'corta':
-                    return 95000;  // Corto - Código completo y profesional
-                case 'media':
-                    return 99000;  // Medio - Código mega extenso HTML/CSS
-                case 'larga':
-                    return 150000; // Largo - CÓDIGO ULTRA MASIVO con TODO
-                default:
-                    return MAX_OUTPUT_TOKENS_PROGRAM;
-            }
-        case 'image':
-            return MAX_OUTPUT_TOKENS_IMAGE;
+// Función para calcular tokens finales según modo de respuesta
+function getResponseModeMultiplier() {
+    switch(responseMode) {
+        case 'corta':
+            return 0;      // Sin aumento adicional
+        case 'media':
+            return 250;    // +250 tokens
+        case 'larga':
+            return 700;    // +700 tokens
         default:
-            return MAX_OUTPUT_TOKENS_INFO; // Por defecto usa modo info
+            return 0;
     }
 }
 
-// ================= SISTEMA DE MODO DE RESPUESTA ===========================
-let responseMode = localStorage.getItem('responseMode') || 'corta'; // 'corta', 'media', 'larga'
+// Función para obtener el límite máximo de tokens según modo activo y modo de respuesta
+function getCurrentMaxTokens() {
+    const baseTokens = BASE_TOKENS_BY_MODE[activeAbility] || BASE_TOKENS_BY_MODE.agent; // Fallback a agent
+    const multiplier = getResponseModeMultiplier();
+    return baseTokens + multiplier;
+}
 // ===========================================================================
+
+// ================= CONFIGURACIÓN DE MODELOS POR MODO =======================
 
 // ================= SISTEMA DE MEMORIA CONTEXTUAL AVANZADO =================
 let contextualMemory = {
@@ -150,54 +194,42 @@ let currentAiIndex = 0;  // Índice para rotación automática de IAs
 let failedAiIds = new Set();  // IDs de IAs que fallaron recientemente
 // ===========================================================================
 
-// ================= CONFIGURACIÓN POR DEFECTO DE IAs ========================
-const DEFAULT_AI_CONFIGS = [
-    // Modelo por defecto: Gemini 2.5 Flash-Lite (Mayor cantidad de respuestas diarias)
-    {
-        id: 'gemini-2.5-flash-lite',
-        name: 'Gemini 2.5 Flash-Lite',
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
-        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
-        rpm: 15, tpm: 250000, rpd: 1000
-    },
-   
-    {
-        id: 'gemini-2.5-pro',
-        name: 'Gemini 2.5 Pro',
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent',
-        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
-        rpm: 5, tpm: 125000, rpd: 100
-    },
-    {
-        id: 'gemini-2.5-flash',
-        name: 'Gemini 2.5 Flash',
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
-        rpm: 10, tpm: 250000, rpd: 250
-    },
-   
-    {
-        id: 'gemini-2.0-flash',
-        name: 'Gemini 2.0 Flash',
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
-        rpm: 15, tpm: 1000000, rpd: 200
-    },
-    {
-        id: 'gemini-2.0-flash-lite',
-        name: 'Gemini 2.0 Flash-Lite',
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent',
-        apiKey: 'AIzaSyCqzytyN8cOpl4bfmh5hrxyLj7mUdgjk5E',
-        rpm: 30, tpm: 1000000, rpd: 200
-    }
-];
-// ===========================================================================
-
-//====================================================== Configuración ======================================================
-
 // ================= SISTEMA DE FAILOVER AUTOMÁTICO =========================
+// Función para obtener el modelo específico del modo activo
+function getModeSpecificModel() {
+    const modeModel = MODE_SPECIFIC_MODELS[activeAbility];
+    if (modeModel) {
+        // Si no tiene id o name, generarlos automáticamente
+        const completeModel = { ...modeModel };
+        if (!completeModel.id) {
+            completeModel.id = `mode-${activeAbility}`;
+        }
+        if (!completeModel.name) {
+            const modeNames = {
+                program: 'Programador',
+                memory: 'Memoria Extendida',
+                info: 'Información',
+                image: 'Generar Imágenes',
+                agent: 'Agente'
+            };
+            completeModel.name = `Modo ${modeNames[activeAbility] || activeAbility}`;
+        }
+
+        console.log(`🎯 Usando modelo específico para modo ${activeAbility}: ${completeModel.name}`);
+        return completeModel;
+    }
+    return null;
+}
+
 function getNextAvailableAi() {
-    // Filtramos las IAs que no han fallado recientemente
+    // PRIMERO: Intentar usar el modelo específico del modo activo
+    const modeModel = getModeSpecificModel();
+    if (modeModel && !failedAiIds.has(modeModel.id)) {
+        currentAiIndex++;
+        return modeModel;
+    }
+
+    // SEGUNDO: Si el modelo específico falló o no existe, usar failover con modelos generales
     const availableAis = aiConfigs.filter(ai => !failedAiIds.has(ai.id));
 
     // Si todas han fallado, reseteamos la lista de fallidas y usamos todas
@@ -404,17 +436,11 @@ const elements = {
     backBtn: document.getElementById('backBtn'),
     previewFrame: document.getElementById('previewFrame'),
     downloadBtn: document.getElementById('downloadBtn'),
+    fullscreenBtn: document.getElementById('fullscreenBtn'),
+    fullscreenBackBtn: document.getElementById('fullscreenBackBtn'),
     shareBtn: document.getElementById('shareBtn'),
     loading: document.getElementById('loading'),
     previewSubtitle: document.getElementById('previewSubtitle')
-};
-
-// Plantillas predefinidas
-const templates = {
-    landing: 'Crea una landing page moderna para una startup tech con hero section, características principales, testimonios y call-to-action',
-    ecommerce: 'Diseña una tienda online con catálogo de productos, carrito de compras, formulario de checkout y diseño responsive',
-    portfolio: 'Genera un portfolio personal para un diseñador web con galería de proyectos, sobre mí, habilidades y contacto',
-    dashboard: 'Crea un dashboard administrativo con gráficos, tablas de datos, métricas importantes y navegación lateral'
 };
 
 // Inicialización
@@ -429,11 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Cargar y activar modo guardado
     loadActiveAbility();
-
-    // Mostrar aviso si está activo
-    if (AVISO_ACTIVO) {
-        mostrarAviso();
-    }
 
     // Mostrar el botón de copiar solo en escritorio
     const copyBtn = document.getElementById('copyCodeBtn');
@@ -480,29 +501,10 @@ function isDevCenterUser() {
         userInfo.custom.trim() === 'DevCenter';
 }
 
-// Mostrar herramientas adicionales para usuarios DevCenter
-function showDevCenterTools() {
-    const container = document.getElementById('devCenterToolsContainer');
-    if (container) {
-        container.style.display = '';
-        setupDevCenterToolsListeners();
-    }
-}
-
-// Ocultar herramientas adicionales
-function hideDevCenterTools() {
-    const container = document.getElementById('devCenterToolsContainer');
-    if (container) {
-        container.style.display = 'none';
-    }
-}
-
 // Configurar event listeners para herramientas DevCenter
 function setupDevCenterToolsListeners() {
     const aiStatusBtn = document.getElementById('aiStatusBtn');
     const systemStatsBtn = document.getElementById('systemStatsBtn');
-    const devToolsBtn = document.getElementById('devToolsBtn');
-    const clearStorageBtn = document.getElementById('clearStorageBtn');
 
     if (aiStatusBtn) {
         aiStatusBtn.removeEventListener('click', showAiStatus);
@@ -512,16 +514,6 @@ function setupDevCenterToolsListeners() {
     if (systemStatsBtn) {
         systemStatsBtn.removeEventListener('click', showSystemStats);
         systemStatsBtn.addEventListener('click', showSystemStats);
-    }
-
-    if (devToolsBtn) {
-        devToolsBtn.removeEventListener('click', showDevTools);
-        devToolsBtn.addEventListener('click', showDevTools);
-    }
-
-    if (clearStorageBtn) {
-        clearStorageBtn.removeEventListener('click', clearAllLocalStorage);
-        clearStorageBtn.addEventListener('click', clearAllLocalStorage);
     }
 }
 
@@ -548,85 +540,6 @@ function showAiStatus() {
     }
 
     alert(statusMessage);
-}
-
-function showSystemStats() {
-    const chatsCount = chats.length;
-    const totalMessages = chats.reduce((total, chat) => total + (chat.messages ? chat.messages.length : 0), 0);
-    const currentChat = getCurrentChat();
-    const currentChatMessages = currentChat ? currentChat.messages.length : 0;
-
-    let statsMessage = `📊 Estadísticas del Sistema:\n\n`;
-    statsMessage += `💬 Total de Chats: ${chatsCount}\n`;
-    statsMessage += `📝 Total de Mensajes: ${totalMessages}\n`;
-    statsMessage += `🔄 Mensajes en Chat Actual: ${currentChatMessages}\n`;
-    statsMessage += `🕒 Sesión Iniciada: ${new Date().toLocaleString('es-ES')}\n\n`;
-    statsMessage += `🔧 IAs Configuradas: ${aiConfigs.length}\n`;
-    statsMessage += `⚡ Modo DevCenter: Activado\n`;
-
-    alert(statsMessage);
-}
-
-function showDevTools() {
-    let devMessage = `⚡ Herramientas de Desarrollo:\n\n`;
-    devMessage += `🗂️ localStorage:\n`;
-    devMessage += `• Chats guardados: ${localStorage.getItem('devCenter_chats') ? 'Sí' : 'No'}\n`;
-    devMessage += `• Configuración AI: ${localStorage.getItem('devCenter_aiConfigs') ? 'Sí' : 'No'}\n`;
-    devMessage += `• Info Usuario: ${localStorage.getItem('devCenter_userInfo') ? 'Sí' : 'No'}\n\n`;
-    devMessage += `🔍 Debug:\n`;
-    devMessage += `• Console.log: F12 → Console\n`;
-    devMessage += `• Logs de IA: Activos\n`;
-    devMessage += `• Failover: Funcionando\n\n`;
-    devMessage += `📱 Información del Navegador:\n`;
-    devMessage += `• Ancho: ${window.innerWidth}px\n`;
-    devMessage += `• Alto: ${window.innerHeight}px\n`;
-    devMessage += `• UserAgent: ${navigator.userAgent.substring(0, 50)}...\n`;
-
-    alert(devMessage);
-}
-
-function clearAllLocalStorage() {
-    // Verificar que el usuario sea DevCenter (defensa en profundidad)
-    if (!isDevCenterUser()) {
-        alert('❌ Acceso denegado. Esta función solo está disponible para usuarios DevCenter.');
-        return;
-    }
-
-    // Primera confirmación
-    const firstConfirmMessage = `🗑️ ADVERTENCIA: Limpiar localStorage\n\n` +
-        `Esto eliminará TODOS los datos guardados:\n` +
-        `• Todos los chats e historial\n` +
-        `• Configuración de usuario\n` +
-        `• Configuración de IAs\n` +
-        `• Preferencias guardadas\n\n` +
-        `⚠️ Esta acción NO se puede deshacer.\n\n` +
-        `¿Estás seguro de que quieres continuar?`;
-
-    if (confirm(firstConfirmMessage)) {
-        // Segunda confirmación (doble seguridad)
-        const secondConfirmMessage = `⚠️ ÚLTIMA ADVERTENCIA ⚠️\n\n` +
-            `Estás a punto de ELIMINAR PERMANENTEMENTE todos los datos.\n\n` +
-            `Esta es tu última oportunidad para cancelar.\n\n` +
-            `¿REALMENTE quieres borrar TODO el localStorage?`;
-
-        if (confirm(secondConfirmMessage)) {
-            try {
-                // Limpiar todo el localStorage
-                localStorage.clear();
-
-                // Mostrar confirmación
-                alert(`✅ localStorage limpiado exitosamente.\n\nTodos los datos han sido eliminados.\nLa página se recargará automáticamente.`);
-
-                // Recargar la página para reflejar los cambios
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } catch (error) {
-                console.error('Error al limpiar localStorage:', error);
-                alert(`❌ Error al limpiar localStorage:\n${error.message}`);
-            }
-        }
-    }
 }
 
 // Notificaciones desactivadas por solicitud del usuario
@@ -1029,7 +942,6 @@ Este modo es 3-4X MÁS GRANDE que el corto - CÓDIGO DE NIVEL ELITE
    🎯 EFECTOS ESPECIALES:
      * Typed text effect
      * Particles.js o canvas background
-     * Mouse follower cursor custom
      * Tilt effect en cards
      * Infinite scroll pagination
      * Lazy loading progresivo
@@ -1118,6 +1030,28 @@ function setupEventListeners() {
     if (elements.shareBtn) {
         elements.shareBtn.addEventListener('click', shareCode);
     }
+    if (elements.fullscreenBtn) {
+        elements.fullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+    if (elements.fullscreenBackBtn) {
+        elements.fullscreenBackBtn.addEventListener('click', toggleFullscreen);
+    }
+    
+    // Listener para detectar salida del fullscreen (ESC key)
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            // Se salió del fullscreen
+            elements.previewModal.classList.remove('fullscreen');
+            elements.fullscreenBackBtn.style.display = 'none';
+            // Cambiar ícono a pantalla completa
+            elements.fullscreenBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                </svg>
+            `;
+            elements.fullscreenBtn.title = 'Pantalla completa';
+        }
+    });
     // --- NUEVO: Copiar código en escritorio ---
     const copyBtn = document.getElementById('copyCodeBtn');
     if (copyBtn) {
@@ -1260,21 +1194,6 @@ function setupEventListeners() {
             hideUserInfoModal();
             updateAiConfigBtnVisibility();
         });
-    }
-
-    // Event listeners para el modal de aviso
-    const avisoClose = document.getElementById('avisoClose');
-    const avisoEntendido = document.getElementById('avisoEntendido');
-    const avisoOverlay = document.getElementById('avisoOverlay');
-
-    if (avisoClose) {
-        avisoClose.addEventListener('click', cerrarAviso);
-    }
-    if (avisoEntendido) {
-        avisoEntendido.addEventListener('click', cerrarAviso);
-    }
-    if (avisoOverlay) {
-        avisoOverlay.addEventListener('click', cerrarAviso);
     }
 
     const aiConfigBtn = document.getElementById('aiConfigBtn');
@@ -1456,21 +1375,97 @@ async function getActiveAbilityPrompt() {
             case 'info':
                 // MODO INFORMACIÓN: Solo información general de DevCenter
                 // Incluye: Notas guardadas (se agregan automáticamente en el prompt principal)
-                const infoResponse = await fetch('prompt-info-devcenter.txt');
-                const infoText = await infoResponse.text();
-                additionalPrompt = `[${infoText}]\n\n`;
+                additionalPrompt = `[INSTRUCCIONES PARA MODO INFORMACIÓN:
+
+Eres DevCenter, un asistente de información amigable y útil. Tu personalidad es:
+
+- Amigable y accesible: Usa un tono conversacional, como si estuvieras charlando con un amigo
+- Paciente y comprensivo: Nunca te impacientes, explica las cosas de manera clara
+- Conocedor pero no arrogante: Comparte información precisa sin sonar pedante
+- Adaptable: Ajusta tu nivel de detalle según el usuario (principiantes vs avanzados)
+- Útil: Siempre busca formas de ayudar, incluso si la pregunta no es directa
+
+COMPORTAMIENTO GENERAL:
+- Responde en español a menos que el usuario pregunte específicamente en otro idioma
+- Mantén respuestas concisas pero completas - no divagues
+- Si no sabes algo, admítelo honestamente en lugar de inventar información
+- Ofrece alternativas o sugerencias cuando sea apropiado
+- Usa emojis ocasionalmente para hacer las respuestas más amigables (sin exagerar)
+
+ESTRUCTURA DE RESPUESTAS:
+- Para preguntas simples: Respuesta directa + explicación breve si es necesario
+- Para preguntas complejas: Divide en secciones con encabezados claros
+- Para tutoriales: Usa numeración o viñetas para pasos
+- Para comparaciones: Usa tablas o listas paralelas cuando ayude
+
+LIMITACIONES:
+- No generes código a menos que sea específicamente solicitado
+- No des consejos médicos, legales o financieros sin disclaimers claros
+- No promuevas actividades ilegales o dañinas
+- Mantén la neutralidad política y religiosa
+
+INFORMACIÓN SOBRE DEVCENTER:
+DevCenter es una plataforma integral de desarrollo que incluye:
+- Chat inteligente con múltiples modos especializados
+- Generador de aplicaciones web
+- Herramientas de desarrollo colaborativo
+- Sistema de gestión de proyectos
+- Comunidad de desarrolladores
+
+El usuario puede acceder a diferentes modos según sus necesidades:
+- Modo Normal: Conversaciones generales
+- Modo Información: Preguntas y respuestas (este modo)
+- Modo Memoria: Análisis con contexto histórico
+- Modo Programador: Desarrollo de código y aplicaciones
+- Modo Imágenes: Generación de descripciones para crear imágenes
+
+]\n\n`;
                 break;
                 
             case 'memory':
                 // MODO MEMORIA EXTENDIDA: Análisis profundo con historial de conversaciones
                 // Incluye: Notas guardadas + Historial de últimos 5 chats + Información general
-                const memoryResponse = await fetch('prompt-memoria-extendida.txt');
-                const memoryText = await memoryResponse.text();
                 
                 // Agregar historial de últimos 5 chats para análisis profundo
                 const last5Chats = chats.slice(-5);
                 if (last5Chats.length > 0) {
-                    additionalPrompt = `[${memoryText}]\n\n[HISTORIAL DE ÚLTIMOS 5 CHATS]:\n`;
+                    additionalPrompt = `[INSTRUCCIONES PARA MODO MEMORIA EXTENDIDA:
+
+Eres DevCenter en modo Memoria Extendida, un analista inteligente que puede recordar y analizar conversaciones anteriores para proporcionar respuestas más contextuales y personalizadas.
+
+CAPACIDADES ESPECIALES:
+- Acceso completo al historial de conversaciones del usuario
+- Análisis de patrones en preguntas y respuestas anteriores
+- Recordar preferencias y contexto de conversaciones pasadas
+- Proporcionar respuestas continuas basadas en interacciones previas
+- Identificar temas recurrentes y conexiones entre conversaciones
+
+COMPORTAMIENTO:
+- Siempre menciona cuando estás usando información de conversaciones anteriores
+- Explica cómo el contexto histórico mejora tu respuesta
+- Mantén la coherencia con respuestas anteriores sobre los mismos temas
+- Si hay contradicciones en el historial, acláralas y pregunta por confirmación
+- Resume conversaciones largas para mantener el foco
+
+ANÁLISIS DE HISTORIAL:
+- Identifica patrones de aprendizaje del usuario
+- Recuerda proyectos o temas de interés recurrentes
+- Nota cambios en el nivel de conocimiento o experiencia
+- Sugiere conexiones entre diferentes conversaciones
+- Mantén la privacidad y confidencialidad de la información
+
+ESTRUCTURA DE RESPUESTAS:
+- Comienza mencionando el contexto histórico relevante
+- Explica cómo usas la memoria para mejorar la respuesta
+- Proporciona la información solicitada
+- Ofrece insights basados en patrones identificados
+
+LIMITACIONES:
+- No reveles información sensible de conversaciones anteriores sin permiso
+- Mantén el foco en el tema actual mientras usas contexto histórico
+- Si el historial es limitado, no inventes conexiones que no existen
+
+]\n\n[HISTORIAL DE ÚLTIMOS 5 CHATS]:\n`;
                     last5Chats.forEach((chat, index) => {
                         additionalPrompt += `\n--- Chat ${index + 1}: ${chat.name} ---\n`;
                         if (chat.messages && chat.messages.length > 0) {
@@ -1485,7 +1480,22 @@ async function getActiveAbilityPrompt() {
                     });
                     additionalPrompt += '\n[FIN DEL HISTORIAL]\n\n';
                 } else {
-                    additionalPrompt = `[${memoryText}]\n[No hay historial de chats previos]\n\n`;
+                    additionalPrompt = `[INSTRUCCIONES PARA MODO MEMORIA EXTENDIDA:
+
+Eres DevCenter en modo Memoria Extendida, un analista inteligente que puede recordar y analizar conversaciones anteriores.
+
+CAPACIDADES ESPECIALES:
+- Acceso completo al historial de conversaciones del usuario
+- Análisis de patrones en preguntas y respuestas anteriores
+- Recordar preferencias y contexto de conversaciones pasadas
+- Proporcionar respuestas continuas basadas en interacciones previas
+
+COMPORTAMIENTO:
+- Siempre menciona cuando estás usando información de conversaciones anteriores
+- Explica cómo el contexto histórico mejora tu respuesta
+- Mantén la coherencia con respuestas anteriores sobre los mismos temas
+
+]\n[No hay historial de chats previos]\n\n`;
                 }
                 break;
                 
@@ -1493,21 +1503,119 @@ async function getActiveAbilityPrompt() {
                 // MODO PROGRAMADOR: Generación de código y páginas web avanzadas
                 // Incluye: Notas guardadas (se agregan automáticamente en el prompt principal)
                 // NO incluye: Historial extendido (para mantener el foco en la programación)
-                const programResponse = await fetch('prompt-programar.txt');
-                const programText = await programResponse.text();
-                additionalPrompt = `[${programText}]\n\n`;
+                additionalPrompt = `[INSTRUCCIONES PARA MODO PROGRAMADOR:
+
+Eres DevCenter, un desarrollador web experto y mentor de programación. Tu especialidad es crear aplicaciones web modernas, funcionales y bien estructuradas.
+
+CAPACIDADES TÉCNICAS:
+- Desarrollo full-stack: HTML, CSS, JavaScript, frameworks modernos
+- Diseño responsive y accesible
+- Optimización de rendimiento y mejores prácticas
+- Integración de APIs y servicios externos
+- Desarrollo de componentes reutilizables
+- Manejo de estado y lógica de negocio
+
+ESTÁNDARES DE CÓDIGO:
+- Código limpio, legible y bien comentado
+- Nombres descriptivos para variables y funciones
+- Estructura modular y organizada
+- Validación de HTML y accesibilidad
+- Compatibilidad cross-browser
+- Optimización para móviles
+
+FRAMEWORKS Y HERRAMIENTAS:
+- HTML5 semántico
+- CSS3 con Grid y Flexbox
+- JavaScript ES6+ (async/await, módulos, etc.)
+- Frameworks: React, Vue, Angular (según necesidad)
+- Preprocesadores: Sass/SCSS cuando sea beneficioso
+- Herramientas de build: Webpack, Vite, etc.
+
+PROCESO DE DESARROLLO:
+1. ANÁLISIS: Entender los requisitos y alcance
+2. PLANIFICACIÓN: Arquitectura y componentes necesarios
+3. DESARROLLO: Código funcional con mejores prácticas
+4. OPTIMIZACIÓN: Rendimiento, accesibilidad, SEO
+5. TESTING: Validación en diferentes dispositivos/navegadores
+
+REQUISITOS PARA SVG:
+- Los SVG deben ser inline en el HTML
+- Incluir atributos aria-label para accesibilidad
+- Optimizar eliminando metadata innecesaria
+- Usar viewBox para escalabilidad
+- Colores consistentes con el tema de la aplicación
+
+ESTRUCTURA DE RESPUESTAS:
+- Explica el enfoque antes de mostrar código
+- Proporciona código completo y funcional
+- Incluye comentarios explicativos
+- Sugiere mejoras o extensiones
+- Menciona dependencias o requisitos
+
+LIMITACIONES:
+- No generes código malicioso o inseguro
+- Siempre prioriza la seguridad y mejores prácticas
+- Evita código obsoleto o deprecated
+- Mantén la simplicidad cuando sea posible
+
+]\n\n`;
                 break;
                 
             case 'image':
                 // MODO GENERAR IMÁGENES: Generación de descripciones detalladas para crear imágenes
                 // Incluye: Instrucciones especializadas para crear descripciones de imágenes
-                const imageResponse = await fetch('prompt-generar-imagenes.txt');
-                const imageText = await imageResponse.text();
-                additionalPrompt = `[${imageText}]\n\n`;
+                additionalPrompt = `[INSTRUCCIONES PARA MODO GENERAR IMÁGENES:
+
+You are DevCenter, an expert image description generator. Your task is to create highly detailed, vivid descriptions that will be used to generate images through AI image generation tools.
+
+CORE PRINCIPLES:
+- Be extremely descriptive and specific
+- Focus on visual elements: lighting, colors, composition, mood, style
+- Include technical details: camera angles, perspectives, focal points
+- Describe atmosphere and emotional impact
+- Specify art styles, techniques, or reference artists when relevant
+- Consider context and narrative elements
+
+DESCRIPTION STRUCTURE:
+1. SUBJECT: Main focus and key elements
+2. SETTING: Environment, location, time of day
+3. STYLE: Art style, technique, medium
+4. LIGHTING: Type, direction, intensity, shadows
+5. COLORS: Dominant colors, color schemes, contrasts
+6. COMPOSITION: Framing, perspective, focal points
+7. DETAILS: Textures, patterns, specific objects
+8. MOOD: Atmosphere, emotions, overall feeling
+
+TECHNICAL SPECIFICATIONS:
+- Resolution: High detail, 4K quality
+- Aspect ratio: Specify when important (16:9, 1:1, etc.)
+- Art style references: Photorealistic, digital art, oil painting, etc.
+- Perspective: Close-up, wide shot, aerial view, etc.
+- Lighting: Natural, studio, dramatic, soft, harsh
+
+LANGUAGE REQUIREMENTS:
+- Write in English for maximum compatibility with image generators
+- Use precise, evocative vocabulary
+- Avoid ambiguity - be specific about visual elements
+- Include quantities when relevant (e.g., "three figures", "dozen roses")
+
+SPECIAL CONSIDERATIONS:
+- Cultural sensitivity and appropriateness
+- Avoid copyrighted character references
+- Consider technical feasibility of complex scenes
+- Balance detail with clarity
+
+OUTPUT FORMAT:
+- Single, comprehensive paragraph description
+- No bullet points or sections in final output
+- Flow naturally as one cohesive description
+- Ready to copy-paste into image generation tools
+
+]\n\n`;
                 break;
         }
     } catch (error) {
-        console.error('Error al cargar prompt:', error);
+        console.error('Error al procesar prompt:', error);
     }
     
     return additionalPrompt;
@@ -1517,12 +1625,48 @@ async function getActiveAbilityPrompt() {
 function loadAiConfigs() {
     try {
         const data = localStorage.getItem('devCenter_aiConfigs');
-        aiConfigs = data ? JSON.parse(data) : DEFAULT_AI_CONFIGS.slice();
-        if (!aiConfigs.length) aiConfigs = DEFAULT_AI_CONFIGS.slice();
-        selectedAiId = localStorage.getItem('devCenter_selectedAiId') || aiConfigs[0].id;
+        aiConfigs = data ? JSON.parse(data) : [];
+
+        // Agregar modelos específicos por modo si no están ya incluidos
+        Object.entries(MODE_SPECIFIC_MODELS).forEach(([modeKey, modeModel]) => {
+            const modelId = `mode-${modeKey}`;
+            const exists = aiConfigs.some(ai => ai.id === modelId);
+            if (!exists) {
+                // Crear el modelo completo con id y name generados
+                const completeModel = {
+                    id: modelId,
+                    name: `Modo ${modeKey.charAt(0).toUpperCase() + modeKey.slice(1)}`,
+                    ...modeModel
+                };
+                aiConfigs.push(completeModel);
+            }
+        });
+
+        // Si no hay configuraciones, inicializar con modelos específicos
+        if (!aiConfigs.length) {
+            Object.entries(MODE_SPECIFIC_MODELS).forEach(([modeKey, modeModel]) => {
+                const completeModel = {
+                    id: `mode-${modeKey}`,
+                    name: `Modo ${modeKey.charAt(0).toUpperCase() + modeKey.slice(1)}`,
+                    ...modeModel
+                };
+                aiConfigs.push(completeModel);
+            });
+        }
+
+        selectedAiId = localStorage.getItem('devCenter_selectedAiId') || aiConfigs[0]?.id;
     } catch (e) {
-        aiConfigs = DEFAULT_AI_CONFIGS.slice();
-        selectedAiId = aiConfigs[0].id;
+        // En caso de error, inicializar con modelos específicos por modo
+        aiConfigs = [];
+        Object.entries(MODE_SPECIFIC_MODELS).forEach(([modeKey, modeModel]) => {
+            const completeModel = {
+                id: `mode-${modeKey}`,
+                name: `Modo ${modeKey.charAt(0).toUpperCase() + modeKey.slice(1)}`,
+                ...modeModel
+            };
+            aiConfigs.push(completeModel);
+        });
+        selectedAiId = aiConfigs[0]?.id;
     }
 }
 
@@ -1956,7 +2100,12 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
         }
     }
     const messageElement = document.createElement('div');
-    messageElement.className = `message ${type} fade-in`;
+    
+    // Detectar si es un mensaje de carga especial
+    const isImageGenerationMessage = type === 'ai' && typeof content === 'string' && 
+        (content.includes('Generando descripción de la imagen') || content.includes('Generando imagen'));
+    
+    messageElement.className = `message ${type} fade-in ${isImageGenerationMessage ? 'image-generation-loading' : ''}`;
 
     // Detectar mensaje de error IA (ambos tipos)
     let isError = false;
@@ -2062,11 +2211,6 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
                             <div class="preview-placeholder-icon"></div>
                             <div class="preview-placeholder-text">Página Web Generada</div>
                         </div>
-                    </div>
-                    <div class="preview-lines">
-                        <div class="preview-line"></div>
-                        <div class="preview-line"></div>
-                        <div class="preview-line"></div>
                     </div>
                     <button class="preview-btn" onclick="showPreview('${messageId}')">
                         Ver Vista Previa
@@ -2310,70 +2454,6 @@ function hideUserInfoModal() {
 // Estas funciones fueron removidas según solicitud del usuario
 // El cambio de modelo se realiza completamente a través del dropdown de modos
 
-// =================== FUNCIONES DE AVISO ===================
-function mostrarAviso() {
-    // Verificar si se debe mostrar según el límite de veces
-    if (!debesMostrarAviso()) {
-        return;
-    }
-
-    const modal = document.getElementById('avisoModal');
-    const titulo = document.getElementById('avisoTitulo');
-    const descripcion = document.getElementById('avisoDescripcion');
-
-    if (modal && titulo && descripcion) {
-        // Establecer el contenido del aviso
-        titulo.textContent = AVISO_TITULO;
-        descripcion.textContent = AVISO_DESCRIPCION;
-
-        // Mostrar el modal
-        modal.style.display = 'block';
-
-        // Incrementar el contador de veces mostradas
-        incrementarContadorAviso();
-
-        // Añadir clase para la animación
-        setTimeout(() => {
-            modal.classList.add('show');
-        }, 10);
-    }
-}
-
-function cerrarAviso() {
-    const modal = document.getElementById('avisoModal');
-
-    if (modal) {
-        // Ocultar el modal
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-    }
-}
-
-function debesMostrarAviso() {
-    // Si AVISO_VECES_MOSTRADAS es 0, mostrar infinitas veces
-    if (AVISO_VECES_MOSTRADAS === 0) {
-        return true;
-    }
-
-    // Obtener cuántas veces se ha mostrado desde localStorage
-    const vecesVisto = parseInt(localStorage.getItem('devcenter_aviso_veces') || '0');
-
-    // Mostrar solo si no se ha alcanzado el límite
-    return vecesVisto < AVISO_VECES_MOSTRADAS;
-}
-
-function incrementarContadorAviso() {
-    // Solo incrementar si no es infinitas veces (0)
-    if (AVISO_VECES_MOSTRADAS > 0) {
-        const vecesVisto = parseInt(localStorage.getItem('devcenter_aviso_veces') || '0');
-        localStorage.setItem('devcenter_aviso_veces', (vecesVisto + 1).toString());
-    }
-}
-
-function resetearContadorAviso() {
-    // Función útil para resetear el contador (para desarrollo o actualización del aviso)
-    localStorage.removeItem('devcenter_aviso_veces');
-}
 function saveUserInfo() {
     const name = document.getElementById('userName').value.trim();
     const birth = document.getElementById('userBirth').value;
@@ -4126,14 +4206,68 @@ async function generateChatResponse(prompt) {
     
     let promptEngineeringGuide = '';
     if (isPromptRequest) {
-        try {
-            const promptGuideResponse = await fetch('prompt-crear-prompts.txt');
-            const promptGuideText = await promptGuideResponse.text();
-            promptEngineeringGuide = `\n\n[${promptGuideText}]\n\n`;
-            console.log('📝 Guía de Prompt Engineering cargada');
-        } catch (error) {
-            console.error('Error al cargar guía de prompts:', error);
-        }
+        promptEngineeringGuide = `\n\n[GUÍA PARA CREAR PROMPTS EFECTIVOS:
+
+Eres un experto en ingeniería de prompts. Cuando te pidan ayuda para crear prompts efectivos, sigue estas directrices:
+
+ESTRUCTURA BÁSICA DE UN PROMPT EFECTIVO:
+
+1. **ROL/PERSONAJE**: Define claramente qué rol debe asumir la IA
+   - "Eres un experto en [tema]"
+   - "Actúa como un [profesión/especialista]"
+   - "Eres un [tipo de asistente] especializado en [área]"
+
+2. **CONTEXTO**: Proporciona información de fondo necesaria
+   - Situación específica
+   - Restricciones o limitaciones
+   - Información previa relevante
+   - Objetivos específicos
+
+3. **TAREA ESPECÍFICA**: Describe exactamente qué debe hacer la IA
+   - Acción concreta a realizar
+   - Formato de salida esperado
+   - Nivel de detalle requerido
+   - Criterios de evaluación
+
+4. **EJEMPLOS**: Incluye ejemplos cuando sea útil
+   - Input/Output de muestra
+   - Casos de uso específicos
+   - Variaciones para mostrar flexibilidad
+
+5. **RESTRICCIONES**: Limita el alcance si es necesario
+   - Evita ciertos temas o enfoques
+   - Define límites de longitud/respuesta
+   - Especifica formato o estructura
+
+EJEMPLOS DE PROMPTS EFECTIVOS:
+
+**Para redacción creativa:**
+"Eres un novelista profesional especializado en literatura de ciencia ficción. Escribe una escena de 300 palabras donde el protagonista descubre un artefacto alienígena en una estación espacial abandonada. El tono debe ser tenso y misterioso, con énfasis en los detalles sensoriales."
+
+**Para análisis técnico:**
+"Actúa como un ingeniero de software senior. Revisa el siguiente código JavaScript y identifica problemas de rendimiento, posibles bugs, y sugiere mejoras siguiendo las mejores prácticas. Proporciona tu respuesta en formato de lista numerada con explicaciones detalladas."
+
+**Para resolución de problemas:**
+"Eres un consultor de resolución de problemas. Un restaurante familiar está perdiendo clientes. Analiza estos datos de ventas y reseñas de clientes, identifica las causas raíz del problema, y proporciona 5 recomendaciones específicas y accionables para revertir la situación."
+
+TÉCNICAS AVANZADAS:
+
+- **Zero-shot**: Pedir algo sin ejemplos previos
+- **Few-shot**: Incluir 1-3 ejemplos para guiar el comportamiento
+- **Chain-of-thought**: Pedir que razone paso a paso
+- **Persona**: Asignar una personalidad específica
+- **Context stuffing**: Proporcionar abundante contexto relevante
+
+ERRORES COMUNES A EVITAR:
+
+- Prompts demasiado vagos o ambiguos
+- Falta de especificidad en el formato de salida
+- No definir claramente el rol o expertise requerido
+- Ignorar restricciones importantes
+- Pedir múltiples tareas complejas en un solo prompt
+
+]\n\n`;
+        console.log('📝 Guía de Prompt Engineering cargada');
     }
     // ========================================================================
 
@@ -4403,6 +4537,40 @@ async function shareCode() {
     }
 }
 
+// Función para alternar pantalla completa
+function toggleFullscreen() {
+    const modal = elements.previewModal;
+    
+    // Verificar si ya estamos en fullscreen del navegador
+    if (document.fullscreenElement) {
+        // Salir del fullscreen del navegador
+        document.exitFullscreen().then(() => {
+            modal.classList.remove('fullscreen');
+            elements.fullscreenBackBtn.style.display = 'none';
+            // Cambiar ícono a pantalla completa
+            elements.fullscreenBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                </svg>
+            `;
+            elements.fullscreenBtn.title = 'Pantalla completa';
+        }).catch(console.error);
+    } else {
+        // Entrar en fullscreen del navegador
+        document.documentElement.requestFullscreen().then(() => {
+            modal.classList.add('fullscreen');
+            elements.fullscreenBackBtn.style.display = 'flex';
+            // Cambiar ícono a salir de pantalla completa
+            elements.fullscreenBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 3H3v6M21 3v6h-6M3 21h6v-6M21 21v-6h-6"></path>
+                </svg>
+            `;
+            elements.fullscreenBtn.title = 'Salir de pantalla completa';
+        }).catch(console.error);
+    }
+}
+
 // Sidebar
 function openSidebar() {
     elements.sidebar.classList.add('open');
@@ -4439,7 +4607,6 @@ const loadingTexts = [
     "Optimizando resultado",
     "Refinando detalles",
     "Casi listo",
-    "Finalizando",
     "Creando respuesta",
     "Trabajando en ello",
     "Dame un segundo",
@@ -6232,72 +6399,125 @@ IMPORTANTE: Debes responder en español para el usuario, pero la descripción de
 // Función SOLO para generar la imagen desde un prompt en inglés
 async function generateImageFromDescription(imagePrompt, aspectRatio = '1:1') {
     loadAiConfigs();
-    
-    // Llamar a la API de generación de imágenes con el modelo Gemini
-    const imageApiCall = async (currentAi) => {
-        const imageModelUrl = `${IMAGE_API_BASE_URL}/${IMAGE_GENERATION_MODEL}:generateContent`;
+
+    console.log(`🎨 Generando imagen con Gemini Nano Banana...`);
+    console.log('📝 Prompt para imagen:', imagePrompt.substring(0, 150) + '...');
+    console.log(`📐 Usando aspect ratio: ${aspectRatio}`);
+    console.log(`🤖 Modelo: ${IMAGE_GENERATION_MODEL}`);
+
+    // Usar la API key dedicada para imágenes si está configurada, sino usar la del modelo activo
+    const currentAi = aiConfigs.find(ai => ai.id === selectedAiId);
+    const apiKeyToUse = IMAGE_API_KEY || (currentAi ? currentAi.apiKey : '');
+
+    if (!apiKeyToUse) {
+        throw new Error('No se encontró API key para generación de imágenes');
+    }
+
+    // Llamar a la API de Gemini con GoogleGenAI para generación de imágenes (Nano Banana)
+    const imageApiCall = async () => {
+        // Construir el contenido del prompt
+        let contents = [{ text: imagePrompt }];
         
-        // Configuración según la documentación oficial
-        const generationConfig = {
-            responseModalities: IMAGE_RESPONSE_MODALITIES
-        };
-        
-        // Solo agregar imageConfig si el modelo lo soporta (gemini-2.5-flash-image y nuevos)
-        if (IMAGE_GENERATION_MODEL.includes('2.5') || IMAGE_GENERATION_MODEL.includes('flash-image')) {
-            generationConfig.imageConfig = {
-                aspectRatio: aspectRatio
-            };
+        // Si hay una imagen cargada para edición, agregarla al contenido
+        if (uploadedImageData) {
+            console.log('🖼️ Usando imagen cargada para edición...');
+            contents.push({
+                inlineData: {
+                    mimeType: uploadedImageMimeType,
+                    data: uploadedImageData
+                }
+            });
         }
-        
+
         const requestBody = {
             contents: [{
-                parts: [{ text: imagePrompt }]
+                parts: contents
             }],
-            generationConfig: generationConfig
+            generation_config: {
+                temperature: 1.0,
+                top_k: 50,
+                top_p: 0.95
+            }
         };
 
-        console.log(`🎨 Paso 2: Generando imagen con ${IMAGE_GENERATION_MODEL}...`);
-        console.log('📝 Prompt para imagen:', imagePrompt.substring(0, 150) + '...');
-        console.log(`📐 Usando aspect ratio: ${aspectRatio}`);
-        
-        // Usar la API key dedicada para imágenes si está configurada, sino usar la del modelo activo
-        const apiKeyToUse = IMAGE_API_KEY || currentAi.apiKey;
-        
-        const response = await fetch(`${imageModelUrl}?key=${apiKeyToUse}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
+        const response = await fetch(
+            `${IMAGE_API_BASE_URL}/${IMAGE_GENERATION_MODEL}:generateContent?key=${apiKeyToUse}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            }
+        );
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Error de API:', response.status, errorText);
-            throw new Error(`Error al generar imagen (${response.status}): ${errorText}`);
+            console.error(`❌ Error de API Gemini Nano Banana (${IMAGE_GENERATION_MODEL}):`, response.status, errorText);
+            throw new Error(`Error al generar imagen con ${IMAGE_GENERATION_MODEL} (${response.status}): ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('📦 Respuesta recibida de la API');
-        
-        // Buscar la imagen en los parts según la documentación oficial
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
+        console.log('📦 Respuesta recibida de API Gemini');
+
+        // Verificar que la respuesta tenga las imágenes generadas
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content.parts) {
             console.error('❌ Estructura de respuesta inválida:', JSON.stringify(data, null, 2));
-            throw new Error('Respuesta inválida de la API de imágenes');
+            throw new Error('Respuesta inválida de la API de Gemini');
         }
 
-        const imagePart = data.candidates[0].content.parts.find(part => part.inlineData);
-        
-        if (!imagePart || !imagePart.inlineData || !imagePart.inlineData.data) {
-            console.error('❌ No se encontró imagen en la respuesta');
-            console.error('Parts recibidos:', JSON.stringify(data.candidates[0].content.parts, null, 2));
-            throw new Error('No se pudo generar la imagen');
+        // Buscar la parte con inlineData (imagen generada)
+        let imageBase64 = null;
+        for (const part of data.candidates[0].content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+                imageBase64 = part.inlineData.data;
+                break;
+            }
         }
 
-        console.log('✅ Imagen generada exitosamente');
-        return imagePart.inlineData.data;
+        if (!imageBase64) {
+            console.error('❌ No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
+            throw new Error('No se generó imagen en la respuesta de Gemini');
+        }
+
+        console.log('✅ Imagen generada exitosamente con Gemini Nano Banana');
+        return imageBase64;
     };
 
     const imageData = await makeApiCallWithFailover(imageApiCall, 3);
     return imageData;
+}
+
+// Función para manejar la carga de imágenes para edición
+function handleImageUpload(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            uploadedImageData = event.target.result.split(',')[1]; // Extraer base64 sin el prefijo
+            uploadedImageMimeType = file.type || 'image/png';
+            console.log('✅ Imagen cargada para edición:', file.name, `(${uploadedImageMimeType})`);
+            resolve({
+                name: file.name,
+                size: file.size,
+                type: uploadedImageMimeType,
+                preview: event.target.result
+            });
+        };
+        
+        reader.onerror = () => {
+            reject(new Error('Error al leer el archivo de imagen'));
+        };
+        
+        reader.readAsDataURL(file);
+    });
+}
+
+// Función para limpiar la imagen cargada
+function clearUploadedImage() {
+    uploadedImageData = null;
+    uploadedImageMimeType = 'image/png';
+    console.log('🗑️ Imagen cargada eliminada');
 }
 
 // Función para agregar mensaje con imagen al chat
