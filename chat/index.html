@@ -90,6 +90,19 @@
             </div>
 
             <div class="input-area">
+                <!-- Indicador de imagen cargada -->
+                <div class="uploaded-image-indicator" id="uploadedImageIndicator" style="display: none;">
+                    <div class="uploaded-image-preview" id="uploadedImagePreview"></div>
+                    <div class="uploaded-image-info">
+                        <span id="uploadedFileName"></span>
+                        <button class="clear-upload-btn" id="clearUploadBtn" title="Eliminar imagen cargada">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <div class="input-container">
                     <button class="abilities-menu-btn" id="abilitiesMenuBtn" title="Cambiar modo">
                         <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -98,6 +111,21 @@
                     </button>
                     <textarea id="messageInput" placeholder="Pregúntame algo..."
                         rows="1"></textarea>
+                    <button class="upload-image-btn" id="uploadImageBtn" title="Subir imagen para editar (modo generador)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                    <button class="upload-image-btn" id="openImageGeneratorBtn" title="Abrir generador de imágenes">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
                     <button id="sendBtn" disabled>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -149,8 +177,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Notificaciones desactivadas por solicitud del usuario -->
 
     <!-- Preview Modal -->
     <div class="preview-modal" id="previewModal">
@@ -452,9 +478,100 @@
         <div class="config-overlay" id="configOverlay"></div>
     </div>
 
-    <!-- Modal de Notas Guardadas y Sistema de Archivo Eliminados -->
+    <!-- 🎨 MODAL GENERADOR DE IMÁGENES EPIC - GEMINI IMAGE STUDIO -->
+    <div id="imageGeneratorModal" class="modal-generator hidden overflow-y-auto" style="position: fixed; inset: 0; z-index: 9999; display: none;">
+        <div class="modal-generator-overlay" onclick="if(event.target === this) document.getElementById('imageGeneratorModal').classList.add('hidden');"></div>
+        <div class="modal-generator-content glass-panel">
+            <!-- Header -->
+            <div class="modal-generator-header">
+                <div>
+                    <h2 class="text-2xl font-bold">🎨 Generador de Imágenes IA</h2>
+                    <p class="text-sm text-gray-400 mt-1">Generación y Edición con Gemini Nano Banana</p>
+                </div>
+                <button id="closeImageModal" class="modal-close-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
 
-    <script src="script.js?v=10"></script>
+            <div class="modal-generator-body">
+                <!-- Left: Controls -->
+                <div class="modal-generator-left">
+                    <!-- Textarea Prompt -->
+                    <div class="glass-input-group">
+                        <label class="glass-label">Tu Idea o Instrucción</label>
+                        <textarea id="imagePrompt" rows="4" placeholder="Describe la imagen que deseas generar o los cambios a realizar..."></textarea>
+                    </div>
+
+                    <!-- Dropzone Carga de Imagen -->
+                    <div class="glass-dropzone" id="imageDropZone" onclick="document.getElementById('imageUploadInput').click()">
+                        <div id="imagePlaceholder" class="glass-placeholder">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Subir imagen para editar (Opcional)</span>
+                        </div>
+                        <img id="imagePreview" src="" style="display: none;" class="glass-image-preview">
+                        <button id="removeImageBtn" class="glass-remove-btn" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
+
+                    <!-- Status -->
+                    <div id="imageStatus" class="glass-panel" style="padding: 1rem; font-size: 0.875rem; text-align: center; color: #a0aec0;">
+                        <span id="imageModeTag">Generación (Text-to-Image)</span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="glass-button-group">
+                        <button id="generateImageBtn" class="btn-gradient-epic">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span>Generar Imagen</span>
+                        </button>
+                        <button id="downloadImageBtn" class="btn-secondary" disabled>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Descargar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Preview -->
+                <div class="modal-generator-right">
+                    <div class="glass-canvas">
+                        <div id="imagePlaceholderCnv" class="glass-canvas-placeholder">
+                            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H4a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <p>Tus imágenes aparecerán aquí</p>
+                        </div>
+
+                        <div id="imageLoadingCnv" style="display: none;" class="glass-canvas-loading">
+                            <div class="loader-ring-epic"></div>
+                            <p id="imageLoadingText">✨ Generando descripción de la imagen...</p>
+                        </div>
+
+                        <img id="generatedImage" src="" style="display: none;" class="glass-canvas-image">
+
+                        <div id="imageActionsBtnCnv" class="glass-canvas-actions" style="display: none;">
+                            <button id="copImageBtn" class="glass-action-btn" title="Copiar al portapapeles">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="imageErrorCnv" class="glass-panel" style="display: none; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: 0.75rem; color: #fc8181; font-size: 0.875rem;">
+                        <span id="imageErrorText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trigger button para abrir modal (opcional) -->
+    <button id="openImageGeneratorBtn" style="display: none;"></button>
+
+    <div class="config-overlay" id="configOverlay"></div>
 </body>
 
 </html>

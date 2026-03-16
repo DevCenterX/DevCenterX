@@ -2535,6 +2535,343 @@ body {
 
 /* =================== ESTILOS ÉPICOS PARA PREVIEW DE PÁGINAS WEB =================== */
 
+/* =================== ESTILOS PARA SUBIDA DE IMÁGENES (NANO BANANA) =================== */
+
+/* Botón subir imagen */
+.upload-image-btn {
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 10px;
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    color: var(--color-text-primary);
+}
+
+.upload-image-btn:hover {
+    background: rgba(96, 165, 250, 0.2);
+    border-color: rgba(96, 165, 250, 0.5);
+    transform: scale(1.05);
+}
+
+.upload-image-btn:active {
+    transform: scale(0.95);
+}
+
+.upload-image-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Indicador de imagen cargada */
+.uploaded-image-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+.uploaded-image-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.uploaded-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uploaded-image-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.uploaded-image-info span {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.clear-upload-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.clear-upload-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-error);
+}
+
+.clear-upload-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==== Image Generator Modal Animations ==== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+    }
+}
+
+/* Modal Styling */
+#imageGeneratorModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+#imageGeneratorModal.hidden {
+    display: none !important;
+}
+
+.bg-gradient-to-br {
+    background: linear-gradient(to bottom right, #131829 0%, #1a1f3a 50%, #0a0e27 100%);
+}
+
+.rounded-2xl {
+    border-radius: 1rem;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.gap-6 {
+    gap: 1.5rem;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.space-y-2 > * + * {
+    margin-top: 0.5rem;
+}
+
+.bg-black\/40 {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.border-blue-500\/20 {
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.bg-gradient-to-r {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.backdrop-blur-sm {
+    backdrop-filter: blur(0.25rem);
+}
+
+.text-blue-300 {
+    color: #93c5fd;
+}
+
+.text-gray-400 {
+    color: #9ca3af;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.text-blue-200 {
+    color: #bfdbfe;
+}
+
+.text-gray-500 {
+    color: #6b7280;
+}
+
+.bg-blue-600\/10 {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+.bg-blue-500 {
+    background-color: #3b82f6;
+}
+
+.hover\:bg-blue-500\/20:hover {
+    background-color: rgba(59, 130, 246, 0.2);
+}
+
+.hover\:bg-blue-600:hover {
+    background-color: #2563eb;
+}
+
+.shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.transition-colors {
+    transition-property: color, background-color, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .uploaded-image-indicator {
+        padding: 0.6rem 0.8rem;
+        gap: 0.75rem;
+    }
+    
+    .uploaded-image-preview {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .uploaded-image-info span {
+        font-size: 0.8rem;
+    }
+    
+    .upload-image-btn {
+        min-width: 40px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* =================== FIN ESTILOS NANO BANANA =================== */
+
 /* Contenedor principal del preview */
 .message-preview {
     margin-top: 0.75rem;
@@ -2886,3 +3223,360 @@ body {
         min-width: 120px;
     }
 }
+
+/* =================== 🎨 IMAGE GENERATOR MODAL - GEMINI EPIC STUDIO =================== */
+
+.modal-generator {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-generator.hidden {
+    display: none !important;
+}
+
+.modal-generator-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.1), transparent);
+    backdrop-filter: blur(8px);
+}
+
+.modal-generator-content {
+    position: relative;
+    width: 95%;
+    max-width: 1200px;
+    max-height: 85vh;
+    background: linear-gradient(135deg, rgba(19, 24, 41, 0.95), rgba(26, 31, 58, 0.95));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.modal-generator-header {
+    padding: 24px;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08));
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.modal-generator-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-close-btn {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ff6b6b;
+}
+
+.modal-generator-body {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 24px;
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+@media (max-width: 1024px) {
+    .modal-generator-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-generator-left,
+.modal-generator-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Inputs */
+.glass-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.glass-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #93c5fd;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#imagePrompt {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--color-text-primary);
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+#imagePrompt:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+#imagePrompt::placeholder {
+    color: #64748b;
+}
+
+/* Dropzone */
+.glass-dropzone {
+    border: 2px dashed rgba(59, 130, 246, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: rgba(59, 130, 246, 0.02);
+}
+
+.glass-dropzone:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.glass-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.glass-placeholder svg {
+    color: #64748b;
+    opacity: 0.7;
+}
+
+.glass-image-preview {
+    width: 100% !important;
+    height: 120px !important;
+    object-fit: cover !important;
+    border-radius: 12px !important;
+}
+
+.glass-remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(239, 68, 68, 0.8) !important;
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.glass-remove-btn:hover {
+    background: rgba(239, 68, 68, 1) !important;
+}
+
+.glass-remove-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Buttons */
+.glass-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-gradient-epic {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-gradient-epic:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.btn-gradient-epic:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-gradient-epic:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 10px 16px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Canvas */
+.glass-canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 16px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-canvas-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: #64748b;
+    text-align: center;
+}
+
+.glass-canvas-placeholder svg {
+    color: #475569;
+    opacity: 0.5;
+}
+
+.glass-canvas-placeholder p {
+    font-size: 0.95rem;
+}
+
+.glass-canvas-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: fadeInScale 0.3s ease;
+}
+
+.loader-ring-epic {
+    width: 80px;
+    height: 80px;
+    border: 4px solid rgba(99, 102, 241, 0.2);
+    border-top-color: #3b82f6;
+    border-right-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+}
+
+#imageLoadingText {
+    color: #93c5fd;
+    font-size: 0.95rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.glass-canvas-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    padding: 16px;
+    opacity: 0;
+    animation: fadeInScale 0.5s ease forwards;
+}
+
+.glass-canvas-actions {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    gap: 12px;
+    animation: slideUp 0.3s ease;
+}
+
+.glass-action-btn {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    transition: all 0.3s ease;
+}
+
+.glass-action-btn:hover {
+    background: rgba(59, 130, 246, 0.4);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =================== FIN IMAGE GENERATOR MODAL =================== */

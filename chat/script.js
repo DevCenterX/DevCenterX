@@ -1,7 +1,7 @@
 //====================================================== Configuración ======================================================
 
 // ================= CONFIGURACIÓN DE GENERACIÓN DE IMÁGENES (NANO BANANA) ================
-let IMAGE_API_KEY = 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM';
+let IMAGE_API_KEY = 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8';
 
 // Modelos disponibles de Nano Banana:
 // - 'gemini-3.1-flash-image-preview': Nano Banana 2 (Alta eficiencia, gran volumen)
@@ -58,7 +58,7 @@ const MODE_SPECIFIC_MODELS = {
     // Modo GENERAR IMÁGENES: Optimizado para descripciones creativas
     image: {
         url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
+        apiKey: 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8',
         rpm: 10,        // 10 peticiones por minuto - Moderado para generación creativa
         tpm: 250000,    // 250K tokens por minuto - Bueno para descripciones detalladas
         rpd: 250        // 250 peticiones por día - Suficiente para generación de imágenes
@@ -440,7 +440,13 @@ const elements = {
     fullscreenBackBtn: document.getElementById('fullscreenBackBtn'),
     shareBtn: document.getElementById('shareBtn'),
     loading: document.getElementById('loading'),
-    previewSubtitle: document.getElementById('previewSubtitle')
+    previewSubtitle: document.getElementById('previewSubtitle'),
+    uploadImageBtn: document.getElementById('uploadImageBtn'),
+    imageUploadInput: document.getElementById('imageUploadInput'),
+    uploadedImageIndicator: document.getElementById('uploadedImageIndicator'),
+    uploadedImagePreview: document.getElementById('uploadedImagePreview'),
+    uploadedFileName: document.getElementById('uploadedFileName'),
+    clearUploadBtn: document.getElementById('clearUploadBtn')
 };
 
 // Inicialización
@@ -1019,6 +1025,51 @@ function setupEventListeners() {
     elements.messageInput.addEventListener('keydown', handleKeyDown);
     elements.sendBtn.addEventListener('click', sendMessage);
 
+    // Event listeners para carga de imágenes (Nano Banana)
+    if (elements.uploadImageBtn && elements.imageUploadInput) {
+        elements.uploadImageBtn.addEventListener('click', () => {
+            elements.imageUploadInput.click();
+        });
+        
+        elements.imageUploadInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    console.log('📤 Procesando imagen...', file.name);
+                    const imageInfo = await handleImageUpload(file);
+                    
+                    // Mostrar indicador de imagen cargada
+                    elements.uploadedImageIndicator.style.display = 'flex';
+                    elements.uploadedFileName.textContent = imageInfo.name;
+                    elements.uploadedImagePreview.innerHTML = `<img src="${imageInfo.preview}" alt="${imageInfo.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+                    
+                    showNotification(`✅ Imagen cargada: ${imageInfo.name}. Ahora puedes pedir que la edites o refines.`);
+                } catch (error) {
+                    console.error('❌ Error cargando imagen:', error);
+                    showNotification(`❌ Error: ${error.message}`);
+                }
+                // Limpiar el input
+                e.target.value = '';
+            }
+        });
+    }
+    
+    if (elements.clearUploadBtn) {
+        elements.clearUploadBtn.addEventListener('click', () => {
+            clearUploadedImage();
+            elements.uploadedImageIndicator.style.display = 'none';
+            elements.uploadedImagePreview.innerHTML = '';
+            elements.uploadedFileName.textContent = '';
+            showNotification('🗑️ Imagen eliminada');
+        });
+    }
+    
+    // Event listener para abrir el generador de imágenes
+    const openImageGeneratorBtn = document.getElementById('openImageGeneratorBtn');
+    if (openImageGeneratorBtn) {
+        openImageGeneratorBtn.addEventListener('click', openImageGeneratorModal);
+    }
+
     elements.suggestions.addEventListener('click', handleSuggestionClick);
 
     if (elements.backBtn) {
@@ -1328,6 +1379,13 @@ function updateModeIcon(ability) {
 function applyAbility(ability) {
     // Cambiar el modo activo
     activeAbility = ability;
+    
+    // Abrir modal generador si se selecciona habilidad de imagen
+    if (ability === 'image') {
+        openImageGeneratorModal();
+        // No cambiar el modo de navegación, solo abrir el modal
+        return;
+    }
     
     // Actualizar icono del botón
     updateModeIcon(ability);
@@ -4097,378 +4155,6 @@ async function generateChatResponse(prompt) {
     return await makeApiCallWithFailover(apiCall, 3);
 }
 
-// Función para generar respuesta de chat normal
-async function generateChatResponse(prompt) {
-    loadUserInfo();
-
-    loadAiConfigs();
-
-    const chat = getCurrentChat();
-    let historyText = '';
-    if (chat && chat.messages && chat.messages.length > 0) {
-        historyText = chat.messages
-            .filter(m => m.type === 'user' || m.type === 'ai')
-            .map(m => {
-                if (m.type === 'user') {
-                    return `Usuario: ${m.content}`;
-                } else if (m.type === 'ai') {
-                    return `DevCenter: ${m.content}`;
-                }
-                return '';
-            })
-            .join('\n');
-    }
-
-    let userInfoText = '';
-    if (userInfo && (userInfo.name || userInfo.birth || userInfo.email || userInfo.custom || userInfo.aiResponseStyle || userInfo.detailLevel || userInfo.projectType || userInfo.codeStylePrefs)) {
-        userInfoText = [
-            userInfo.name ? `Nombre: ${userInfo.name}` : '',
-            userInfo.birth ? `Fecha de nacimiento: ${userInfo.birth}` : '',
-            userInfo.email ? `Correo: ${userInfo.email}` : '',
-            userInfo.custom ? `Información personalizada: ${userInfo.custom}` : '',
-            '',
-            '=== CONFIGURACIONES DE IA ===',
-            userInfo.aiResponseStyle ? `Estilo de respuesta preferido: ${userInfo.aiResponseStyle}` : '',
-            userInfo.detailLevel ? `Nivel de detalle: ${userInfo.detailLevel}` : '',
-            userInfo.projectType ? `Tipo de proyectos: ${userInfo.projectType}` : '',
-            userInfo.codeStylePrefs ? `Estilo de código: ${userInfo.codeStylePrefs}` : ''
-        ].filter(Boolean).join('\n');
-    }
-
-    // ============= ANÁLISIS INTELIGENTE Y MEMORIA CONTEXTUAL =================
-    const detectedLevel = intelligentAnalysis.detectUserLevel(prompt);
-    const detectedLanguage = intelligentAnalysis.extractCodeLanguage(prompt);
-    const detectedProjectType = intelligentAnalysis.detectProjectType(prompt);
-
-    // Actualizar memoria contextual
-    if (detectedLevel && detectedLevel !== 'intermediate') {
-        contextualMemory.userExpertise = detectedLevel;
-        contextualMemory.complexityLevel = detectedLevel;
-    }
-
-    if (detectedLanguage) {
-        contextualMemory.lastCodeLanguage = detectedLanguage;
-        if (!contextualMemory.userPreferences.languages) contextualMemory.userPreferences.languages = [];
-        if (!contextualMemory.userPreferences.languages.includes(detectedLanguage)) {
-            contextualMemory.userPreferences.languages.push(detectedLanguage);
-        }
-    }
-
-    if (detectedProjectType && detectedProjectType !== 'general') {
-        contextualMemory.projectContext = detectedProjectType;
-    }
-
-    // Detectar tema conversacional
-    const techKeywords = ['código', 'programación', 'algoritmo', 'debug', 'error', 'función'];
-    const designKeywords = ['diseño', 'interfaz', 'ui', 'ux', 'css', 'responsive'];
-    const architectureKeywords = ['arquitectura', 'patrón', 'estructura', 'escalabilidad'];
-
-    if (techKeywords.some(keyword => prompt.toLowerCase().includes(keyword))) {
-        contextualMemory.conversationTheme = 'programming';
-    } else if (designKeywords.some(keyword => prompt.toLowerCase().includes(keyword))) {
-        contextualMemory.conversationTheme = 'design';
-    } else if (architectureKeywords.some(keyword => prompt.toLowerCase().includes(keyword))) {
-        contextualMemory.conversationTheme = 'architecture';
-    }
-
-    contextualMemory.interactionPattern = 'chat';
-
-    // Preparar información contextual para el prompt
-    let contextualInfo = '';
-    if (contextualMemory.userExpertise && contextualMemory.userExpertise !== 'intermediate') {
-        contextualInfo += `**NIVEL DETECTADO:** ${contextualMemory.userExpertise.toUpperCase()}\n`;
-    }
-    if (contextualMemory.lastCodeLanguage) {
-        contextualInfo += `**LENGUAJE PRINCIPAL:** ${contextualMemory.lastCodeLanguage.toUpperCase()}\n`;
-    }
-    if (contextualMemory.projectContext && contextualMemory.projectContext !== 'general') {
-        contextualInfo += `**CONTEXTO:** ${contextualMemory.projectContext.toUpperCase()}\n`;
-    }
-    if (contextualMemory.conversationTheme) {
-        contextualInfo += `**ESPECIALIZACIÓN:** ${contextualMemory.conversationTheme.toUpperCase()}\n`;
-    }
-    // ========================================================================
-
-    // ============= DETECCIÓN DE SOLICITUD DE AYUDA CON PROMPTS =============
-    const promptKeywords = [
-        'crear prompt', 'crear un prompt', 'ayuda con prompt', 'ayúdame con un prompt',
-        'cómo hacer un prompt', 'como hacer un prompt', 'necesito un prompt',
-        'diseñar prompt', 'generar prompt', 'prompt para', 'escribe un prompt',
-        'haz un prompt', 'hacer prompt', 'crear prompts', 'ayuda prompts',
-        'prompt engineering', 'ingeniería de prompts', 'mejores prompts',
-        'prompt potente', 'prompt efectivo', 'prompt profesional',
-        'estructura de prompt', 'estructurar prompt', 'formato de prompt'
-    ];
-    
-    const isPromptRequest = promptKeywords.some(keyword => 
-        prompt.toLowerCase().includes(keyword)
-    );
-    
-    let promptEngineeringGuide = '';
-    if (isPromptRequest) {
-        promptEngineeringGuide = `\n\n[GUÍA PARA CREAR PROMPTS EFECTIVOS:
-
-Eres un experto en ingeniería de prompts. Cuando te pidan ayuda para crear prompts efectivos, sigue estas directrices:
-
-ESTRUCTURA BÁSICA DE UN PROMPT EFECTIVO:
-
-1. **ROL/PERSONAJE**: Define claramente qué rol debe asumir la IA
-   - "Eres un experto en [tema]"
-   - "Actúa como un [profesión/especialista]"
-   - "Eres un [tipo de asistente] especializado en [área]"
-
-2. **CONTEXTO**: Proporciona información de fondo necesaria
-   - Situación específica
-   - Restricciones o limitaciones
-   - Información previa relevante
-   - Objetivos específicos
-
-3. **TAREA ESPECÍFICA**: Describe exactamente qué debe hacer la IA
-   - Acción concreta a realizar
-   - Formato de salida esperado
-   - Nivel de detalle requerido
-   - Criterios de evaluación
-
-4. **EJEMPLOS**: Incluye ejemplos cuando sea útil
-   - Input/Output de muestra
-   - Casos de uso específicos
-   - Variaciones para mostrar flexibilidad
-
-5. **RESTRICCIONES**: Limita el alcance si es necesario
-   - Evita ciertos temas o enfoques
-   - Define límites de longitud/respuesta
-   - Especifica formato o estructura
-
-EJEMPLOS DE PROMPTS EFECTIVOS:
-
-**Para redacción creativa:**
-"Eres un novelista profesional especializado en literatura de ciencia ficción. Escribe una escena de 300 palabras donde el protagonista descubre un artefacto alienígena en una estación espacial abandonada. El tono debe ser tenso y misterioso, con énfasis en los detalles sensoriales."
-
-**Para análisis técnico:**
-"Actúa como un ingeniero de software senior. Revisa el siguiente código JavaScript y identifica problemas de rendimiento, posibles bugs, y sugiere mejoras siguiendo las mejores prácticas. Proporciona tu respuesta en formato de lista numerada con explicaciones detalladas."
-
-**Para resolución de problemas:**
-"Eres un consultor de resolución de problemas. Un restaurante familiar está perdiendo clientes. Analiza estos datos de ventas y reseñas de clientes, identifica las causas raíz del problema, y proporciona 5 recomendaciones específicas y accionables para revertir la situación."
-
-TÉCNICAS AVANZADAS:
-
-- **Zero-shot**: Pedir algo sin ejemplos previos
-- **Few-shot**: Incluir 1-3 ejemplos para guiar el comportamiento
-- **Chain-of-thought**: Pedir que razone paso a paso
-- **Persona**: Asignar una personalidad específica
-- **Context stuffing**: Proporcionar abundante contexto relevante
-
-ERRORES COMUNES A EVITAR:
-
-- Prompts demasiado vagos o ambiguos
-- Falta de especificidad en el formato de salida
-- No definir claramente el rol o expertise requerido
-- Ignorar restricciones importantes
-- Pedir múltiples tareas complejas en un solo prompt
-
-]\n\n`;
-        console.log('📝 Guía de Prompt Engineering cargada');
-    }
-    // ========================================================================
-
-    // Obtener el prompt del modo activo
-    const abilityPrompt = await getActiveAbilityPrompt();
-
-    // Obtener notas guardadas para incluir en el contexto
-    const savedNotes = loadSavedNotes();
-    let notesContext = '';
-    if (savedNotes && savedNotes.length > 0) {
-        notesContext = '\n\n📝 **NOTAS GUARDADAS (información importante que guardaste previamente):**\n\n';
-        savedNotes.forEach((note, index) => {
-            const noteDate = new Date(note.timestamp).toLocaleDateString('es-ES');
-            notesContext += `${index + 1}. [${noteDate}] ${note.content}\n`;
-        });
-        notesContext += '\nUsa esta información cuando sea relevante para responder.\n';
-    }
-
-    // Obtener la fecha actual
-    const ahora = new Date();
-
-    // Día de la semana
-    const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const diaSemana = diasSemana[ahora.getDay()];
-
-    // Fecha completa
-    const dia = ahora.getDate().toString().padStart(2, '0');
-    const mes = (ahora.getMonth() + 1).toString().padStart(2, '0'); // Enero = 0
-    const anio = ahora.getFullYear();
-
-    // Hora completa en formato A.M./P.M.
-    let hora = ahora.getHours();
-    const minuto = ahora.getMinutes().toString().padStart(2, '0');
-    const segundo = ahora.getSeconds().toString().padStart(2, '0');
-    const ampm = hora >= 12 ? 'PM' : 'AM';
-    hora = hora % 12;
-    hora = hora ? hora : 12; // Si es 0, convertir a 12
-    const horaStr = hora.toString();
-
-    // Zona horaria
-    const zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-
-    // Obtener información del dispositivo
-    const userAgent = navigator.userAgent.toLowerCase();
-
-    let dispositivo = "Desconocido";
-
-    if (userAgent.includes("mobile") || userAgent.includes("android") || userAgent.includes("iphone")) {
-        dispositivo = "Celular";
-    } else if (userAgent.includes("ipad") || userAgent.includes("tablet")) {
-        dispositivo = "Tablet";
-    } else {
-        dispositivo = "Computadora";
-    }
-
-
-
-
-    // Obtener el prompt del sistema personalizado
-    const customSystemPrompt = localStorage.getItem('devCenter_systemPrompt') || '';
-    
-    // PROMPT especial para chat normal
-    // No menciones nada sobre generar páginas web o aplicaciones web a menos que el usuario lo pida explícitamente.
-
-    const systemPrompt = `${customSystemPrompt ? `📋 PROMPT DEL SISTEMA PERSONALIZADO (LEE ESTO PRIMERO Y ÚSALO EN CADA RESPUESTA):\n${customSystemPrompt}\n\n---\n\n` : ''}Eres DevCenter IA, un asistente de programación que habla como persona real, no como robot.
-
-🚨 REGLAS CRÍTICAS (LEE ESTO PRIMERO):
-
-1. ⛔ NUNCA REPITAS RESPUESTAS - Lee el historial abajo y NO USES nada parecido a lo que ya dijiste
-   - Cambia TODO: estructura, longitud, tono, palabras, emojis
-   - Ejemplo: si ya dijiste "¡Qué onda! ¿En qué te ayudo?" NO VUELVAS A USAR ESA ESTRUCTURA
-   - Varía entre: corto/largo, pregunta/afirmación, formal/casual, con emojis/sin emojis
-
-2. ✅ OBEDECE AL USUARIO SIEMPRE Y USA COMANDOS ESPECIALES
-   - Si dice "guarda X" → Responde: {GUARDAR: X} y confirma
-   - Si pide código, dáselo
-   - Si pide explicación, explícale
-   - Si pide guardar info, guárdala con {GUARDAR: la info}
-   
-   🤖 COMANDOS ESPECIALES DISPONIBLES:
-   
-   a) {GUARDAR: texto} - Guarda notas importantes automáticamente
-      - Úsalo cuando detectes info valiosa: nombres, preferencias, tecnologías, configuraciones,
-        decisiones de proyecto, ideas, planes, objetivos
-      - Ejemplo: Usuario dice "Me gusta usar React con TypeScript"
-        → Tú guardas: {GUARDAR: Usuario prefiere React con TypeScript}
-      - Hazlo de manera inteligente, solo cuando la info sea realmente útil para futuras conversaciones
-      - NO guardes cosas obvias o temporales
-   
-   b) {MODIFICAR_PROMPT: nuevo_comportamiento} - Sugiere cambios a tu comportamiento
-      - Úsalo SOLO cuando el usuario explícitamente pida un cambio permanente en cómo respondes
-      - Ejemplo: Usuario dice "siempre quiero ejemplos con async/await"
-        → Tú sugieres: {MODIFICAR_PROMPT: Usar async/await en todos los ejemplos de JavaScript}
-      - El usuario tendrá que CONFIRMAR el cambio antes de aplicarlo
-      - No abuses de este comando - solo para cambios significativos y permanentes
-   
-   ⚠️ Estos comandos son invisibles para el usuario y se procesan automáticamente
-
-3. 💬 HABLA NATURAL COMO HUMANO
-   - Sin formato robótico tipo "**Analizando tu solicitud...**"
-   - Habla directo, como mensaje de texto a un amigo
-   - Organiza bien tus respuestas pero de forma natural
-   - No uses listas innecesarias ni formato exagerado
-   - Sé directo y claro
-
----
-
-CONTEXTO:
-${historyText ? `Historial previo:\n${historyText}\n\n⚠️ NO REPITAS nada de lo que ya dijiste arriba` : 'Primera interacción'}
-
-${userInfoText ? `Info del usuario:\n${userInfoText}` : ''}
-
-${contextualInfo ? `Contexto: ${contextualInfo}` : ''}
-
-${notesContext || ''}
-
----
-
-Usuario pregunta: ${prompt}
-
-Hora actual: ${horaStr}:${minuto}:${segundo} ${ampm}, ${diaSemana} ${dia}/${mes}/${anio}
-Dispositivo: ${dispositivo}
-
-${getResponseModeInstructions()}
-${abilityPrompt}
-${promptEngineeringGuide}
-
-Responde de forma natural, útil y DIFERENTE a tus respuestas anteriores.`
-
-        ;
-
-
-
-
-
-
-
-
-
-
-    // Usamos el sistema de failover para hacer la llamada a la API
-    const apiCall = async (ai) => {
-        console.log(`🌐 Llamando a API generateChatResponse: ${ai.name}`);
-
-        const response = await fetch(`${ai.url}?key=${ai.apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: systemPrompt,
-                            },
-                        ],
-                    },
-                ],
-                generationConfig: {
-                    temperature: TEMPERATURE,
-                    topK: TOP_K,
-                    topP: TOP_P,
-                    maxOutputTokens: getCurrentMaxTokens(), // Tokens dinámicos según modo activo
-                }
-
-
-
-
-
-
-
-
-
-
-            }),
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Error:', errorText);
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-        return text.trim();
-    };
-
-    // Llamar al sistema de failover
-    try {
-        return await makeApiCallWithFailover(apiCall, 3);
-    } catch (error) {
-        console.error('Error generating chat response:', error);
-        // Lanzar error para que sendMessage lo maneje en el catch con retryData
-        throw new Error('Lo siento, no pude procesar tu solicitud en este momento.');
-    }
-}
-
 // Preview
 function showPreview(messageId) {
     const chat = getCurrentChat();
@@ -4685,6 +4371,49 @@ function hideLoading() {
 // Utilidades
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Función para mostrar notificaciones tipo toast
+function showNotification(message, duration = 3000, type = 'info') {
+    const notifId = 'notif-' + generateId();
+    const notif = document.createElement('div');
+    notif.id = notifId;
+    notif.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(26, 31, 58, 0.95);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: var(--color-text-primary);
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        max-width: 90vw;
+        backdrop-filter: blur(10px);
+        z-index: 99999;
+        animation: slideInRight 0.3s ease-out;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    `;
+    
+    // Colores según tipo
+    if (type === 'success') {
+        notif.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        notif.style.background = 'rgba(16, 185, 129, 0.1)';
+    } else if (type === 'error') {
+        notif.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        notif.style.background = 'rgba(239, 68, 68, 0.1)';
+    }
+    
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    
+    // Auto-remover después del tiempo especificado
+    setTimeout(() => {
+        notif.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (notif.parentNode) notif.remove();
+        }, 300);
+    }, duration);
 }
 
 function escapeHtml(text) {
@@ -5030,32 +4759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 */
 
-// --- Corrige posible bug en deleteChat ---
-function deleteChat(chatId) {
-    if (chats.length <= 1) {
-        alert('No puedes eliminar el último chat');
-        return;
-    }
-    if (confirm('¿Estás seguro de que quieres eliminar este chat?')) {
-        const idx = chats.findIndex(c => c.id === chatId);
-        chats = chats.filter(chat => chat.id !== chatId);
-        // Corrige la selección del siguiente chat
-        if (currentChatId === chatId) {
-            if (chats[idx]) {
-                currentChatId = chats[idx].id;
-            } else if (chats[0]) {
-                currentChatId = chats[0].id;
-            } else {
-                currentChatId = null;
-            }
-            loadCurrentChat();
-        }
-        saveChats();
-        renderSidebar();
-    }
-}
-
-// Función duplicada eliminada - usando la función original arriba (línea 2936)
+// Función duplicada eliminada - usando la función original arriba (línea 1916)
 
 // =================== FUNCIONES DE BOTONES DE ACCIÓN DE MENSAJES ===================
 
@@ -6242,6 +5946,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ==== EVENT LISTENERS FOR IMAGE GENERATOR MODAL ====
+document.addEventListener('DOMContentLoaded', () => {
+    // Close modal button
+    const closeModalBtn = document.getElementById('closeImageModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeImageGeneratorModalFn);
+    }
+    
+    // Generate button
+    const generateBtn = document.getElementById('generateImageBtn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', handleImageGeneration);
+    }
+    
+    // Quick prompt buttons
+    const quickPromptBtns = document.querySelectorAll('.quick-prompt-btn');
+    quickPromptBtns.forEach(btn => {
+        btn.addEventListener('click', handleQuickPrompt);
+    });
+    
+    // Download button
+    const downloadBtn = document.getElementById('downloadGenImageBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadGeneratedImage);
+    }
+    
+    // Copy button
+    const copyBtn = document.getElementById('copyGenImageBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyGeneratedImage);
+    }
+    
+    // Insert button
+    const insertBtn = document.getElementById('insertImageBtn');
+    if (insertBtn) {
+        insertBtn.addEventListener('click', insertGeneratedImage);
+    }
+    
+    // Click on modal overlay to close
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeImageGeneratorModalFn();
+            }
+        });
+    }
+    
+    // Enter key in prompt to generate
+    const promptInput = document.getElementById('imagePromptInput');
+    if (promptInput) {
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                handleImageGeneration();
+            }
+        });
+    }
+});
+
 // ============= FUNCIONES DE GENERACIÓN DE IMÁGENES CON GEMINI =============
 
 // Función SOLO para generar la descripción de la imagen
@@ -6518,6 +6282,163 @@ function clearUploadedImage() {
     uploadedImageData = null;
     uploadedImageMimeType = 'image/png';
     console.log('🗑️ Imagen cargada eliminada');
+}
+
+// ==== IMAGE GENERATOR MODAL FUNCTIONS ====
+
+// Abre el modal del generador de imágenes
+function openImageGeneratorModal() {
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Cierra el modal del generador de imágenes
+function closeImageGeneratorModalFn() {
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // Limpiar campos
+        const promptInput = document.getElementById('imagePromptInput');
+        if (promptInput) promptInput.value = '';
+        const imgPlaceholder = document.getElementById('imgPlaceholder');
+        const imgLoading = document.getElementById('imgLoading');
+        const generatedImg = document.getElementById('generatedImg');
+        const imageActions = document.getElementById('imageActions');
+        if (imgPlaceholder) imgPlaceholder.classList.remove('hidden');
+        if (imgLoading) imgLoading.classList.add('hidden');
+        if (generatedImg) {
+            generatedImg.classList.add('hidden');
+            generatedImg.src = '';
+        }
+        if (imageActions) imageActions.classList.add('hidden');
+    }
+}
+
+// Genera imagen con reintentos exponenciales
+async function generateImageWithRetry(prompt, maxRetries = 4) {
+    let retryCount = 0;
+    const delays = [1000, 2000, 4000, 8000]; // ms
+    
+    while (retryCount < maxRetries) {
+        try {
+            return await generateImageFromDescription(prompt);
+        } catch (error) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+                throw new Error(`Error después de ${maxRetries} intentos: ${error.message}`);
+            }
+            const delay = delays[retryCount - 1];
+            console.log(`🔄 Reintentando en ${delay/1000}s... (intento ${retryCount}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
+// Maneja la generación de imagen desde el modal
+async function handleImageGeneration() {
+    const promptInput = document.getElementById('imagePromptInput');
+    const prompt = promptInput.value.trim();
+    
+    if (!prompt) {
+        showNotification('Por favor, introduce una descripción', 'error');
+        return;
+    }
+    
+    const imgPlaceholder = document.getElementById('imgPlaceholder');
+    const imgLoading = document.getElementById('imgLoading');
+    const generatedImg = document.getElementById('generatedImg');
+    const imageError = document.getElementById('imageError');
+    const imageErrorText = document.getElementById('imageErrorText');
+    
+    // Mostrar loading
+    if (imgPlaceholder) imgPlaceholder.classList.add('hidden');
+    if (imgLoading) imgLoading.classList.remove('hidden');
+    if (imageError) imageError.classList.add('hidden');
+    if (generatedImg) generatedImg.classList.add('hidden');
+    
+    try {
+        const imageData = await generateImageWithRetry(prompt);
+        if (imageData) {
+            if (generatedImg) {
+                generatedImg.src = imageData;
+                generatedImg.classList.remove('hidden');
+            }
+            if (imgLoading) imgLoading.classList.add('hidden');
+            const imageActions = document.getElementById('imageActions');
+            if (imageActions) imageActions.classList.remove('hidden');
+            
+            // Guardar la imagen generada
+            window.lastGeneratedImage = imageData;
+        }
+    } catch (error) {
+        console.error('Error generating image:', error);
+        if (imageError) {
+            imageErrorText.textContent = error.message;
+            imageError.classList.remove('hidden');
+        }
+        if (imgLoading) imgLoading.classList.add('hidden');
+        showNotification('Error al generar imagen: ' + error.message, 'error');
+    }
+}
+
+// Descarga la imagen generada
+function downloadGeneratedImage() {
+    if (!window.lastGeneratedImage) {
+        showNotification('No hay imagen para descargar', 'error');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = window.lastGeneratedImage;
+    link.download = `imagen-generada-${Date.now()}.png`;
+    link.click();
+    showNotification('Imagen descargada', 'success');
+}
+
+// Copia la imagen al portapapeles
+async function copyGeneratedImage() {
+    if (!window.lastGeneratedImage) {
+        showNotification('No hay imagen para copiar', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(window.lastGeneratedImage);
+        const blob = await response.blob();
+        await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+        ]);
+        showNotification('Imagen copiada al portapapeles', 'success');
+    } catch (error) {
+        showNotification('Error al copiar imagen: ' + error.message, 'error');
+    }
+}
+
+// Inserta la imagen generada en el chat
+function insertGeneratedImage() {
+    if (!window.lastGeneratedImage) {
+        showNotification('No hay imagen para insertar', 'error');
+        return;
+    }
+    
+    const aspectRatio = document.getElementById('imageAspectRatio').value || '1:1';
+    addImageMessage(window.lastGeneratedImage, aspectRatio);
+    closeImageGeneratorModalFn();
+    showNotification('Imagen insertada en el chat', 'success');
+}
+
+// Maneja los prompts rápidos
+function handleQuickPrompt(event) {
+    const prompt = event.currentTarget.dataset.prompt;
+    const promptInput = document.getElementById('imagePromptInput');
+    if (promptInput) {
+        promptInput.value = prompt;
+        promptInput.focus();
+    }
 }
 
 // Función para agregar mensaje con imagen al chat
@@ -7482,3 +7403,368 @@ function generateCoolWelcomeIcon() {
 
 // Generar icono épico al cargar la página
 generateCoolWelcomeIcon();
+
+// =================== 🎨 MODAL GENERADOR DE IMÁGENES - GEMINI EPIC STUDIO ===================
+
+// Estado del modal generador
+let generatorModalState = {
+    selectedImage: null,
+    selectedImageBase64: null,
+    selectedImageMimeType: 'image/png',
+    mode: 'text-to-image',
+    lastGeneratedImage: null
+};
+
+// Abrir el modal generador desde el menú de habilidades
+function openImageGeneratorModal() {
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Cerrar el modal generador
+function closeImageGeneratorModal() {
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // Limpiar estado
+        generatorModalState.selectedImage = null;
+        generatorModalState.selectedImageBase64 = null;
+        generatorModalState.mode = 'text-to-image';
+        
+        // Restaurar UI
+        const imageDropZone = document.getElementById('imageDropZone');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        if (imageDropZone) imageDropZone.style.display = 'flex';
+        if (imagePreview) imagePreview.style.display = 'none';
+        if (removeImageBtn) removeImageBtn.style.display = 'none';
+    }
+}
+
+// Manejar el upload de imágenes en el modal generador
+function handleGeneratorImageUpload(event) {
+    const file = event.target.files[0] || (event.dataTransfer && event.dataTransfer.files[0]);
+    if (!file) return;
+    
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+        showNotification('Por favor, selecciona una imagen válida', 'error');
+        return;
+    }
+    
+    // Leer archivo y convertir a base64
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        generatorModalState.selectedImage = file;
+        generatorModalState.selectedImageBase64 = e.target.result;
+        generatorModalState.selectedImageMimeType = file.type;
+        generatorModalState.mode = 'image-to-image';
+        
+        // Mostrar preview
+        const imageDropZone = document.getElementById('imageDropZone');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const modeStatus = document.getElementById('modeStatus');
+        
+        if (imageDropZone) imageDropZone.style.display = 'none';
+        if (imagePreview) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+        }
+        if (removeImageBtn) removeImageBtn.style.display = 'block';
+        if (modeStatus) modeStatus.textContent = '🖼️ Modo: Imagen a Imagen (Edición)';
+        
+        showNotification('Imagen cargada correctamente', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remover imagen seleccionada
+function removeGeneratorImage() {
+    generatorModalState.selectedImage = null;
+    generatorModalState.selectedImageBase64 = null;
+    generatorModalState.mode = 'text-to-image';
+    
+    const imageDropZone = document.getElementById('imageDropZone');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    const modeStatus = document.getElementById('modeStatus');
+    
+    if (imageDropZone) imageDropZone.style.display = 'flex';
+    if (imagePreview) imagePreview.style.display = 'none';
+    if (removeImageBtn) removeImageBtn.style.display = 'none';
+    if (modeStatus) modeStatus.textContent = '✨ Modo: Texto a Imagen';
+}
+
+// Generar imagen desde el modal generador con reintentos
+async function generatorModalGenerateImage() {
+    const promptInput = document.getElementById('imagePrompt');
+    const prompt = promptInput.value.trim();
+    
+    if (!prompt) {
+        showNotification('Por favor, ingresa una descripción', 'error');
+        return;
+    }
+    
+    const generateBtn = document.getElementById('generateImageBtn');
+    const canvas = document.getElementById('generatedImageCanvas');
+    const placeholder = document.querySelector('.glass-canvas-placeholder');
+    const loadingDiv = document.querySelector('.glass-canvas-loading');
+    const loadingText = document.getElementById('imageLoadingText');
+    
+    try {
+        // Mostrar estado de carga
+        if (placeholder) placeholder.style.display = 'none';
+        if (loadingDiv) loadingDiv.style.display = 'flex';
+        if (generateBtn) generateBtn.disabled = true;
+        
+        // Generar imagen con reintentos
+        let imageData = null;
+        let retryCount = 0;
+        const delays = [1000, 2000, 4000, 8000];
+        
+        while (retryCount < 5) {
+            try {
+                if (generatorModalState.mode === 'image-to-image' && generatorModalState.selectedImageBase64) {
+                    // Generar a partir de imagen (edición)
+                    // Usar el modelo gemini-2.5-flash-image-preview para edición
+                    imageData = await generateImageFromBase64(
+                        generatorModalState.selectedImageBase64,
+                        prompt,
+                        generatorModalState.selectedImageMimeType
+                    );
+                } else {
+                    // Generar texto a imagen
+                    imageData = await generateImageFromDescription(prompt);
+                }
+                break;
+            } catch (error) {
+                retryCount++;
+                if (retryCount >= 5) throw error;
+                
+                const delay = delays[Math.min(retryCount - 1, delays.length - 1)];
+                if (loadingText) loadingText.textContent = `Reintentando en ${delay/1000}s... (${retryCount}/5)`;
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+        
+        if (imageData) {
+            // Mostrar imagen generada
+            generatorModalState.lastGeneratedImage = imageData;
+            
+            if (canvas) {
+                canvas.src = imageData;
+                canvas.style.display = 'block';
+            }
+            
+            // Mostrar botones de acción
+            const actionsDiv = document.querySelector('.glass-canvas-actions');
+            if (actionsDiv) actionsDiv.style.display = 'flex';
+            
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+            
+            showNotification('✨ Imagen generada exitosamente', 'success');
+        }
+    } catch (error) {
+        console.error('Error generando imagen:', error);
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+            placeholder.innerHTML = `<p style="color: #ff6b6b;">❌ ${error.message}</p>`;
+        }
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        showNotification('Error: ' + error.message, 'error');
+    } finally {
+        if (generateBtn) generateBtn.disabled = false;
+    }
+}
+
+// Descargar imagen generada desde el modal
+function generatorDownloadImage() {
+    if (!generatorModalState.lastGeneratedImage) {
+        showNotification('No hay imagen para descargar', 'error');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = generatorModalState.lastGeneratedImage;
+    link.download = `imagen-${Date.now()}.png`;
+    link.click();
+    showNotification('Imagen descargada ✓', 'success');
+}
+
+// Copiar imagen al portapapeles
+async function generatorCopyImage() {
+    if (!generatorModalState.lastGeneratedImage) {
+        showNotification('No hay imagen para copiar', 'error');
+        return;
+    }
+    
+    try {
+        const imageBlob = await fetch(generatorModalState.lastGeneratedImage).then(r => r.blob());
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                [imageBlob.type]: imageBlob
+            })
+        ]);
+        showNotification('Imagen copiada al portapapeles ✓', 'success');
+    } catch (error) {
+        console.error('Error copying image:', error);
+        showNotification('Error al copiar imagen', 'error');
+    }
+}
+
+// Event listeners para el modal generador
+document.addEventListener('DOMContentLoaded', () => {
+    // Botón de cerrar
+    const closeBtn = document.getElementById('closeGeneratorBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeImageGeneratorModal);
+    }
+    
+    // Overlay para cerrar
+    const modal = document.getElementById('imageGeneratorModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeImageGeneratorModal();
+            }
+        });
+    }
+    
+    // Input de archivo de imagen
+    const imageUploadInput = document.getElementById('imageUploadInput');
+    if (imageUploadInput) {
+        imageUploadInput.addEventListener('change', handleGeneratorImageUpload);
+    }
+    
+    // Dropzone para imágenes
+    const imageDropZone = document.getElementById('imageDropZone');
+    if (imageDropZone) {
+        imageDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.8)';
+            imageDropZone.style.background = 'rgba(59, 130, 246, 0.1)';
+        });
+        
+        imageDropZone.addEventListener('dragleave', () => {
+            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            imageDropZone.style.background = 'rgba(59, 130, 246, 0.02)';
+        });
+        
+        imageDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            imageDropZone.style.background = 'rgba(59, 130, 246, 0.02)';
+            handleGeneratorImageUpload(e);
+        });
+        
+        imageDropZone.addEventListener('click', () => {
+            imageUploadInput.click();
+        });
+    }
+    
+    // Botón de remover imagen
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', removeGeneratorImage);
+    }
+    
+    // Botón de generar
+    const generateBtn = document.getElementById('generateImageBtn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generatorModalGenerateImage);
+    }
+    
+    // Botón de descargar
+    const downloadBtn = document.getElementById('downloadGeneratedImageBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', generatorDownloadImage);
+    }
+    
+    // Botón de copiar
+    const copyBtn = document.getElementById('copyGeneratedImageBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', generatorCopyImage);
+    }
+    
+    // Enter en el prompt para generar
+    const promptInput = document.getElementById('imagePrompt');
+    if (promptInput) {
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                generatorModalGenerateImage();
+            }
+        });
+    }
+});
+
+// Función auxiliar para generar imagen a partir de base64 (para edición)
+async function generateImageFromBase64(base64Data, prompt, mimeType = 'image/png') {
+    // Esta función usa gemini-2.5-flash-image-preview para edición
+    const apiKey = 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8';
+    const model = 'gemini-2.5-flash-image-preview';
+    const url = `${IMAGE_API_BASE_URL}/${model}:generateContent?key=${apiKey}`;
+    
+    // Convertir el base64 a formato de parte de contenido
+    const imageBase64 = base64Data.split(',')[1];
+    
+    const requestBody = {
+        contents: [{
+            parts: [
+                {
+                    text: prompt
+                },
+                {
+                    inline_data: {
+                        mime_type: mimeType,
+                        data: imageBase64
+                    }
+                }
+            ]
+        }],
+        generation_config: {
+            temperature: 1.0,
+            top_k: 50,
+            top_p: 0.95,
+            max_output_tokens: 1024,
+            response_modalities: ["IMAGE"],
+            aspect_ratio: DEFAULT_IMAGE_ASPECT_RATIO
+        }
+    };
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error?.message || 'Error en la generación de imagen');
+        }
+        
+        const data = await response.json();
+        const imageContent = data.candidates?.[0]?.content?.parts?.find(p => p.inline_data);
+        
+        if (imageContent?.inline_data?.data) {
+            return `data:${imageContent.inline_data.mime_type};base64,${imageContent.inline_data.data}`;
+        } else {
+            throw new Error('No se recibió imagen en la respuesta');
+        }
+    } catch (error) {
+        console.error('Error en generateImageFromBase64:', error);
+        throw error;
+    }
+}
+
+// =================== FIN MODAL GENERADOR DE IMÁGENES ===================
+
