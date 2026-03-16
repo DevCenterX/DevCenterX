@@ -1338,7 +1338,6 @@ function showModeChangeNotification(mode) {
 // 📋 MODO INFO: Notas + Información general (sin historial extendido)
 // 🧠 MODO MEMORY: Notas + Análisis de historial de los últimos 5 chats + Información general
 // 💻 MODO PROGRAM: Notas + Generación de código avanzada (sin historial extendido)
-// 🎨 MODO IMAGE: Generación de descripciones para crear imágenes con Gemini
 async function getActiveAbilityPrompt() {
     let additionalPrompt = '';
     

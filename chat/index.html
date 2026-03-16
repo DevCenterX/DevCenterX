@@ -118,7 +118,6 @@
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
                     </button>
-                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
                     <button id="sendBtn" disabled>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -419,40 +418,6 @@
             </div>
             
             <div class="config-form">
-                <!-- API Key para Imágenes -->
-                <div class="config-group">
-                    <label for="imageApiKey">
-                        <span class="config-icon">🎨</span>
-                        API Key para generar imágenes
-                    </label>
-                    <input type="text" id="imageApiKey" placeholder="Ingresa tu API Key para imágenes" autocomplete="off">
-                    <small>Dejalo vacío para usar la API Key principal</small>
-                </div>
-
-                <!-- Selector de Modelo Gemini -->
-                <div class="config-group">
-                    <label>
-                        <span class="config-icon">🤖</span>
-                        Modelo Gemini por defecto
-                    </label>
-                    <div class="model-selector">
-                        <label class="model-option">
-                            <input type="radio" name="geminiModel" value="gemini-2.5-flash-lite" id="modelLite">
-                            <span class="model-label">
-                                <strong>2.5 Flash-Lite</strong>
-                                <small>Mejor para respuestas rápidas</small>
-                            </span>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="geminiModel" value="gemini-2.5-flash" id="modelFlash">
-                            <span class="model-label">
-                                <strong>2.5 Flash</strong>
-                                <small>Balance velocidad y calidad</small>
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
                 <!-- Botones de acción -->
                 <div class="config-actions">
                     <button type="button" class="btn-secondary" id="closeConfigBtnBottom">Cancelar</button>
@@ -462,8 +427,6 @@
         </div>
         <div class="config-overlay" id="configOverlay"></div>
     </div>
-
-    <div class="config-overlay" id="configOverlay"></div>
     <script src="script.js" defer></script>
 </body>
 
