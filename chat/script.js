@@ -1,26 +1,5 @@
 //====================================================== Configuración ======================================================
 
-// ================= CONFIGURACIÓN DE GENERACIÓN DE IMÁGENES (NANO BANANA) ================
-let IMAGE_API_KEY = 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8';
-
-// Modelos disponibles de Nano Banana:
-// - 'gemini-3.1-flash-image-preview': Nano Banana 2 (Alta eficiencia, gran volumen)
-// - 'gemini-3-pro-image-preview': Nano Banana Pro (Producción profesional, textos precisos)
-// - 'gemini-2.5-flash-image': Nano Banana (Velocidad y eficiencia)
-const IMAGE_GENERATION_MODEL = 'gemini-2.5-flash-image';
-
-const IMAGE_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-
-const IMAGE_RESPONSE_MODALITIES = ["TEXT", "IMAGE"];
-
-const DEFAULT_IMAGE_ASPECT_RATIO = '1:1';
-// Opciones disponibles: '1:1', '3:2', '2:3', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'
-
-// Variable para almacenar imagen cargada para edición
-let uploadedImageData = null;
-let uploadedImageMimeType = 'image/png';
-// =======================================================================================
-
 // ================= CONFIGURACIÓN DE MODELOS POR MODO =======================
 // Cada modo puede tener su propio modelo de IA optimizado para la tarea específica
 // rpm = Requests Per Minute (peticiones por minuto)
@@ -55,14 +34,7 @@ const MODE_SPECIFIC_MODELS = {
         rpd: 1000       // 1000 peticiones por día - Alto volumen para consultas generales
     },
 
-    // Modo GENERAR IMÁGENES: Optimizado para descripciones creativas
-    image: {
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-        apiKey: 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8',
-        rpm: 10,        // 10 peticiones por minuto - Moderado para generación creativa
-        tpm: 250000,    // 250K tokens por minuto - Bueno para descripciones detalladas
-        rpd: 250        // 250 peticiones por día - Suficiente para generación de imágenes
-    },
+
 
     // Modo AGENTE (por defecto): Balance general entre velocidad y capacidad
     agent: {
@@ -91,7 +63,7 @@ const BASE_TOKENS_BY_MODE = {
     info: 7000,      // Modo Información - Respuestas informativas normales
     memory: 8000,    // Modo Memoria Extendida - Mayor capacidad para análisis con historial
     program: 90000,  // Modo Programador - SÚPER ALTA CAPACIDAD para código extenso
-    image: 4000,     // Modo Generar Imágenes - Descripciones detalladas de imágenes
+
     agent: 7000      // Modo Agente - Balance general
 };
 // ===========================================================================
@@ -209,7 +181,6 @@ function getModeSpecificModel() {
                 program: 'Programador',
                 memory: 'Memoria Extendida',
                 info: 'Información',
-                image: 'Generar Imágenes',
                 agent: 'Agente'
             };
             completeModel.name = `Modo ${modeNames[activeAbility] || activeAbility}`;
@@ -441,12 +412,6 @@ const elements = {
     shareBtn: document.getElementById('shareBtn'),
     loading: document.getElementById('loading'),
     previewSubtitle: document.getElementById('previewSubtitle'),
-    uploadImageBtn: document.getElementById('uploadImageBtn'),
-    imageUploadInput: document.getElementById('imageUploadInput'),
-    uploadedImageIndicator: document.getElementById('uploadedImageIndicator'),
-    uploadedImagePreview: document.getElementById('uploadedImagePreview'),
-    uploadedFileName: document.getElementById('uploadedFileName'),
-    clearUploadBtn: document.getElementById('clearUploadBtn')
 };
 
 // Inicialización
@@ -1025,50 +990,7 @@ function setupEventListeners() {
     elements.messageInput.addEventListener('keydown', handleKeyDown);
     elements.sendBtn.addEventListener('click', sendMessage);
 
-    // Event listeners para carga de imágenes (Nano Banana)
-    if (elements.uploadImageBtn && elements.imageUploadInput) {
-        elements.uploadImageBtn.addEventListener('click', () => {
-            elements.imageUploadInput.click();
-        });
-        
-        elements.imageUploadInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                try {
-                    console.log('📤 Procesando imagen...', file.name);
-                    const imageInfo = await handleImageUpload(file);
-                    
-                    // Mostrar indicador de imagen cargada
-                    elements.uploadedImageIndicator.style.display = 'flex';
-                    elements.uploadedFileName.textContent = imageInfo.name;
-                    elements.uploadedImagePreview.innerHTML = `<img src="${imageInfo.preview}" alt="${imageInfo.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
-                    
-                    showNotification(`✅ Imagen cargada: ${imageInfo.name}. Ahora puedes pedir que la edites o refines.`);
-                } catch (error) {
-                    console.error('❌ Error cargando imagen:', error);
-                    showNotification(`❌ Error: ${error.message}`);
-                }
-                // Limpiar el input
-                e.target.value = '';
-            }
-        });
-    }
-    
-    if (elements.clearUploadBtn) {
-        elements.clearUploadBtn.addEventListener('click', () => {
-            clearUploadedImage();
-            elements.uploadedImageIndicator.style.display = 'none';
-            elements.uploadedImagePreview.innerHTML = '';
-            elements.uploadedFileName.textContent = '';
-            showNotification('🗑️ Imagen eliminada');
-        });
-    }
-    
-    // Event listener para abrir el generador de imágenes
-    const openImageGeneratorBtn = document.getElementById('openImageGeneratorBtn');
-    if (openImageGeneratorBtn) {
-        openImageGeneratorBtn.addEventListener('click', openImageGeneratorModal);
-    }
+
 
     elements.suggestions.addEventListener('click', handleSuggestionClick);
 
@@ -1351,7 +1273,7 @@ function loadActiveAbility() {
     const abilitiesMenuBtn = document.getElementById('abilitiesMenuBtn');
     if (abilitiesMenuBtn) {
         // Remover todas las clases de modo anteriores
-        abilitiesMenuBtn.classList.remove('mode-agent', 'mode-info', 'mode-memory', 'mode-program', 'mode-image');
+        abilitiesMenuBtn.classList.remove('mode-agent', 'mode-info', 'mode-memory', 'mode-program');
         
         // Agregar la clase del modo actual para cambiar el color de los puntitos
         abilitiesMenuBtn.classList.add(`mode-${activeAbility}`);
@@ -1368,8 +1290,7 @@ function updateModeIcon(ability) {
         agent: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>',
         info: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
         memory: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M9 10h6M9 14h6"></path>',
-        program: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line>',
-        image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'
+        program: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line>'
     };
     
     // Actualizar el contenido del SVG
@@ -1379,13 +1300,6 @@ function updateModeIcon(ability) {
 function applyAbility(ability) {
     // Cambiar el modo activo
     activeAbility = ability;
-    
-    // Abrir modal generador si se selecciona habilidad de imagen
-    if (ability === 'image') {
-        openImageGeneratorModal();
-        // No cambiar el modo de navegación, solo abrir el modal
-        return;
-    }
     
     // Actualizar icono del botón
     updateModeIcon(ability);
@@ -1404,7 +1318,7 @@ function applyAbility(ability) {
     const abilitiesMenuBtn = document.getElementById('abilitiesMenuBtn');
     if (abilitiesMenuBtn) {
         // Remover todas las clases de modo anteriores
-        abilitiesMenuBtn.classList.remove('mode-agent', 'mode-info', 'mode-memory', 'mode-program', 'mode-image');
+        abilitiesMenuBtn.classList.remove('mode-agent', 'mode-info', 'mode-memory', 'mode-program');
         
         // Agregar la clase del modo actual para cambiar el color de los puntitos
         abilitiesMenuBtn.classList.add(`mode-${ability}`);
@@ -1475,7 +1389,6 @@ El usuario puede acceder a diferentes modos según sus necesidades:
 - Modo Información: Preguntas y respuestas (este modo)
 - Modo Memoria: Análisis con contexto histórico
 - Modo Programador: Desarrollo de código y aplicaciones
-- Modo Imágenes: Generación de descripciones para crear imágenes
 
 ]\n\n`;
                 break;
@@ -1615,59 +1528,6 @@ LIMITACIONES:
 - Siempre prioriza la seguridad y mejores prácticas
 - Evita código obsoleto o deprecated
 - Mantén la simplicidad cuando sea posible
-
-]\n\n`;
-                break;
-                
-            case 'image':
-                // MODO GENERAR IMÁGENES: Generación de descripciones detalladas para crear imágenes
-                // Incluye: Instrucciones especializadas para crear descripciones de imágenes
-                additionalPrompt = `[INSTRUCCIONES PARA MODO GENERAR IMÁGENES:
-
-You are DevCenter, an expert image description generator. Your task is to create highly detailed, vivid descriptions that will be used to generate images through AI image generation tools.
-
-CORE PRINCIPLES:
-- Be extremely descriptive and specific
-- Focus on visual elements: lighting, colors, composition, mood, style
-- Include technical details: camera angles, perspectives, focal points
-- Describe atmosphere and emotional impact
-- Specify art styles, techniques, or reference artists when relevant
-- Consider context and narrative elements
-
-DESCRIPTION STRUCTURE:
-1. SUBJECT: Main focus and key elements
-2. SETTING: Environment, location, time of day
-3. STYLE: Art style, technique, medium
-4. LIGHTING: Type, direction, intensity, shadows
-5. COLORS: Dominant colors, color schemes, contrasts
-6. COMPOSITION: Framing, perspective, focal points
-7. DETAILS: Textures, patterns, specific objects
-8. MOOD: Atmosphere, emotions, overall feeling
-
-TECHNICAL SPECIFICATIONS:
-- Resolution: High detail, 4K quality
-- Aspect ratio: Specify when important (16:9, 1:1, etc.)
-- Art style references: Photorealistic, digital art, oil painting, etc.
-- Perspective: Close-up, wide shot, aerial view, etc.
-- Lighting: Natural, studio, dramatic, soft, harsh
-
-LANGUAGE REQUIREMENTS:
-- Write in English for maximum compatibility with image generators
-- Use precise, evocative vocabulary
-- Avoid ambiguity - be specific about visual elements
-- Include quantities when relevant (e.g., "three figures", "dozen roses")
-
-SPECIAL CONSIDERATIONS:
-- Cultural sensitivity and appropriateness
-- Avoid copyrighted character references
-- Consider technical feasibility of complex scenes
-- Balance detail with clarity
-
-OUTPUT FORMAT:
-- Single, comprehensive paragraph description
-- No bullet points or sections in final output
-- Flow naturally as one cohesive description
-- Ready to copy-paste into image generation tools
 
 ]\n\n`;
                 break;
@@ -2041,9 +1901,7 @@ function loadCurrentChat() {
         showWelcomeMessage();
     } else {
         chat.messages.forEach(message => {
-            if (message.type === 'image') {
-                addImageMessage(message.imageData, message.aspectRatio, false, message.id, message.timestamp, message.filename || 'imagen_generada');
-            } else {
+            if (message.type !== 'image') {
                 addMessage(message.type, message.content, message.generatedCode, false, message.id, message.timestamp, null, message.aiModel, message.mode);
             }
         });
@@ -2243,14 +2101,13 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
     let modeLabel = '';
     if (type === 'ai') {
         // Nombre del modo - siempre mostrar aunque sea desconocido
-        const modeNames = {
-            'agent': 'Agente',
-            'info': 'Información',
-            'memory': 'Memoria',
-            'program': 'Programador',
-            'image': 'Imágenes',
-            'create_prompt': 'Crear Prompts'
-        };
+            const modeNames = {
+                'agent': 'Agente',
+                'info': 'Información',
+                'memory': 'Memoria',
+                'program': 'Programador',
+                'create_prompt': 'Crear Prompts'
+            };
         const modeName = modeNames[messageMode] || modeNames[activeAbility] || 'Agente';
         
         // Solo mostrar modo, sin modelo
@@ -3023,9 +2880,10 @@ async function decideAgentMode(userPrompt, chatHistory = []) {
         }
 
         // PROMPT SÚPER INTELIGENTE - Máxima precisión en clasificación
+        
         const decisionPrompt = `Eres un clasificador experto y flexible.
 Tu función es entender la intención real del mensaje, no solo las palabras exactas.
-Tu misión: responder solo con el número del modo correcto (1, 2, 3 o 4).
+Tu misión: responder solo con el número del modo correcto (1, 2 o 3).
 No te tomes las reglas literalmente: usa sentido común y contexto.
 Aunque el texto esté mal escrito o tenga errores, interpreta lo que el usuario realmente quiso decir.
 
@@ -3035,123 +2893,44 @@ ${userPrompt}
 HISTORIAL:
 ${historyContext}
 
-🔢 MODOS
+🧭 MODOS
 
-1️⃣ INFO → Conversaciones normales, saludos, dudas o explicaciones sin creación.
-2️⃣ MEMORIA → Referencias a conversaciones pasadas (“recuerdas”, “antes dijiste”, etc.).
-3️⃣ WEB → Solicitudes para crear, generar o mostrar páginas, sitios o HTML.
-4️⃣ IMAGEN → Solicitudes para crear, generar o mostrar imágenes, dibujos, fotos, logos o ilustraciones.
+1️⃣ — INFO → Conversaciones normales, saludos, dudas o explicaciones sin generación.
+2️⃣ — MEMORIA → Referencias a conversaciones pasadas (“recuerdas”, “antes dijiste”, etc.).
+3️⃣ — PROGRAM → Solicitudes para crear, generar o mostrar páginas, sitios o HTML/CSS/JS, prototipos o funciones nuevas.
 
-⚙️ LÓGICA DE CLASIFICACIÓN (CON INTERPRETACIÓN FLEXIBLE)
-🔹 Paso 1 – Intención visual (modo 4)
+🎯 LÓGICA DE CLASIFICACIÓN
+Paso 1 — Intención programadora (modo 3)
+Si el mensaje pide crear o generar páginas web, aplicaciones, código, estructuras HTML, CSS o JavaScript, responde con 3 incluso si el texto está mal escrito.
 
-Si el mensaje pide una imagen, dibujo, foto, logo o ilustración,
-usa modo 4, aunque esté mal escrito, incompleto o tenga errores de ortografía.
+Paso 2 — Referencias pasadas (modo 2)
+Si menciona conversaciones anteriores, responde con 2.
 
-Reconoce variaciones y errores comunes:
+Paso 3 — Conversación general (modo 1)
+Usa 1 cuando no se pida crear nada y se trate de saludos, dudas o explicaciones.
 
-“as imagen”, “az una imgn”, “genera imagn”, “imajen”, “hazme un logo”, “foto de”, “dibuja”, “imagen de”, “haz un dibujo”, “inagen”, “fotito de”, “ilustracion”
-
-También detecta sinónimos o expresiones similares:
-
-“pon una foto de”, “quiero ver”, “crea algo visual”, “haz un retrato”, “hazme un dibujo”
-
-Ejemplos:
-
-“haz una imagen de un dragón” → 4
-
-“as imagen de hola” → 4
-
-“imagen de un paisaje sin sol” → 4
-
-“logo sin texto” → 4
-
-“foto de un auto” → 4
-
-Solo usa otro modo si la negación cancela la acción visual (no describe).
-
-“no quiero imagen”, “sin imagen”, “no hagas dibujo” → 1
-
-🔹 Paso 2 – Intención web (modo 3)
-
-Si el mensaje pide crear o generar una página web, sitio o HTML,
-usa modo 3, incluso si contiene errores de escritura.
-
-Reconoce variaciones:
-
-“crea una web”, “as una pajina”, “haz html”, “genera sitio”, “hazme un website”, “pagina sin css”, “haz pagina”, “estructura html”, “web sencilla”
-
-Ejemplos:
-
-“crea una pagina web sobre autos” → 3
-
-“haz un html de hola” → 3
-
-“pagina de gatos sin css” → 3
-
-🔹 Paso 3 – Referencias pasadas (modo 2)
-
-Si menciona o recuerda mensajes anteriores, usa modo 2.
-Reconoce expresiones con o sin errores:
-
-“te acuerdas”, “recordas”, “recuerdas”, “antes dijiste”, “lo de hace rato”, “lo que hablamos”
-
-Ejemplo:
-
-“recuerdas lo que dijiste antes” → 2
-
-“como te mencioné” → 2
-
-🔹 Paso 4 – Conversación general (modo 1)
-
-Usa modo 1 cuando no se pida crear nada.
-Incluye saludos, charlas, preguntas o explicaciones.
-Ejemplo:
-
-“hola”, “cómo estás”, “qué tal”, “qué es HTML”, “ya no quiero imagen” → 1
-
-🧭 PRIORIDAD DE INTENCIÓN
-
-Si detectas intención de imagen o algo visual → 4
-
-Si detectas intención de web o HTML → 3
-
+⚡ PRIORIDAD DE INTENCIÓN
+Si detectas intención programadora → 3
 Si detectas referencia al pasado → 2
-
 Si ninguna aplica → 1
 
-⚠️ PRINCIPIOS DE ESTABILIDAD
+🛡 PRINCIPIOS DE ESTABILIDAD
+Si el texto es confuso, interpreta lo más probable.
+No te dejes llevar por palabras sueltas: analiza el mensaje completo.
+Si hay “sin” o “no” en la descripción, verifica si niega la acción principal antes de cambiar el modo.
 
-Si el texto es confuso, interpreta lo que más probablemente quiso decir.
-
-No te dejes llevar por palabras sueltas: analiza el significado completo.
-
-Si hay “sin” o “no” dentro de una descripción, no anules la acción principal.
-Ejemplo: “imagen sin fondo” → sigue siendo 4.
-
-Si hay errores ortográficos (“as” en lugar de “haz”, “pajina” en lugar de “página”), corrígelos mentalmente antes de decidir.
-
-Solo devuelve un número (1, 2, 3 o 4), sin explicación adicional.
-
-🧩 EJEMPLOS INTELIGENTES
-
+📚 EJEMPLOS INTELIGENTES
 “hola” → 1
 “cómo estás” → 1
-“haz una imagen de un gato sin fondo” → 4
-“as imagen de hola” → 4
-“foto de un dragón sin alas” → 4
-“genera un logo sin texto” → 4
-“haz una pagina web sin css” → 3
 “crea html simple de hola mundo” → 3
 “recuerdas lo que dijiste antes” → 2
-“no quiero imagen” → 1
+“no quiero que generes código” → 1
 
 RESPUESTA FINAL:
 Devuelve solo el número del modo correcto:
-1, 2, 3 o 4`;
+1, 2 o 3`;
 
-
-        const requestBody = {
+const requestBody = {
             contents: [{
                 parts: [{
                     text: decisionPrompt
@@ -3187,8 +2966,7 @@ Devuelve solo el número del modo correcto:
         const modeMap = {
             1: 'info',
             2: 'memory',
-            3: 'program',
-            4: 'image'
+            3: 'program'
         };
 
         const selectedMode = modeMap[modeNumber] || 'info'; // Por defecto info si no reconoce
@@ -3301,99 +3079,6 @@ async function sendMessage(customPrompt) {
             console.error('Error:', error);
             // Pasar el prompt original para el botón de reintentar
             addMessage('ai', 'Lo siento, ha ocurrido un error al generar la página web. Por favor, inténtalo de nuevo.', null, true, null, null, { prompt: content });
-        }
-
-        isGenerating = false;
-        handleInputChange();
-    } else if (activeAbility === 'image') {
-        // Generar imagen - PRIMERO obtener descripción SIN loading, LUEGO mostrar loading mientras genera imagen
-        isGenerating = true;
-        handleInputChange();
-
-        try {
-            console.log('🎨 Iniciando generación de imagen...');
-            
-            // Variable para controlar si ya se mostró el mensaje temporal
-            let loadingMessageId = null;
-            let descriptionReceived = false;
-            
-            // PASO 1: Timer de 3 segundos para mostrar mensaje de carga si aún no hay descripción
-            const loadingTimer = setTimeout(() => {
-                console.log('⏰ Timer de 3 segundos activado');
-                console.log('⏰ descriptionReceived =', descriptionReceived);
-                if (!descriptionReceived) {
-                    console.log('⏰ Mostrando mensaje de carga después de 3 segundos');
-                    loadingMessageId = addMessage('ai', '✨ Generando descripción de la imagen...\n\n_Esto puede tardar unos momentos_');
-                    console.log('⏰ loadingMessageId =', loadingMessageId);
-                } else {
-                    console.log('⏰ Ya se recibió la descripción, no se muestra mensaje de carga');
-                }
-            }, 3000);
-            
-            console.log('⏰ Timer iniciado, esperando descripción...');
-            
-            // PASO 2: Obtener descripción de la imagen
-            const descriptionResult = await generateImageDescription(content);
-            descriptionReceived = true;
-            console.log('✅ Descripción recibida, descriptionReceived =', descriptionReceived);
-            console.log('✅ loadingMessageId actual =', loadingMessageId);
-            
-            // Limpiar el timer ya que recibimos la descripción
-            clearTimeout(loadingTimer);
-            console.log('⏰ Timer limpiado');
-            
-            // PASO 3: Mostrar la descripción al usuario (reemplazar mensaje temporal si existe)
-            if (loadingMessageId) {
-                console.log('🔄 Reemplazando mensaje temporal con descripción real');
-                // Reemplazar el mensaje temporal con la descripción real
-                updateMessageContent(loadingMessageId, descriptionResult.description);
-            } else {
-                console.log('➕ Agregando descripción directamente (sin mensaje temporal)');
-                // Agregar mensaje normal si no hubo mensaje temporal
-                addMessage('ai', descriptionResult.description);
-            }
-            
-            // PASO 4: Ahora mostrar loading mientras SE GENERA LA IMAGEN REAL
-            showLoading(true);
-            
-            // Generar la imagen real
-            const imageData = await generateImageFromDescription(descriptionResult.imagePrompt, descriptionResult.aspectRatio);
-            
-            hideLoading();
-            console.log('✅ Imagen generada con éxito');
-            
-            // Agregar la imagen generada
-            if (imageData) {
-                addImageMessage(imageData, descriptionResult.aspectRatio, true, null, null, descriptionResult.filename);
-            } else {
-                console.warn('⚠️ No se recibió imageData en el resultado');
-                addMessage('ai', '⚠️ La imagen se generó pero no se pudo mostrar. Por favor, intenta de nuevo.');
-            }
-        } catch (error) {
-            hideLoading();
-            console.error('❌ Error al generar imagen:', error);
-            console.error('Error message:', error.message);
-            console.error('Error stack:', error.stack);
-            
-            // Crear un mensaje de error más informativo
-            let errorMsg = 'Error desconocido al generar la imagen';
-            let suggestions = `💡 **Sugerencias:**\n- Verifica que tu API key de Gemini sea válida\n- Intenta con una descripción más simple\n- Si el error persiste, intenta de nuevo en unos momentos`;
-            
-            // Detectar error de cuota excedida (429)
-            if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')) {
-                errorMsg = '⚠️ **Cuota de API agotada**\n\nHas excedido el límite gratuito de tu API key de Gemini para generar imágenes.';
-                suggestions = `💡 **Soluciones:**\n\n1. **Espera hasta mañana** - La cuota gratuita se renueva cada día\n2. **Usa otra API key** - Crea una nueva en: https://aistudio.google.com/apikey\n3. **Actualiza a plan de pago** - Visita: https://ai.google.dev/pricing\n\n📊 Puedes ver tu uso actual en: https://ai.dev/usage`;
-            } else if (error.message.includes('API error') || error.message.includes('Error al generar imagen')) {
-                errorMsg = 'Hubo un problema al comunicarse con la API de Gemini. Verifica tu conexión y tu API key.';
-            } else if (error.message.includes('Respuesta inválida')) {
-                errorMsg = 'La API respondió con un formato inesperado. Intenta de nuevo en unos momentos.';
-            } else if (error.message.includes('No se pudo generar la imagen')) {
-                errorMsg = 'No se pudo generar la imagen. Intenta con una descripción diferente o más detallada.';
-            } else {
-                errorMsg = error.message;
-            }
-            
-            addMessage('ai', `❌ Lo siento, ha ocurrido un error al generar la imagen:\n\n${errorMsg}\n\n${suggestions}`, null, true, null, null, { prompt: content });
         }
 
         isGenerating = false;
@@ -4668,7 +4353,7 @@ function renderAiConfigPanelByType() {
             mensajesPanel.innerHTML = `
                 <h4 style="margin-bottom:0.7rem;color:#fff;font-size:1.12em;text-shadow:0 0 8px #0ff1ce;">💬 Configuración de mensajes por chat</h4>
                 <div style="display:flex;align-items:center;gap:0.7em;">
-                    <label style="color:#e0e0e0;font-size:1em;font-weight:500;">
+                <label for="maxMessagesPerChat" style="color:#e0e0e0;font-size:1em;font-weight:500;">
                         Máximo de mensajes por chat:
                     </label>
                     <input type="number" id="maxMessagesPerChat" min="1" max="1000" value="${getMaxMessagesPerChat()}" style="border-radius:8px;border:1.5px solid #0ff1ce;padding:0.4em 0.8em;width:90px;font-size:1em;background:#101c2c;color:#0ff1ce;font-weight:bold;box-shadow:0 0 8px #0ff1ce44;">
@@ -5946,913 +5631,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ==== EVENT LISTENERS FOR IMAGE GENERATOR MODAL ====
-document.addEventListener('DOMContentLoaded', () => {
-    // Close modal button
-    const closeModalBtn = document.getElementById('closeImageModal');
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeImageGeneratorModalFn);
-    }
-    
-    // Generate button
-    const generateBtn = document.getElementById('generateImageBtn');
-    if (generateBtn) {
-        generateBtn.addEventListener('click', handleImageGeneration);
-    }
-    
-    // Quick prompt buttons
-    const quickPromptBtns = document.querySelectorAll('.quick-prompt-btn');
-    quickPromptBtns.forEach(btn => {
-        btn.addEventListener('click', handleQuickPrompt);
-    });
-    
-    // Download button
-    const downloadBtn = document.getElementById('downloadGenImageBtn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', downloadGeneratedImage);
-    }
-    
-    // Copy button
-    const copyBtn = document.getElementById('copyGenImageBtn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', copyGeneratedImage);
-    }
-    
-    // Insert button
-    const insertBtn = document.getElementById('insertImageBtn');
-    if (insertBtn) {
-        insertBtn.addEventListener('click', insertGeneratedImage);
-    }
-    
-    // Click on modal overlay to close
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeImageGeneratorModalFn();
-            }
-        });
-    }
-    
-    // Enter key in prompt to generate
-    const promptInput = document.getElementById('imagePromptInput');
-    if (promptInput) {
-        promptInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                handleImageGeneration();
-            }
-        });
-    }
-});
-
-// ============= FUNCIONES DE GENERACIÓN DE IMÁGENES CON GEMINI =============
-
-// Función SOLO para generar la descripción de la imagen
-async function generateImageDescription(prompt, options = {}) {
-    loadUserInfo();
-    loadAiConfigs();
-
-    const chat = getCurrentChat();
-    let historyText = '';
-    if (chat && chat.messages && chat.messages.length > 0) {
-        historyText = chat.messages
-            .filter(m => m.type === 'user' || m.type === 'ai')
-            .slice(-5)
-            .map(m => {
-                if (m.type === 'user') {
-                    return `Usuario: ${m.content}`;
-                } else if (m.type === 'ai') {
-                    return `DevCenter: ${m.content}`;
-                }
-                return '';
-            })
-            .join('\n');
-    }
-
-    // Información del usuario para IA
-    let userInfoText = '';
-    if (userInfo && (userInfo.name || userInfo.custom)) {
-        userInfoText = [
-            userInfo.name ? `Nombre: ${userInfo.name}` : '',
-            userInfo.custom ? `Información personalizada: ${userInfo.custom}` : ''
-        ].filter(Boolean).join('\n');
-    }
-
-    // Obtener el prompt del modo activo
-    const abilityPrompt = await getActiveAbilityPrompt();
-
-    // Obtener notas guardadas
-    const savedNotes = loadSavedNotes();
-    let notesContext = '';
-    if (savedNotes && savedNotes.length > 0) {
-        notesContext = '\n\n📝 **NOTAS GUARDADAS:**\n\n';
-        savedNotes.forEach((note, index) => {
-            const noteDate = new Date(note.timestamp).toLocaleDateString('es-ES');
-            notesContext += `${index + 1}. [${noteDate}] ${note.content}\n`;
-        });
-    }
-
-    // Construir el prompt completo para obtener la descripción
-    const fullPrompt = `${abilityPrompt}${notesContext}${userInfoText ? '\n\n[INFORMACIÓN DEL USUARIO]:\n' + userInfoText : ''}${historyText ? '\n\n[HISTORIAL RECIENTE]:\n' + historyText : ''}\n\n[SOLICITUD DEL USUARIO]:\n${prompt}
-
-IMPORTANTE: Debes responder en español para el usuario, pero la descripción de la imagen debe incluir también una versión en INGLÉS de alta calidad, ya que el modelo funciona mejor con prompts en inglés. Incluye ambas versiones.`;
-
-    // Llamada a la API para obtener la descripción
-    const apiCallForDescription = async (currentAi) => {
-        const requestBody = {
-            contents: [{
-                parts: [{ text: fullPrompt }]
-            }],
-            generationConfig: {
-                temperature: TEMPERATURE,
-                topK: TOP_K,
-                topP: TOP_P,
-                maxOutputTokens: getCurrentMaxTokens()
-            }
-        };
-
-        const response = await fetch(`${currentAi.url}?key=${currentAi.apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API error (${currentAi.name}): ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
-            throw new Error('Respuesta inválida de la API');
-        }
-
-        const textContent = data.candidates[0].content.parts
-            .filter(part => part.text)
-            .map(part => part.text)
-            .join('\n');
-
-        return textContent;
-    };
-
-    console.log('🎨 Paso 1: Generando descripción detallada de la imagen...');
-    const description = await makeApiCallWithFailover(apiCallForDescription, 3);
-    
-    // Extraer el prompt de imagen en INGLÉS (buscar entre llaves {ENGLISH_PROMPT: ...})
-    let imagePrompt = '';
-    let imageFilename = 'imagen_generada';
-    
-    // Intentar extraer el prompt en inglés desde las llaves {}
-    const englishMatch = description.match(/\{ENGLISH_PROMPT:\s*(.+?)\}/si);
-    if (englishMatch) {
-        imagePrompt = englishMatch[1].trim();
-        console.log('✅ Encontrado prompt en inglés');
-    } else {
-        // Si no hay prompt en inglés explícito, buscar la descripción normal
-        const descMatch = description.match(/📝\s*Descripción:\s*(.+?)(?=\n\n|📐|📎|$)/s);
-        if (descMatch) {
-            imagePrompt = descMatch[1].trim();
-        } else {
-            // Último recurso: usar toda la descripción
-            imagePrompt = description;
-        }
-    }
-    
-    // Extraer nombre de archivo (permite nombres con o sin guiones bajos)
-    let originalFilename = '';
-    const filenameMatch = description.match(/📎\s*Nombre archivo:\s*([a-zA-Z0-9_\s]+)/i);
-    if (filenameMatch) {
-        // Guardar el nombre original (con espacios) para mostrar
-        originalFilename = filenameMatch[1].trim();
-        // Normalizar: quitar espacios extras y reemplazar espacios por guiones bajos SOLO para descarga
-        imageFilename = originalFilename.replace(/\s+/g, '_').toLowerCase();
-        console.log(`📎 Nombre original: ${originalFilename}`);
-        console.log(`📎 Nombre para descarga: ${imageFilename}`);
-    }
-    
-    // Extraer aspectRatio si está especificado en la descripción
-    let aspectRatio = options.aspectRatio || DEFAULT_IMAGE_ASPECT_RATIO;
-    const aspectMatch = description.match(/(?:📐|Aspect ratio|Relación de aspecto).*?(\d+:\d+)/i);
-    if (aspectMatch) {
-        aspectRatio = aspectMatch[1];
-        console.log(`📐 Relación de aspecto detectada: ${aspectRatio}`);
-    }
-
-    // Ocultar el ENGLISH_PROMPT del mensaje visible (quitar todo lo que esté entre llaves {})
-    let cleanDescription = description.replace(/\{ENGLISH_PROMPT:.+?\}/si, '').trim();
-    
-    // Mantener el nombre original en la descripción visible (con espacios bonitos)
-    if (filenameMatch && originalFilename) {
-        cleanDescription = cleanDescription.replace(/📎\s*Nombre archivo:\s*[^\n]+/i, `📎 Nombre archivo: ${originalFilename}`);
-    }
-
-    // Detectar y guardar notas automáticamente
-    detectAndSaveNotes(cleanDescription);
-
-    // Retornar solo la descripción y los datos necesarios para generar la imagen después
-    return {
-        description: cleanDescription,
-        imagePrompt: imagePrompt,
-        aspectRatio: aspectRatio,
-        filename: imageFilename
-    };
-}
-
-// Función SOLO para generar la imagen desde un prompt en inglés
-async function generateImageFromDescription(imagePrompt, aspectRatio = '1:1') {
-    loadAiConfigs();
-
-    console.log(`🎨 Generando imagen con Gemini Nano Banana...`);
-    console.log('📝 Prompt para imagen:', imagePrompt.substring(0, 150) + '...');
-    console.log(`📐 Usando aspect ratio: ${aspectRatio}`);
-    console.log(`🤖 Modelo: ${IMAGE_GENERATION_MODEL}`);
-
-    // Usar la API key dedicada para imágenes si está configurada, sino usar la del modelo activo
-    const currentAi = aiConfigs.find(ai => ai.id === selectedAiId);
-    const apiKeyToUse = IMAGE_API_KEY || (currentAi ? currentAi.apiKey : '');
-
-    if (!apiKeyToUse) {
-        throw new Error('No se encontró API key para generación de imágenes');
-    }
-
-    // Llamar a la API de Gemini con GoogleGenAI para generación de imágenes (Nano Banana)
-    const imageApiCall = async () => {
-        // Construir el contenido del prompt
-        let contents = [{ text: imagePrompt }];
-        
-        // Si hay una imagen cargada para edición, agregarla al contenido
-        if (uploadedImageData) {
-            console.log('🖼️ Usando imagen cargada para edición...');
-            contents.push({
-                inlineData: {
-                    mimeType: uploadedImageMimeType,
-                    data: uploadedImageData
-                }
-            });
-        }
-
-        const requestBody = {
-            contents: [{
-                parts: contents
-            }],
-            generation_config: {
-                temperature: 1.0,
-                top_k: 50,
-                top_p: 0.95
-            }
-        };
-
-        const response = await fetch(
-            `${IMAGE_API_BASE_URL}/${IMAGE_GENERATION_MODEL}:generateContent?key=${apiKeyToUse}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            }
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`❌ Error de API Gemini Nano Banana (${IMAGE_GENERATION_MODEL}):`, response.status, errorText);
-            throw new Error(`Error al generar imagen con ${IMAGE_GENERATION_MODEL} (${response.status}): ${errorText}`);
-        }
-
-        const data = await response.json();
-        console.log('📦 Respuesta recibida de API Gemini');
-
-        // Verificar que la respuesta tenga las imágenes generadas
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content.parts) {
-            console.error('❌ Estructura de respuesta inválida:', JSON.stringify(data, null, 2));
-            throw new Error('Respuesta inválida de la API de Gemini');
-        }
-
-        // Buscar la parte con inlineData (imagen generada)
-        let imageBase64 = null;
-        for (const part of data.candidates[0].content.parts) {
-            if (part.inlineData && part.inlineData.data) {
-                imageBase64 = part.inlineData.data;
-                break;
-            }
-        }
-
-        if (!imageBase64) {
-            console.error('❌ No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
-            throw new Error('No se generó imagen en la respuesta de Gemini');
-        }
-
-        console.log('✅ Imagen generada exitosamente con Gemini Nano Banana');
-        return imageBase64;
-    };
-
-    const imageData = await makeApiCallWithFailover(imageApiCall, 3);
-    return imageData;
-}
-
-// Función para manejar la carga de imágenes para edición
-function handleImageUpload(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = (event) => {
-            uploadedImageData = event.target.result.split(',')[1]; // Extraer base64 sin el prefijo
-            uploadedImageMimeType = file.type || 'image/png';
-            console.log('✅ Imagen cargada para edición:', file.name, `(${uploadedImageMimeType})`);
-            resolve({
-                name: file.name,
-                size: file.size,
-                type: uploadedImageMimeType,
-                preview: event.target.result
-            });
-        };
-        
-        reader.onerror = () => {
-            reject(new Error('Error al leer el archivo de imagen'));
-        };
-        
-        reader.readAsDataURL(file);
-    });
-}
-
-// Función para limpiar la imagen cargada
-function clearUploadedImage() {
-    uploadedImageData = null;
-    uploadedImageMimeType = 'image/png';
-    console.log('🗑️ Imagen cargada eliminada');
-}
-
-// ==== IMAGE GENERATOR MODAL FUNCTIONS ====
-
-// Abre el modal del generador de imágenes
-function openImageGeneratorModal() {
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Cierra el modal del generador de imágenes
-function closeImageGeneratorModalFn() {
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        // Limpiar campos
-        const promptInput = document.getElementById('imagePromptInput');
-        if (promptInput) promptInput.value = '';
-        const imgPlaceholder = document.getElementById('imgPlaceholder');
-        const imgLoading = document.getElementById('imgLoading');
-        const generatedImg = document.getElementById('generatedImg');
-        const imageActions = document.getElementById('imageActions');
-        if (imgPlaceholder) imgPlaceholder.classList.remove('hidden');
-        if (imgLoading) imgLoading.classList.add('hidden');
-        if (generatedImg) {
-            generatedImg.classList.add('hidden');
-            generatedImg.src = '';
-        }
-        if (imageActions) imageActions.classList.add('hidden');
-    }
-}
-
-// Genera imagen con reintentos exponenciales
-async function generateImageWithRetry(prompt, maxRetries = 4) {
-    let retryCount = 0;
-    const delays = [1000, 2000, 4000, 8000]; // ms
-    
-    while (retryCount < maxRetries) {
-        try {
-            return await generateImageFromDescription(prompt);
-        } catch (error) {
-            retryCount++;
-            if (retryCount >= maxRetries) {
-                throw new Error(`Error después de ${maxRetries} intentos: ${error.message}`);
-            }
-            const delay = delays[retryCount - 1];
-            console.log(`🔄 Reintentando en ${delay/1000}s... (intento ${retryCount}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
-}
-
-// Maneja la generación de imagen desde el modal
-async function handleImageGeneration() {
-    const promptInput = document.getElementById('imagePromptInput');
-    const prompt = promptInput.value.trim();
-    
-    if (!prompt) {
-        showNotification('Por favor, introduce una descripción', 'error');
-        return;
-    }
-    
-    const imgPlaceholder = document.getElementById('imgPlaceholder');
-    const imgLoading = document.getElementById('imgLoading');
-    const generatedImg = document.getElementById('generatedImg');
-    const imageError = document.getElementById('imageError');
-    const imageErrorText = document.getElementById('imageErrorText');
-    
-    // Mostrar loading
-    if (imgPlaceholder) imgPlaceholder.classList.add('hidden');
-    if (imgLoading) imgLoading.classList.remove('hidden');
-    if (imageError) imageError.classList.add('hidden');
-    if (generatedImg) generatedImg.classList.add('hidden');
-    
-    try {
-        const imageData = await generateImageWithRetry(prompt);
-        if (imageData) {
-            if (generatedImg) {
-                generatedImg.src = imageData;
-                generatedImg.classList.remove('hidden');
-            }
-            if (imgLoading) imgLoading.classList.add('hidden');
-            const imageActions = document.getElementById('imageActions');
-            if (imageActions) imageActions.classList.remove('hidden');
-            
-            // Guardar la imagen generada
-            window.lastGeneratedImage = imageData;
-        }
-    } catch (error) {
-        console.error('Error generating image:', error);
-        if (imageError) {
-            imageErrorText.textContent = error.message;
-            imageError.classList.remove('hidden');
-        }
-        if (imgLoading) imgLoading.classList.add('hidden');
-        showNotification('Error al generar imagen: ' + error.message, 'error');
-    }
-}
-
-// Descarga la imagen generada
-function downloadGeneratedImage() {
-    if (!window.lastGeneratedImage) {
-        showNotification('No hay imagen para descargar', 'error');
-        return;
-    }
-    
-    const link = document.createElement('a');
-    link.href = window.lastGeneratedImage;
-    link.download = `imagen-generada-${Date.now()}.png`;
-    link.click();
-    showNotification('Imagen descargada', 'success');
-}
-
-// Copia la imagen al portapapeles
-async function copyGeneratedImage() {
-    if (!window.lastGeneratedImage) {
-        showNotification('No hay imagen para copiar', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch(window.lastGeneratedImage);
-        const blob = await response.blob();
-        await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob })
-        ]);
-        showNotification('Imagen copiada al portapapeles', 'success');
-    } catch (error) {
-        showNotification('Error al copiar imagen: ' + error.message, 'error');
-    }
-}
-
-// Inserta la imagen generada en el chat
-function insertGeneratedImage() {
-    if (!window.lastGeneratedImage) {
-        showNotification('No hay imagen para insertar', 'error');
-        return;
-    }
-    
-    const aspectRatio = document.getElementById('imageAspectRatio').value || '1:1';
-    addImageMessage(window.lastGeneratedImage, aspectRatio);
-    closeImageGeneratorModalFn();
-    showNotification('Imagen insertada en el chat', 'success');
-}
-
-// Maneja los prompts rápidos
-function handleQuickPrompt(event) {
-    const prompt = event.currentTarget.dataset.prompt;
-    const promptInput = document.getElementById('imagePromptInput');
-    if (promptInput) {
-        promptInput.value = prompt;
-        promptInput.focus();
-    }
-}
-
-// Función para agregar mensaje con imagen al chat
-function addImageMessage(imageData, aspectRatio = '1:1', save = true, messageId = null, timestamp = null, filename = 'imagen_generada') {
-    messageId = messageId || generateId();
-    const messagesDiv = document.getElementById('messages');
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ai-message';
-    messageDiv.dataset.messageId = messageId;
-    
-    // Crear elemento de imagen con mejor visualización
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'generated-image-container';
-    imgContainer.style.cssText = `
-        margin: 1.5rem 0;
-        max-width: 100%;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-        padding: 0.5rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    `;
-    
-    // Hover effect para el contenedor
-    imgContainer.onmouseover = () => {
-        imgContainer.style.transform = 'translateY(-2px)';
-        imgContainer.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.1)';
-    };
-    imgContainer.onmouseout = () => {
-        imgContainer.style.transform = 'translateY(0)';
-        imgContainer.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)';
-    };
-    
-    // Wrapper interno para la imagen
-    const imgWrapper = document.createElement('div');
-    imgWrapper.style.cssText = 'border-radius: 12px; overflow: hidden; background: #f8f9fa; cursor: pointer;';
-    
-    const img = document.createElement('img');
-    img.src = `data:image/png;base64,${imageData}`;
-    img.alt = 'Imagen generada por IA con Gemini';
-    img.style.cssText = 'width: 100%; height: auto; display: block;';
-    img.loading = 'lazy';
-    
-    // Agregar efecto de carga
-    img.style.opacity = '0';
-    img.onload = () => {
-        img.style.transition = 'opacity 0.5s ease-in';
-        img.style.opacity = '1';
-    };
-    
-    // Abrir modal al hacer clic en la imagen
-    imgWrapper.onclick = () => {
-        openImageModal(imageData, aspectRatio, filename);
-    };
-    
-    imgWrapper.appendChild(img);
-    
-    // Panel de información y acciones
-    const actionsPanel = document.createElement('div');
-    actionsPanel.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 0.75rem;
-        padding: 0.5rem;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    `;
-    
-    // Info de aspect ratio
-    const infoDiv = document.createElement('div');
-    infoDiv.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #6b7280;';
-    infoDiv.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-        </svg>
-        <span>Ratio: <strong>${aspectRatio}</strong></span>
-    `;
-    
-    // Botón de descarga mejorado
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'download-image-btn';
-    downloadBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <span>Descargar</span>
-    `;
-    downloadBtn.style.cssText = `
-        padding: 0.6rem 1.2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-    `;
-    downloadBtn.onmouseover = () => {
-        downloadBtn.style.transform = 'scale(1.05) translateY(-1px)';
-        downloadBtn.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
-    };
-    downloadBtn.onmouseout = () => {
-        downloadBtn.style.transform = 'scale(1) translateY(0)';
-        downloadBtn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
-    };
-    downloadBtn.onclick = () => {
-        const link = document.createElement('a');
-        link.href = `data:image/png;base64,${imageData}`;
-        link.download = `${filename}.png`;
-        link.click();
-        
-        // Feedback visual
-        const originalText = downloadBtn.innerHTML;
-        downloadBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>¡Descargada!</span>
-        `;
-        downloadBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-        
-        setTimeout(() => {
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        }, 2000);
-    };
-    
-    // Ensamblar componentes
-    actionsPanel.appendChild(infoDiv);
-    actionsPanel.appendChild(downloadBtn);
-    
-    imgContainer.appendChild(imgWrapper);
-    imgContainer.appendChild(actionsPanel);
-    messageDiv.appendChild(imgContainer);
-    
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
-    // Guardar en el chat actual solo si save es true
-    if (save) {
-        const chat = getCurrentChat();
-        if (chat) {
-            if (!chat.messages) chat.messages = [];
-            chat.messages.push({
-                id: messageId,
-                type: 'image',
-                imageData: imageData,
-                aspectRatio: aspectRatio,
-                filename: filename,
-                timestamp: timestamp || new Date().toISOString()
-            });
-            updateCurrentChat({});
-        }
-        console.log(`✅ Imagen agregada y guardada en el chat con ID: ${messageId}`);
-    } else {
-        console.log(`✅ Imagen renderizada (sin guardar) con ID: ${messageId}`);
-    }
-    
-    return messageId;
-}
-
-// Función para abrir modal de imagen en pantalla grande
-function openImageModal(imageData, aspectRatio, filename = 'imagen_generada') {
-    // Crear overlay del modal
-    const modalOverlay = document.createElement('div');
-    modalOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        backdrop-filter: blur(10px);
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    // Contenedor de botones superiores
-    const topButtons = document.createElement('div');
-    topButtons.style.cssText = `
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        display: flex;
-        gap: 12px;
-        z-index: 10000;
-    `;
-    
-    // Estilo base para los botones
-    const buttonBaseStyle = `
-        padding: 14px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        color: white;
-    `;
-    
-    // Botón de compartir
-    const shareBtn = document.createElement('button');
-    shareBtn.title = 'Compartir imagen';
-    shareBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
-            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-        </svg>
-    `;
-    shareBtn.style.cssText = buttonBaseStyle;
-    shareBtn.onmouseover = () => {
-        shareBtn.style.background = 'rgba(102, 126, 234, 0.8)';
-        shareBtn.style.transform = 'scale(1.1)';
-    };
-    shareBtn.onmouseout = () => {
-        shareBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-        shareBtn.style.transform = 'scale(1)';
-    };
-    shareBtn.onclick = async () => {
-        try {
-            const response = await fetch(`data:image/png;base64,${imageData}`);
-            const blob = await response.blob();
-            const file = new File([blob], `${filename}.png`, { type: 'image/png' });
-            
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Imagen generada con IA',
-                    text: 'Mira esta imagen que generé con IA'
-                });
-            } else {
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
-                alert('✅ Imagen copiada al portapapeles');
-            }
-        } catch (error) {
-            console.error('Error al compartir:', error);
-            alert('No se pudo compartir la imagen');
-        }
-    };
-    
-    // Botón de descargar
-    const downloadBtn = document.createElement('button');
-    downloadBtn.title = 'Descargar imagen';
-    downloadBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-    `;
-    downloadBtn.style.cssText = buttonBaseStyle;
-    downloadBtn.onmouseover = () => {
-        downloadBtn.style.background = 'rgba(102, 126, 234, 0.8)';
-        downloadBtn.style.transform = 'scale(1.1)';
-    };
-    downloadBtn.onmouseout = () => {
-        downloadBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-        downloadBtn.style.transform = 'scale(1)';
-    };
-    downloadBtn.onclick = () => {
-        const link = document.createElement('a');
-        link.href = `data:image/png;base64,${imageData}`;
-        link.download = `${filename}.png`;
-        link.click();
-    };
-    
-    // Botón de pantalla completa
-    const fullscreenBtn = document.createElement('button');
-    fullscreenBtn.title = 'Ver en pantalla completa';
-    fullscreenBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-        </svg>
-    `;
-    fullscreenBtn.style.cssText = buttonBaseStyle;
-    fullscreenBtn.onmouseover = () => {
-        fullscreenBtn.style.background = 'rgba(102, 126, 234, 0.8)';
-        fullscreenBtn.style.transform = 'scale(1.1)';
-    };
-    fullscreenBtn.onmouseout = () => {
-        fullscreenBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-        fullscreenBtn.style.transform = 'scale(1)';
-    };
-    fullscreenBtn.onclick = () => {
-        if (modalOverlay.requestFullscreen) {
-            modalOverlay.requestFullscreen();
-        } else if (modalOverlay.webkitRequestFullscreen) {
-            modalOverlay.webkitRequestFullscreen();
-        } else if (modalOverlay.msRequestFullscreen) {
-            modalOverlay.msRequestFullscreen();
-        }
-    };
-    
-    // Detectar cambios de pantalla completa y ocultar/mostrar el botón
-    const handleFullscreenChange = () => {
-        const isFullscreen = !!(document.fullscreenElement || 
-                               document.webkitFullscreenElement || 
-                               document.msFullscreenElement);
-        
-        if (isFullscreen) {
-            fullscreenBtn.style.display = 'none'; // Ocultar botón en fullscreen
-        } else {
-            fullscreenBtn.style.display = 'flex'; // Mostrar botón cuando salga de fullscreen
-        }
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    
-    // Botón de cerrar (X)
-    const closeBtn = document.createElement('button');
-    closeBtn.title = 'Cerrar';
-    closeBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-    `;
-    closeBtn.style.cssText = buttonBaseStyle;
-    closeBtn.onmouseover = () => {
-        closeBtn.style.background = 'rgba(237, 66, 69, 0.8)';
-        closeBtn.style.transform = 'scale(1.1)';
-    };
-    closeBtn.onmouseout = () => {
-        closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-        closeBtn.style.transform = 'scale(1)';
-    };
-    closeBtn.onclick = () => {
-        // Limpiar event listeners de fullscreen
-        document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-        document.body.removeChild(modalOverlay);
-    };
-    
-    topButtons.appendChild(shareBtn);
-    topButtons.appendChild(downloadBtn);
-    topButtons.appendChild(fullscreenBtn);
-    topButtons.appendChild(closeBtn);
-    
-    // Contenedor de la imagen
-    const imageContainer = document.createElement('div');
-    imageContainer.style.cssText = `
-        max-width: 95vw;
-        max-height: 90vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    `;
-    
-    const modalImg = document.createElement('img');
-    modalImg.src = `data:image/png;base64,${imageData}`;
-    modalImg.alt = 'Imagen generada por IA';
-    modalImg.style.cssText = `
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    `;
-    
-    imageContainer.appendChild(modalImg);
-    
-    // Cerrar al hacer clic en el fondo
-    modalOverlay.onclick = (e) => {
-        if (e.target === modalOverlay) {
-            // Limpiar event listeners de fullscreen
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-            document.body.removeChild(modalOverlay);
-        }
-    };
-    
-    // Cerrar con tecla ESC
-    const handleEscape = (e) => {
-        if (e.key === 'Escape') {
-            // Limpiar event listeners de fullscreen
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-            document.body.removeChild(modalOverlay);
-            document.removeEventListener('keydown', handleEscape);
-        }
-    };
-    document.addEventListener('keydown', handleEscape);
-    
-    modalOverlay.appendChild(topButtons);
-    modalOverlay.appendChild(imageContainer);
-    document.body.appendChild(modalOverlay);
-}
-
-
 
 // =================== MENÚ DESPLEGABLE DEL HEADER ===================
 const headerMenuBtn = document.getElementById('headerMenuBtn');
@@ -7403,368 +6181,4 @@ function generateCoolWelcomeIcon() {
 
 // Generar icono épico al cargar la página
 generateCoolWelcomeIcon();
-
-// =================== 🎨 MODAL GENERADOR DE IMÁGENES - GEMINI EPIC STUDIO ===================
-
-// Estado del modal generador
-let generatorModalState = {
-    selectedImage: null,
-    selectedImageBase64: null,
-    selectedImageMimeType: 'image/png',
-    mode: 'text-to-image',
-    lastGeneratedImage: null
-};
-
-// Abrir el modal generador desde el menú de habilidades
-function openImageGeneratorModal() {
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Cerrar el modal generador
-function closeImageGeneratorModal() {
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        // Limpiar estado
-        generatorModalState.selectedImage = null;
-        generatorModalState.selectedImageBase64 = null;
-        generatorModalState.mode = 'text-to-image';
-        
-        // Restaurar UI
-        const imageDropZone = document.getElementById('imageDropZone');
-        const imagePreview = document.getElementById('imagePreview');
-        const removeImageBtn = document.getElementById('removeImageBtn');
-        if (imageDropZone) imageDropZone.style.display = 'flex';
-        if (imagePreview) imagePreview.style.display = 'none';
-        if (removeImageBtn) removeImageBtn.style.display = 'none';
-    }
-}
-
-// Manejar el upload de imágenes en el modal generador
-function handleGeneratorImageUpload(event) {
-    const file = event.target.files[0] || (event.dataTransfer && event.dataTransfer.files[0]);
-    if (!file) return;
-    
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-        showNotification('Por favor, selecciona una imagen válida', 'error');
-        return;
-    }
-    
-    // Leer archivo y convertir a base64
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        generatorModalState.selectedImage = file;
-        generatorModalState.selectedImageBase64 = e.target.result;
-        generatorModalState.selectedImageMimeType = file.type;
-        generatorModalState.mode = 'image-to-image';
-        
-        // Mostrar preview
-        const imageDropZone = document.getElementById('imageDropZone');
-        const imagePreview = document.getElementById('imagePreview');
-        const removeImageBtn = document.getElementById('removeImageBtn');
-        const modeStatus = document.getElementById('modeStatus');
-        
-        if (imageDropZone) imageDropZone.style.display = 'none';
-        if (imagePreview) {
-            imagePreview.src = e.target.result;
-            imagePreview.style.display = 'block';
-        }
-        if (removeImageBtn) removeImageBtn.style.display = 'block';
-        if (modeStatus) modeStatus.textContent = '🖼️ Modo: Imagen a Imagen (Edición)';
-        
-        showNotification('Imagen cargada correctamente', 'success');
-    };
-    reader.readAsDataURL(file);
-}
-
-// Remover imagen seleccionada
-function removeGeneratorImage() {
-    generatorModalState.selectedImage = null;
-    generatorModalState.selectedImageBase64 = null;
-    generatorModalState.mode = 'text-to-image';
-    
-    const imageDropZone = document.getElementById('imageDropZone');
-    const imagePreview = document.getElementById('imagePreview');
-    const removeImageBtn = document.getElementById('removeImageBtn');
-    const modeStatus = document.getElementById('modeStatus');
-    
-    if (imageDropZone) imageDropZone.style.display = 'flex';
-    if (imagePreview) imagePreview.style.display = 'none';
-    if (removeImageBtn) removeImageBtn.style.display = 'none';
-    if (modeStatus) modeStatus.textContent = '✨ Modo: Texto a Imagen';
-}
-
-// Generar imagen desde el modal generador con reintentos
-async function generatorModalGenerateImage() {
-    const promptInput = document.getElementById('imagePrompt');
-    const prompt = promptInput.value.trim();
-    
-    if (!prompt) {
-        showNotification('Por favor, ingresa una descripción', 'error');
-        return;
-    }
-    
-    const generateBtn = document.getElementById('generateImageBtn');
-    const canvas = document.getElementById('generatedImageCanvas');
-    const placeholder = document.querySelector('.glass-canvas-placeholder');
-    const loadingDiv = document.querySelector('.glass-canvas-loading');
-    const loadingText = document.getElementById('imageLoadingText');
-    
-    try {
-        // Mostrar estado de carga
-        if (placeholder) placeholder.style.display = 'none';
-        if (loadingDiv) loadingDiv.style.display = 'flex';
-        if (generateBtn) generateBtn.disabled = true;
-        
-        // Generar imagen con reintentos
-        let imageData = null;
-        let retryCount = 0;
-        const delays = [1000, 2000, 4000, 8000];
-        
-        while (retryCount < 5) {
-            try {
-                if (generatorModalState.mode === 'image-to-image' && generatorModalState.selectedImageBase64) {
-                    // Generar a partir de imagen (edición)
-                    // Usar el modelo gemini-2.5-flash-image-preview para edición
-                    imageData = await generateImageFromBase64(
-                        generatorModalState.selectedImageBase64,
-                        prompt,
-                        generatorModalState.selectedImageMimeType
-                    );
-                } else {
-                    // Generar texto a imagen
-                    imageData = await generateImageFromDescription(prompt);
-                }
-                break;
-            } catch (error) {
-                retryCount++;
-                if (retryCount >= 5) throw error;
-                
-                const delay = delays[Math.min(retryCount - 1, delays.length - 1)];
-                if (loadingText) loadingText.textContent = `Reintentando en ${delay/1000}s... (${retryCount}/5)`;
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
-        
-        if (imageData) {
-            // Mostrar imagen generada
-            generatorModalState.lastGeneratedImage = imageData;
-            
-            if (canvas) {
-                canvas.src = imageData;
-                canvas.style.display = 'block';
-            }
-            
-            // Mostrar botones de acción
-            const actionsDiv = document.querySelector('.glass-canvas-actions');
-            if (actionsDiv) actionsDiv.style.display = 'flex';
-            
-            if (loadingDiv) loadingDiv.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'none';
-            
-            showNotification('✨ Imagen generada exitosamente', 'success');
-        }
-    } catch (error) {
-        console.error('Error generando imagen:', error);
-        if (placeholder) {
-            placeholder.style.display = 'flex';
-            placeholder.innerHTML = `<p style="color: #ff6b6b;">❌ ${error.message}</p>`;
-        }
-        if (loadingDiv) loadingDiv.style.display = 'none';
-        showNotification('Error: ' + error.message, 'error');
-    } finally {
-        if (generateBtn) generateBtn.disabled = false;
-    }
-}
-
-// Descargar imagen generada desde el modal
-function generatorDownloadImage() {
-    if (!generatorModalState.lastGeneratedImage) {
-        showNotification('No hay imagen para descargar', 'error');
-        return;
-    }
-    
-    const link = document.createElement('a');
-    link.href = generatorModalState.lastGeneratedImage;
-    link.download = `imagen-${Date.now()}.png`;
-    link.click();
-    showNotification('Imagen descargada ✓', 'success');
-}
-
-// Copiar imagen al portapapeles
-async function generatorCopyImage() {
-    if (!generatorModalState.lastGeneratedImage) {
-        showNotification('No hay imagen para copiar', 'error');
-        return;
-    }
-    
-    try {
-        const imageBlob = await fetch(generatorModalState.lastGeneratedImage).then(r => r.blob());
-        await navigator.clipboard.write([
-            new ClipboardItem({
-                [imageBlob.type]: imageBlob
-            })
-        ]);
-        showNotification('Imagen copiada al portapapeles ✓', 'success');
-    } catch (error) {
-        console.error('Error copying image:', error);
-        showNotification('Error al copiar imagen', 'error');
-    }
-}
-
-// Event listeners para el modal generador
-document.addEventListener('DOMContentLoaded', () => {
-    // Botón de cerrar
-    const closeBtn = document.getElementById('closeGeneratorBtn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeImageGeneratorModal);
-    }
-    
-    // Overlay para cerrar
-    const modal = document.getElementById('imageGeneratorModal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeImageGeneratorModal();
-            }
-        });
-    }
-    
-    // Input de archivo de imagen
-    const imageUploadInput = document.getElementById('imageUploadInput');
-    if (imageUploadInput) {
-        imageUploadInput.addEventListener('change', handleGeneratorImageUpload);
-    }
-    
-    // Dropzone para imágenes
-    const imageDropZone = document.getElementById('imageDropZone');
-    if (imageDropZone) {
-        imageDropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.8)';
-            imageDropZone.style.background = 'rgba(59, 130, 246, 0.1)';
-        });
-        
-        imageDropZone.addEventListener('dragleave', () => {
-            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-            imageDropZone.style.background = 'rgba(59, 130, 246, 0.02)';
-        });
-        
-        imageDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            imageDropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-            imageDropZone.style.background = 'rgba(59, 130, 246, 0.02)';
-            handleGeneratorImageUpload(e);
-        });
-        
-        imageDropZone.addEventListener('click', () => {
-            imageUploadInput.click();
-        });
-    }
-    
-    // Botón de remover imagen
-    const removeImageBtn = document.getElementById('removeImageBtn');
-    if (removeImageBtn) {
-        removeImageBtn.addEventListener('click', removeGeneratorImage);
-    }
-    
-    // Botón de generar
-    const generateBtn = document.getElementById('generateImageBtn');
-    if (generateBtn) {
-        generateBtn.addEventListener('click', generatorModalGenerateImage);
-    }
-    
-    // Botón de descargar
-    const downloadBtn = document.getElementById('downloadGeneratedImageBtn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', generatorDownloadImage);
-    }
-    
-    // Botón de copiar
-    const copyBtn = document.getElementById('copyGeneratedImageBtn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', generatorCopyImage);
-    }
-    
-    // Enter en el prompt para generar
-    const promptInput = document.getElementById('imagePrompt');
-    if (promptInput) {
-        promptInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                generatorModalGenerateImage();
-            }
-        });
-    }
-});
-
-// Función auxiliar para generar imagen a partir de base64 (para edición)
-async function generateImageFromBase64(base64Data, prompt, mimeType = 'image/png') {
-    // Esta función usa gemini-2.5-flash-image-preview para edición
-    const apiKey = 'AIzaSyCSbN7XjwLUB3a--u3KTzUN1sV1vfU_RP8';
-    const model = 'gemini-2.5-flash-image-preview';
-    const url = `${IMAGE_API_BASE_URL}/${model}:generateContent?key=${apiKey}`;
-    
-    // Convertir el base64 a formato de parte de contenido
-    const imageBase64 = base64Data.split(',')[1];
-    
-    const requestBody = {
-        contents: [{
-            parts: [
-                {
-                    text: prompt
-                },
-                {
-                    inline_data: {
-                        mime_type: mimeType,
-                        data: imageBase64
-                    }
-                }
-            ]
-        }],
-        generation_config: {
-            temperature: 1.0,
-            top_k: 50,
-            top_p: 0.95,
-            max_output_tokens: 1024,
-            response_modalities: ["IMAGE"],
-            aspect_ratio: DEFAULT_IMAGE_ASPECT_RATIO
-        }
-    };
-    
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || 'Error en la generación de imagen');
-        }
-        
-        const data = await response.json();
-        const imageContent = data.candidates?.[0]?.content?.parts?.find(p => p.inline_data);
-        
-        if (imageContent?.inline_data?.data) {
-            return `data:${imageContent.inline_data.mime_type};base64,${imageContent.inline_data.data}`;
-        } else {
-            throw new Error('No se recibió imagen en la respuesta');
-        }
-    } catch (error) {
-        console.error('Error en generateImageFromBase64:', error);
-        throw error;
-    }
-}
-
-// =================== FIN MODAL GENERADOR DE IMÁGENES ===================
-
+// 6266
