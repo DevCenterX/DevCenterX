@@ -422,7 +422,7 @@
         }
 
         async function callGeminiAPI(prompt, schema) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: "Eres una IA corporativa de grado empresarial. Responde EXCLUSIVAMENTE en JSON puro, sin markdown, ni saludos." }] },
