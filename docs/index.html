@@ -122,6 +122,12 @@
         <!-- UI DE ENTRADA (Formulario) -->
         <div id="mainContainer" class="w-full bg-slate-900/60 backdrop-blur-2xl border border-slate-700/50 rounded-[2rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] p-6 sm:p-10 transform transition-all duration-700 ease-in-out opacity-0 scale-95 origin-center hidden">
                 
+                <!-- Botón de Regreso -->
+                <a href="/" class="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 transition-all duration-300 text-slate-300 hover:text-blue-400 text-sm font-medium">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>Volver a Inicio</span>
+                </a>
+
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-10 text-center sm:text-left">
                     <div class="mx-auto sm:mx-0 bg-gradient-to-tr from-blue-600 to-purple-600 p-4 rounded-3xl shadow-[0_0_30px_rgba(96,165,250,0.4)] animate-pulse-glow flex-shrink-0">
                         <i data-lucide="zap" class="w-10 h-10 text-white"></i>
@@ -271,6 +277,24 @@
         let fileData = null;
         let currentType = null;
 
+        // --- Cargar configuración preseleccionada ---
+        window.addEventListener('load', () => {
+            try {
+                const config = JSON.parse(localStorage.getItem('devcenter_docs_config') || '{}');
+                if (config.docType) {
+                    // Preseleccionar el tipo de documento
+                    const docTypeRadio = document.querySelector(`input[name="docType"][value="${config.docType}"]`);
+                    if (docTypeRadio) {
+                        docTypeRadio.checked = true;
+                    }
+                    // Limpiar la configuración después de usarla
+                    localStorage.removeItem('devcenter_docs_config');
+                }
+            } catch (e) {
+                console.warn('Error al cargar configuración:', e);
+            }
+        });
+
         // --- Esquemas JSON ---
         const wordSchema = { type: "OBJECT", properties: { title: { type: "STRING" }, subtitle: { type: "STRING" }, sections: { type: "ARRAY", items: { type: "OBJECT", properties: { heading: { type: "STRING" }, content: { type: "STRING" } } } } } };
         const pptSchema = { type: "OBJECT", properties: { title: { type: "STRING" }, subtitle: { type: "STRING" }, slides: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, bullets: { type: "ARRAY", items: { type: "STRING" } } } } } } };
@@ -345,6 +369,24 @@
                 await cambiarEstadoVisual('loadingState', 'resultArea', true);
                 
                 document.getElementById('downloadBtn').onclick = () => {
+                    const timestamp = new Date().toISOString();
+                    const filename = `document_${Date.now()}`;
+                    
+                    // Guardar en localStorage
+                    try {
+                        const docs = JSON.parse(localStorage.getItem('devcenter_generated_docs') || '[]');
+                        const docTypeLabel = currentType === 'word' ? 'word' : currentType === 'ppt' ? 'powerpoint' : 'excel';
+                        docs.push({
+                            docType: docTypeLabel,
+                            fileName: fileData.title || filename,
+                            timestamp: timestamp,
+                            data: fileData
+                        });
+                        localStorage.setItem('devcenter_generated_docs', JSON.stringify(docs));
+                    } catch (e) {
+                        console.warn('Error al guardar documento:', e);
+                    }
+                    
                     if(currentType === 'word') generarWord(fileData);
                     else if(currentType === 'ppt') generarPPT(fileData);
                     else generarExcel(fileData);

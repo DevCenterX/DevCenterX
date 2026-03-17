@@ -773,5 +773,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==================== GENERATED DOCUMENTS MANAGEMENT ====================
+  const docsBtn = document.getElementById('docsBtn');
+  const generatedDocsSection = document.getElementById('generatedDocsSection');
+  const generatedDocsList = document.getElementById('generatedDocsList');
+
+  // Cargar y mostrar documentos generados
+  function loadGeneratedDocs() {
+    try {
+      const docs = JSON.parse(localStorage.getItem('devcenter_generated_docs') || '[]');
+      if (docs.length === 0) {
+        if (generatedDocsSection) generatedDocsSection.classList.add('hidden');
+        return;
+      }
+
+      if (generatedDocsSection) generatedDocsSection.classList.remove('hidden');
+      if (generatedDocsList) {
+        generatedDocsList.innerHTML = '';
+        docs.slice(-5).reverse().forEach((doc, index) => {
+          const docEl = document.createElement('button');
+          docEl.type = 'button';
+          docEl.className = 'w-full text-left px-3 py-2 rounded bg-slate-700/50 hover:bg-slate-600 text-xs text-slate-300 hover:text-slate-100 transition-colors flex justify-between items-center';
+          const date = new Date(doc.timestamp).toLocaleDateString('es-ES', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+          docEl.innerHTML = `
+            <span>${doc.docType === 'word' ? '📄 Word' : doc.docType === 'powerpoint' ? '📊 PowerPoint' : '📋 Excel'} - ${doc.fileName || 'Sin nombre'}</span>
+            <span class="text-slate-500 text-xs">${date}</span>
+          `;
+          docEl.addEventListener('click', () => goToDocsWithConfig(doc.docType, doc.fileName));
+          if (generatedDocsList) generatedDocsList.appendChild(docEl);
+        });
+      }
+    } catch (e) {
+      console.warn('Error al cargar documentos generados:', e);
+    }
+  }
+
+  // Ir a docs con configuración preseleccionada
+  function goToDocsWithConfig(docType, fileName) {
+    localStorage.setItem('devcenter_docs_config', JSON.stringify({
+      docType: docType,
+      fileName: fileName,
+      timestamp: new Date().toISOString()
+    }));
+    window.location.href = '/docs/';
+  }
+
+  // Click en botón Docs
+  if (docsBtn) {
+    docsBtn.addEventListener('click', () => {
+      window.location.href = '/docs/';
+    });
+  }
+
+  // Cargar documentos al inicio
+  loadGeneratedDocs();
+
   console.log('✅ Gemini chat integration ready');
 });

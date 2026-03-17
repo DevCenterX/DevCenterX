@@ -1473,6 +1473,12 @@ body.light-theme .sidebar .sidebar-footer .stat-value {
   font-weight: 500;
 }
 
+#docsBtn {
+  text-decoration: none;
+  border: none;
+  background: rgba(37, 99, 235, 0.08);
+}
+
 /* Light theme overrides for mode selector */
 body.light-theme #home-section .mode-selector {
   background: #f3f6fb;
@@ -11522,4 +11528,45 @@ html:not(.theme-light) .auth-message.success {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* Generated Docs Section Styles */
+#generatedDocsSection {
+  background: rgba(51, 65, 85, 0.3) !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+}
+
+#generatedDocsSection.hidden {
+  display: none;
+}
+
+#generatedDocsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#generatedDocsList button {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(71, 85, 105, 0.4) !important;
+  color: rgba(203, 213, 225, 0.9) !important;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+#generatedDocsList button:hover {
+  background: rgba(51, 65, 85, 0.8) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  color: #e2e8f0 !important;
 }
