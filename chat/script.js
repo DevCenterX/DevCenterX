@@ -3764,33 +3764,78 @@ async function generateChatResponse(prompt) {
         contextualInfo += `**NIVEL DETECTADO:** ${contextualMemory.userExpertise.toUpperCase()}\n`;
     }
     if (contextualMemory.lastCodeLanguage) {
-        if (lines.length > 1) {
-            // Respuesta multilínea: primera línea = mensaje, resto = código
-            codeHtml = lines.slice(1).join('\n').trim();
-        } else {
-            // Respuesta de una sola línea: verificar si es solo código HTML
-            if (cleanCode.toLowerCase().includes('<html')) {
-                firstLine = 'Página web generada';
-                codeHtml = cleanCode;
-            } else {
-                throw new Error(`Respuesta inválida: no se pudo extraer código HTML válido`);
-            }
+        contextualInfo += `**LENGUAJE DETECTADO:** ${contextualMemory.lastCodeLanguage.toUpperCase()}\n`;
+    }
+    if (contextualMemory.projectContext && contextualMemory.projectContext !== 'general') {
+        contextualInfo += `**TIPO DE PROYECTO:** ${contextualMemory.projectContext.toUpperCase()}\n`;
+    }
+
+    // Obtener el prompt del modo activo para chat
+    const abilityPrompt = await getActiveAbilityPrompt();
+
+    // Construir systemPrompt para respuesta de chat
+    const systemPrompt = `Eres DevCenter, un asistente de IA experto y amigable.
+
+${abilityPrompt}
+
+CONTEXTO DE LA CONVERSACIÓN:
+${contextualInfo}
+
+INFORMACIÓN DEL USUARIO:
+${userInfoText}
+
+HISTORIAL DE MENSACIÓN:
+${historyText}
+
+Responde de manera:
+- Accesible y comprensible para el nivel detectado
+- Adaptada al contexto de la conversación
+- Útil y directa
+- En español
+- Sin markdown innecesario, solo usa formatos básicos si es necesario`;
+
+    // Definir función apiCall para failover
+    const apiCall = async (ai) => {
+        console.log(`🌐 Llamando a API generateChatResponse: ${ai.name}`);
+
+        const response = await fetch(`${ai.url}?key=${ai.apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: systemPrompt + `\n\nMensaje del usuario: ${prompt}`,
+                            },
+                        ],
+                    },
+                ],
+                generationConfig: {
+                    temperature: TEMPERATURE,
+                    topK: TOP_K,
+                    topP: TOP_P,
+                    maxOutputTokens: getCurrentMaxTokens(),
+                }
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API Error:', errorText);
+            throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
         }
 
-        // Verificar que el código extraído sea funcional
-        if (!codeHtml || codeHtml.length < 30) {
-            throw new Error('Código HTML extraído insuficiente: Necesita más contenido para ser funcional.');
+        const data = await response.json();
+        const message = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        if (!message) {
+            throw new Error('No se pudo generar respuesta');
         }
 
-        // Verificar estructura HTML básica
-        if (!codeHtml.toLowerCase().includes('<html') || !codeHtml.toLowerCase().includes('</html>')) {
-            throw new Error('Estructura HTML incompleta: Faltan etiquetas de apertura/cierre <html>.');
-        }
-
-        return {
-            code: codeHtml,
-            message: firstLine.trim()
-        };
+        return message;
     };
 
     // Llamar al sistema de failover

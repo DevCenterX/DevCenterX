@@ -35,6 +35,12 @@ body {
     overflow: hidden;
 }
 
+/* Loading Element - Oculto por defecto */
+#loading {
+    display: none !important;
+    pointer-events: none;
+}
+
 /* Animated Background */
 .animated-bg {
     position: fixed;

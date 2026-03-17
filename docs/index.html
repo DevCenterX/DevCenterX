@@ -15,7 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
     <!-- Librería para generar Word (docx) -->
-    <script src="https://unpkg.com/docx@8.2.3/build/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
     
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -427,7 +427,13 @@
 
         async function generarWord(data) {
             try {
-                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = docx;
+                // Acceder correctamente a la librería docx
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = window.docx || docx;
+                
+                if (!Document) {
+                    throw new Error("Librería docx no cargada. Recarga la página.");
+                }
+                
                 const children = [];
                 
                 // Título principal
