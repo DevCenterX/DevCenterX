@@ -366,7 +366,11 @@
 
             for (let attempt = 0; attempt < retryDelays.length; attempt++) {
                 try {
-                    const response = await fetch('/api/gemini', {
+                    // Detectar si es Vercel (producción) o localhost (desarrollo)
+                    const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+                    const apiUrl = isProduction ? '/api/gemini' : 'http://localhost:3000/api/gemini';
+                    
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(requestBody)
