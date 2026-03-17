@@ -2054,9 +2054,6 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
     // Botones de acción para mensajes de IA
     let actionButtonsHtml = '';
     if (type === 'ai' && !isError) {
-        // Detectar si hay notas guardadas en el mensaje
-        const hasNotes = content && typeof content === 'string' && /\{GUARDAR:\s*([^}]+)\}/gi.test(content);
-        
         actionButtonsHtml = `
             <div class="message-actions">
                 <button class="message-action-btn copy-btn" onclick="copyMessage('${messageId}')" title="Copiar respuesta">
@@ -2076,15 +2073,6 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                     </svg>
                 </button>
-                ${hasNotes ? `
-                <button class="message-action-btn notes-btn" onclick="showSavedNotesModal()" title="Ver notas guardadas" style="color: #10b981;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <polyline points="9 13 11 15 15 11" stroke-width="2.5"></polyline>
-                    </svg>
-                </button>
-                ` : ''}
                 <button class="message-action-btn reload-btn" onclick="reloadMessage('${messageId}')" title="Recargar respuesta">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="23 4 23 10 17 10"></polyline>
@@ -2136,9 +2124,9 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
     `;
     elements.messages.appendChild(messageElement);
     
-    // Detectar y guardar notas automáticamente si es un mensaje de la IA
+    // Detectar comandos especiales si es un mensaje de la IA
     if (type === 'ai' && !isError && save) {
-        detectAndSaveNotes(content);
+        detectAndModifyPrompt(content);
     }
     
     if (save) {
@@ -2205,8 +2193,8 @@ function updateMessageContent(messageId, newContent) {
         }
     }
     
-    // Detectar y guardar notas automáticamente
-    detectAndSaveNotes(newContent);
+    // Detectar comandos especiales
+    detectAndModifyPrompt(newContent);
 }
 
 // Función para agregar mensaje con efecto de escritura progresiva
@@ -2220,9 +2208,6 @@ function addMessageWithTyping(type, content, generatedCode = null) {
     const timeStr = new Date().toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true });
     const messageElement = document.createElement('div');
     messageElement.className = `message ${type} fade-in`;
-    
-    // Detectar si hay notas guardadas en el mensaje
-    const hasNotes = content && typeof content === 'string' && /\{GUARDAR:\s*([^}]+)\}/gi.test(content);
     
     // Botones de acción para mensajes de IA
     const actionButtonsHtml = `
@@ -2244,15 +2229,6 @@ function addMessageWithTyping(type, content, generatedCode = null) {
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
             </button>
-            ${hasNotes ? `
-            <button class="message-action-btn notes-btn" onclick="showSavedNotesModal()" title="Ver notas guardadas" style="color: #10b981;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <polyline points="9 13 11 15 15 11" stroke-width="2.5"></polyline>
-                </svg>
-            </button>
-            ` : ''}
             <button class="message-action-btn reload-btn" onclick="reloadMessage('${messageId}')" title="Recargar respuesta">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="23 4 23 10 17 10"></polyline>
@@ -2290,8 +2266,8 @@ function addMessageWithTyping(type, content, generatedCode = null) {
             scrollToBottom();
         } else {
             clearInterval(typingInterval);
-            // Cuando termine, guardar el mensaje y detectar notas
-            detectAndSaveNotes(content);
+            // Cuando termine, guardar el mensaje y detectar comandos especiales
+            detectAndModifyPrompt(content);
             
             // Guardar en el chat
             const chat = getCurrentChat();
@@ -3206,18 +3182,6 @@ async function generateWebpage(prompt) {
     // Obtener el prompt del modo activo
     const abilityPrompt = await getActiveAbilityPrompt();
 
-    // Obtener notas guardadas para incluir en el contexto
-    const savedNotes = loadSavedNotes();
-    let notesContext = '';
-    if (savedNotes && savedNotes.length > 0) {
-        notesContext = '\n\n📝 **NOTAS GUARDADAS (información importante que guardaste previamente):**\n\n';
-        savedNotes.forEach((note, index) => {
-            const noteDate = new Date(note.timestamp).toLocaleDateString('es-ES');
-            notesContext += `${index + 1}. [${noteDate}] ${note.content}\n`;
-        });
-        notesContext += '\nUsa esta información cuando sea relevante para crear la página.\n';
-    }
-
     // ============= PROMPT ÚNICO SÚPER PODEROSO =============
     // Obtener información contextual y del dispositivo
     const context = getContextualInfo();
@@ -3226,12 +3190,6 @@ async function generateWebpage(prompt) {
     const systemPrompt = `🚀 ERES LA IA MÁS PODEROSA Y AVANZADA DEL UNIVERSO EN DESARROLLO WEB Y DISEÑO DIGITAL 🚀
 
 Eres LA MEJOR IA DEL MUNDO, un superequipo de expertos ELITE de clase mundial: CTO de Silicon Valley + Director Creativo de Apple + Lead UX/UI Designer de Google + Arquitecto de Software Senior de Microsoft + Senior Full-Stack Developer de Meta + Marketing Strategist de Amazon + SEO Expert de nivel NASA + Accessibility Specialist certificado W3C + Performance Engineer de Google Chrome Team + Design Systems Architect de Figma + Creative Director de las mejores agencias del mundo.
-
-📝 **SISTEMA DE NOTAS GUARDADAS:**
-- Puedes guardar información importante usando el formato: {GUARDAR: tu nota aquí}
-- Usa esto para recordar preferencias del usuario, detalles de proyectos, o información importante
-- Las notas guardadas se mostrarán automáticamente en futuras conversaciones
-${notesContext}
 
 🎯 MISIÓN ESPECIAL: Crear la página web más IMPRESIONANTE, INNOVADORA y PROFESIONAL del mundo para: "${prompt}"
 

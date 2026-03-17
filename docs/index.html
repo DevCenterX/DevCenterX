@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCenter Docs</title>
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 8s ease-in-out 3s infinite',
+                        'epic-enter': 'epicEnter 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'success-pop': 'successPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'pan-grid': 'panGrid 20s linear infinite',
+                        'spin-slow': 'spin 20s linear infinite',
+                        'spin-reverse': 'spin 25s linear infinite reverse',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'epicEnter': {
+                            '0%': { opacity: '0', transform: 'scale(0.85) translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        'pulseGlow': {
+                            '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                            '50%': { opacity: .7, transform: 'scale(1.1)' },
+                        },
+                        'successPop': {
+                            '0%': { transform: 'scale(0.5)', opacity: '0' },
+                            '70%': { transform: 'scale(1.1)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        },
+                        'panGrid': {
+                            '0%': { transform: 'translateY(0)' },
+                            '100%': { transform: 'translateY(24px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Librería para generar Excel con estilos PRO (ExcelJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <!-- Librería para generar PowerPoint (PptxGenJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+    <!-- Librería para generar Word (docx) -->
+    <script src="https://unpkg.com/docx@8.2.3/build/index.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ocultar los radio buttons por defecto para estilizarlos */
+        input[type="radio"].peer { display: none; }
+        
+        /* Estilos del spinner futurista gigante */
+        .core-loader {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: inline-block;
+            border-top: 6px solid #60a5fa;
+            border-right: 6px solid transparent;
+            box-sizing: border-box;
+            animation: rotation 1.5s linear infinite;
+            position: relative;
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.5);
+        }
+        .core-loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border-bottom: 6px solid #a855f7;
+            border-left: 6px solid transparent;
+            animation: rotation 1s ease-in-out infinite alternate;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Scrollbar épico personalizado */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(to bottom, #3b82f6, #9333ea); 
+            border-radius: 10px; 
+            border: 2px solid #020617;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #60a5fa, #a855f7); }
+        
+        /* Perspectiva 3D para el grid */
+        .perspective-grid {
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            transform-origin: top;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-8 text-slate-100 relative overflow-x-hidden">
+
+    <!-- PANTALLA DE BIENVENIDA ÉPICA -->
+    <div id="welcomeScreen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020617] transition-all duration-1000 ease-in-out">
+        <div class="relative flex items-center justify-center w-32 h-32 mb-10">
+            <!-- Anillos de escaneo elegantes -->
+            <div class="absolute inset-0 rounded-full border border-blue-900 shadow-[0_0_50px_rgba(30,58,138,0.5)] animate-[pulse_3s_ease-in-out_infinite]"></div>
+            <div class="absolute inset-4 rounded-full border-t border-b border-blue-500 animate-[spin_4s_linear_infinite]"></div>
+            <div class="absolute inset-8 rounded-full border-r border-l border-cyan-400 animate-[spin_3s_linear_infinite_reverse]"></div>
+            <i data-lucide="layers" class="w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"></i>
+        </div>
+        
+        <div class="text-center overflow-hidden">
+            <h1 class="text-2xl sm:text-4xl font-light text-slate-300 tracking-[0.3em] uppercase mb-2">
+                DevCenter<span class="font-bold text-white">X</span>
+            </h1>
+            <p class="text-blue-400 text-sm tracking-[0.4em] uppercase font-semibold animate-pulse">Enterprise Agent</p>
+        </div>
+        
+        <div class="mt-12 w-64 h-[2px] bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-transparent via-blue-500 to-transparent w-[50%] animate-[gradient-x_1.5s_linear_infinite]"></div>
+        </div>
+    </div>
+
+    <!-- FONDOS ÉPICOS PRO-DECORADOS -->
+    <div class="fixed inset-0 z-0 bg-[#020617] overflow-hidden">
+        <!-- Efecto Aurora (Luces dinámicas) -->
+        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-600/30 rounded-full blur-[120px] mix-blend-screen animate-float"></div>
+        <div class="absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[150px] mix-blend-screen animate-float-delayed"></div>
+        <div class="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] bg-emerald-600/20 rounded-full blur-[120px] mix-blend-screen animate-float"></div>
+
+        <!-- Grid Cibernético 3D -->
+        <div class="absolute inset-0 opacity-30 pointer-events-none flex justify-center items-start">
+            <div class="w-[200%] h-[200%] bg-[linear-gradient(to_right,#4f46e5_1px,transparent_1px),linear-gradient(to_bottom,#4f46e5_1px,transparent_1px)] bg-[size:40px_40px] animate-pan-grid perspective-grid [mask-image:linear-gradient(to_bottom,transparent,black_20%,transparent_80%)]"></div>
+        </div>
+
+        <!-- Elementos Geométricos Flotantes (Glassmorphism) -->
+        <div class="absolute top-20 right-[15%] w-32 h-32 border border-blue-500/30 rounded-full animate-spin-slow backdrop-blur-sm shadow-[0_0_30px_rgba(59,130,246,0.1)]"></div>
+        <div class="absolute bottom-32 left-[10%] w-40 h-40 border border-purple-500/30 rounded-full animate-spin-reverse backdrop-blur-md shadow-[0_0_40px_rgba(147,51,234,0.1)]">
+            <div class="absolute inset-4 border border-purple-400/20 rounded-full"></div>
+        </div>
+        <div class="absolute top-1/2 right-[5%] w-16 h-16 border-2 border-emerald-500/20 rotate-45 animate-float shadow-[0_0_20px_rgba(16,185,129,0.1)]"></div>
+        <div class="absolute top-[15%] left-[15%] w-8 h-8 bg-blue-500/50 rounded-full blur-md animate-pulse"></div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL (Oculto inicialmente hasta que pase la bienvenida) -->
+    <div class="relative z-10 w-full max-w-4xl min-h-[500px] flex items-center justify-center">
+        
+        <!-- UI DE ENTRADA (Formulario) -->
+        <div id="mainContainer" class="w-full bg-slate-900/60 backdrop-blur-2xl border border-slate-700/50 rounded-[2rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] p-6 sm:p-10 transform transition-all duration-700 ease-in-out opacity-0 scale-95 origin-center hidden">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-10 text-center sm:text-left">
+                    <div class="mx-auto sm:mx-0 bg-gradient-to-tr from-blue-600 to-purple-600 p-4 rounded-3xl shadow-[0_0_30px_rgba(96,165,250,0.4)] animate-pulse-glow flex-shrink-0">
+                        <i data-lucide="zap" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl sm:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]">
+                            DevCenter Docs
+                        </h1>
+                        <p class="text-slate-400 text-sm sm:text-base mt-2 font-medium">Plataforma empresarial de síntesis documental.</p>
+                    </div>
+                </div>
+
+                <!-- Selector de formato -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-4 uppercase tracking-widest text-center sm:text-left">Configuración de Salida</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- Word -->
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="docType" value="word" checked class="peer">
+                            <div class="flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-slate-700 bg-slate-800/60 hover:bg-slate-700 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                                <i data-lucide="file-text" class="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                <span class="font-bold text-slate-200">Word</span>
+                            </div>
+                        </label>
+
+                        <!-- PowerPoint -->
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="docType" value="ppt" class="peer">
+                            <div class="flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-slate-700 bg-slate-800/60 hover:bg-slate-700 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                                <i data-lucide="presentation" class="w-10 h-10 text-orange-400 mb-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                <span class="font-bold text-slate-200">PowerPoint</span>
+                            </div>
+                        </label>
+                        
+                        <!-- Excel -->
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="docType" value="xls" class="peer">
+                            <div class="flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-slate-700 bg-slate-800/60 hover:bg-slate-700 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 peer-checked:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                                <i data-lucide="table" class="w-10 h-10 text-emerald-400 mb-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                <span class="font-bold text-slate-200">Excel</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Prompt -->
+                <div class="relative mt-8">
+                    <label for="prompt" class="block text-xs sm:text-sm font-bold text-slate-300 mb-4 uppercase tracking-widest text-center sm:text-left">Parámetros de la IA</label>
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-md opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                        <textarea id="prompt" rows="4" 
+                            class="relative w-full bg-slate-900 border border-slate-700 rounded-2xl p-5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none leading-relaxed text-base sm:text-lg shadow-inner" 
+                            placeholder="Describe el tema magistralmente. Ej: 'Plan financiero a 5 años para una startup tecnológica...'" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Mensaje de Error (Oculto por defecto) -->
+                <div id="errorArea" class="hidden mt-6 bg-red-900/40 border border-red-500/50 p-4 rounded-xl flex items-center space-x-3 backdrop-blur-sm">
+                    <i data-lucide="alert-triangle" class="text-red-400 w-6 h-6 flex-shrink-0"></i>
+                    <p id="errorMsg" class="text-red-200 text-sm sm:text-base font-medium"></p>
+                </div>
+
+                <!-- Botón de Generar -->
+                <button id="generateBtn" onclick="procesarSolicitud()" class="relative w-full mt-8 overflow-hidden rounded-2xl group font-extrabold text-xl sm:text-2xl shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_50px_rgba(79,70,229,0.7)] transition-shadow duration-500">
+                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 group-hover:from-blue-600 group-hover:via-indigo-500 group-hover:to-purple-600 transition-all duration-300 ease-out"></span>
+                    <span class="absolute right-0 w-32 h-64 mt-12 transition duration-700 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-full ease"></span>
+                    <span class="relative flex items-center justify-center space-x-4 py-5 text-white">
+                        <i data-lucide="cpu" class="w-8 h-8"></i>
+                        <span>INICIAR SÍNTESIS</span>
+                    </span>
+                </button>
+            
+        </div>
+
+        <!-- ESTADO DE CARGA (Oculto por defecto) -->
+        <div id="loadingState" class="hidden flex-col items-center justify-center space-y-8 absolute inset-0 z-20 w-full h-full transition-all duration-700 ease-in-out opacity-0 scale-95 origin-center">
+            <div class="relative">
+                <div class="absolute inset-0 bg-blue-500 rounded-full blur-[60px] opacity-40 animate-pulse"></div>
+                <span class="core-loader"></span>
+            </div>
+            <div class="text-center z-10 backdrop-blur-xl bg-slate-900/50 p-8 rounded-3xl border border-slate-700/50 shadow-2xl">
+                <h2 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse mb-3">GENERANDO DOCUMENTO</h2>
+                <p class="text-slate-300 text-lg">Procesando redes neuronales...</p>
+                <div class="mt-4 w-48 h-1 bg-slate-800 rounded-full mx-auto overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-500 animate-[gradient-x_2s_linear_infinite] w-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÁREA DE ÉXITO (Oculta por defecto) -->
+        <div id="resultArea" class="hidden flex-col items-center justify-center space-y-10 absolute inset-0 z-30 w-full h-full transition-all duration-700 ease-in-out opacity-0 scale-105 origin-center">
+            
+            <!-- Super animación de Checkmark -->
+            <div class="relative flex items-center justify-center w-48 h-48 group">
+                <div class="absolute inset-0 border-[6px] border-green-500/30 rounded-full animate-ping"></div>
+                <div class="absolute inset-4 border-[6px] border-green-400/50 rounded-full animate-pulse"></div>
+                <div class="absolute inset-8 bg-gradient-to-tr from-green-500 to-emerald-400 rounded-full shadow-[0_0_80px_rgba(16,185,129,0.8)] z-10 flex items-center justify-center transform transition-transform group-hover:scale-105 duration-300">
+                    <i data-lucide="check" class="w-20 h-20 text-white font-extrabold drop-shadow-md"></i>
+                </div>
+            </div>
+
+            <div class="text-center max-w-lg mx-auto bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-4xl font-black text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-300">¡SÍNTESIS COMPLETADA!</h2>
+                <p class="text-slate-300 text-lg mb-8">El archivo <strong class="text-white">DevCenterX</strong> está listo para ti.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <!-- Botón de Descarga Fijo -->
+                    <button id="downloadBtn" class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] flex items-center justify-center space-x-3 transform hover:-translate-y-1">
+                        <i data-lucide="download-cloud" class="w-6 h-6"></i>
+                        <span class="text-lg">Descargar Archivo</span>
+                    </button>
+                    
+                    <!-- Botón Reiniciar -->
+                    <button onclick="reiniciarApp()" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center space-x-3 shadow-lg transform hover:-translate-y-1">
+                        <i data-lucide="rotate-ccw" class="w-6 h-6 text-blue-400"></i>
+                        <span class="text-lg">Generar Otro</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // LÓGICA DE LA PANTALLA DE BIENVENIDA
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const welcome = document.getElementById('welcomeScreen');
+                welcome.classList.add('opacity-0', 'pointer-events-none', 'scale-110');
+                
+                setTimeout(() => {
+                    welcome.style.display = 'none';
+                    const mainContainer = document.getElementById('mainContainer');
+                    mainContainer.classList.remove('hidden');
+                    mainContainer.classList.add('block', 'animate-epic-enter');
+                    // Forzamos el reflow
+                    void mainContainer.offsetWidth;
+                    mainContainer.classList.remove('opacity-0', 'scale-95');
+                    obtenerApiKey(); // Cargar la API key al mostrar la app
+                }, 1000);
+            }, 2500); // La pantalla dura 2.5 segundos visible
+        });
+
+        // Configuración de la API
+        let apiKey = ""; 
+        let fileData = null; 
+        let currentType = null;
+
+        // Función para obtener la API key del servidor (desde variables de entorno de Vercel)
+        async function obtenerApiKey() {
+            try {
+                const response = await fetch('/api/getGeminiKey');
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener la API key');
+                }
+                const data = await response.json();
+                apiKey = data.apiKey;
+                console.log('✓ API key de Gemini cargada correctamente');
+            } catch (error) {
+                console.error('Error al obtener la API key:', error);
+                mostrarError('Error al cargar la configuración: ' + error.message);
+            }
+        }
+
+        // --- Esquemas JSON ---
+        const wordSchema = { type: "OBJECT", properties: { title: { type: "STRING" }, subtitle: { type: "STRING" }, sections: { type: "ARRAY", items: { type: "OBJECT", properties: { heading: { type: "STRING" }, content: { type: "STRING" } } } } } };
+        const pptSchema = { type: "OBJECT", properties: { title: { type: "STRING" }, subtitle: { type: "STRING" }, slides: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, bullets: { type: "ARRAY", items: { type: "STRING" } } } } } } };
+        const xlsSchema = { type: "OBJECT", properties: { columns: { type: "ARRAY", items: { type: "STRING" } }, rows: { type: "ARRAY", items: { type: "ARRAY", items: { type: "STRING" } } } } };
+
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        // --- Sistema de Transiciones Fluidas ---
+        async function cambiarEstadoVisual(idOcultar, idMostrar, animarPop = false) {
+            const elOcultar = document.getElementById(idOcultar);
+            const elMostrar = document.getElementById(idMostrar);
+
+            // Fade out
+            elOcultar.classList.remove('opacity-100', 'scale-100');
+            elOcultar.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+            
+            await delay(400); 
+            
+            elOcultar.classList.add('hidden');
+            if (idOcultar === 'mainContainer') elOcultar.classList.remove('block');
+            else elOcultar.classList.remove('flex');
+
+            // Preparar el nuevo
+            elMostrar.classList.remove('hidden');
+            if (idMostrar === 'mainContainer') elMostrar.classList.add('block');
+            else elMostrar.classList.add('flex');
+            
+            void elMostrar.offsetWidth; // Reflow
+            
+            // Fade in
+            elMostrar.classList.remove('opacity-0', 'scale-95', 'scale-105', 'pointer-events-none');
+            elMostrar.classList.add('opacity-100', 'scale-100');
+
+            if (animarPop) {
+                elMostrar.classList.add('animate-success-pop');
+                setTimeout(() => elMostrar.classList.remove('animate-success-pop'), 1000);
+            }
+        }
+
+        // --- Lógica Principal ---
+        async function procesarSolicitud() {
+            const promptInput = document.getElementById('prompt').value.trim();
+            const docType = document.querySelector('input[name="docType"]:checked').value;
+
+            if (!promptInput) {
+                mostrarError("La directiva no puede estar vacía.");
+                return;
+            }
+
+            document.getElementById('errorArea').classList.add('hidden');
+            await cambiarEstadoVisual('mainContainer', 'loadingState');
+            
+            try {
+                let schema, instruction;
+
+                if (docType === 'word') {
+                    schema = wordSchema;
+                    instruction = `Crea un documento profesional y detallado sobre: ${promptInput}.`;
+                } else if (docType === 'ppt') {
+                    schema = pptSchema;
+                    instruction = `Crea una presentación concisa de 5 diapositivas sobre: ${promptInput}.`;
+                } else {
+                    schema = xlsSchema;
+                    instruction = `Genera una tabla analítica (mínimo 5 filas) sobre: ${promptInput}.`;
+                }
+
+                const jsonData = await callGeminiAPI(instruction, schema);
+                
+                fileData = jsonData;
+                currentType = docType;
+
+                await cambiarEstadoVisual('loadingState', 'resultArea', true);
+                
+                document.getElementById('downloadBtn').onclick = () => {
+                    if(currentType === 'word') generarWord(fileData);
+                    else if(currentType === 'ppt') generarPPT(fileData);
+                    else generarExcel(fileData);
+                };
+
+            } catch (error) {
+                console.error(error);
+                await cambiarEstadoVisual('loadingState', 'mainContainer');
+                mostrarError("Anomalía: " + error.message);
+            }
+        }
+
+        async function callGeminiAPI(prompt, schema) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "Eres una IA corporativa de grado empresarial. Responde EXCLUSIVAMENTE en JSON puro, sin markdown, ni saludos." }] },
+                generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!rawText) throw new Error("Respuesta vacía");
+                    
+                    const startIndex = rawText.indexOf('{');
+                    const endIndex = rawText.lastIndexOf('}');
+                    
+                    if (startIndex === -1 || endIndex === -1) {
+                        throw new Error("La IA no devolvió un JSON válido.");
+                    }
+                    
+                    const jsonString = rawText.substring(startIndex, endIndex + 1);
+                    return JSON.parse(jsonString);
+                } catch (error) {
+                    if (i === 4) throw new Error("Conexión fallida tras varios intentos.");
+                    await delay([1000, 2000, 4000, 8000, 16000][i]);
+                }
+            }
+        }
+
+        // --- Funciones de Generación (DevCenterX PRO) ---
+
+        async function generarWord(data) {
+            try {
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = docx;
+                const children = [];
+                
+                // Título principal
+                children.push(new Paragraph({ 
+                    text: data.title || "DevCenterX Documento", 
+                    heading: HeadingLevel.TITLE, 
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 } 
+                }));
+
+                // Subtítulo
+                if (data.subtitle) {
+                    children.push(new Paragraph({ 
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 600 },
+                        children: [new TextRun({ text: data.subtitle, color: "64748B", italics: true, size: 28 })]
+                    }));
+                }
+                
+                if (data.sections) {
+                    data.sections.forEach(sec => {
+                        // Subtítulos con borde inferior (Estilo PRO)
+                        children.push(new Paragraph({ 
+                            text: sec.heading, 
+                            heading: HeadingLevel.HEADING_1, 
+                            spacing: { before: 400, after: 200 },
+                            border: {
+                                bottom: { color: "3B82F6", space: 1, style: "single", size: 12 }
+                            }
+                        }));
+                        // Contenido
+                        children.push(new Paragraph({ 
+                            alignment: AlignmentType.JUSTIFIED,
+                            children: [new TextRun({ text: sec.content, size: 24, font: "Calibri", color: "334155" })], 
+                            spacing: { after: 300, line: 360 } 
+                        }));
+                    });
+                }
+
+                const doc = new Document({ 
+                    styles: {
+                        paragraphStyles: [
+                            { id: "Title", name: "Title", basedOn: "Normal", next: "Normal", run: { color: "1E3A8A", size: 64, bold: true, font: "Arial" } },
+                            { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", run: { color: "0F172A", size: 32, bold: true, font: "Arial" } }
+                        ]
+                    },
+                    sections: [{ 
+                        properties: {}, 
+                        // Encabezado Corporativo
+                        headers: {
+                            default: new Header({
+                                children: [
+                                    new Paragraph({
+                                        alignment: AlignmentType.RIGHT,
+                                        children: [
+                                            new TextRun({ text: "Generado por ", color: "94A3B8", size: 20 }),
+                                            new TextRun({ text: "DevCenterX Agent", color: "3B82F6", bold: true, size: 20 })
+                                        ]
+                                    })
+                                ]
+                            })
+                        },
+                        // Pie de página con numeración
+                        footers: {
+                            default: new Footer({
+                                children: [
+                                    new Paragraph({
+                                        alignment: AlignmentType.CENTER,
+                                        children: [
+                                            new TextRun({ text: "Página ", color: "94A3B8", size: 20 }),
+                                            new TextRun({ children: [PageNumber.CURRENT], color: "94A3B8", size: 20 }),
+                                            new TextRun({ text: " de ", color: "94A3B8", size: 20 }),
+                                            new TextRun({ children: [PageNumber.TOTAL_PAGES], color: "94A3B8", size: 20 })
+                                        ]
+                                    })
+                                ]
+                            })
+                        },
+                        children: children 
+                    }] 
+                });
+                
+                const blob = await Packer.toBlob(doc);
+                descargarBlob(blob, "DevCenterX.docx");
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        function generarPPT(data) {
+            try {
+                let pptx = new PptxGenJS();
+                pptx.layout = 'LAYOUT_16x9';
+
+                // ==========================================
+                // 1. DIAPOSITIVA MAESTRA (Estilo Corporativo Premium)
+                // ==========================================
+                pptx.defineSlideMaster({
+                    title: "TEMA_CORP",
+                    background: { color: "F8FAFC" }, 
+                    objects: [
+                        // Línea superior delgada y elegante
+                        { rect: { x: 0, y: 0, w: '100%', h: 0.05, fill: { color: "1D4ED8" } } },
+                        // Línea separadora sutil bajo el título
+                        { rect: { x: 0.5, y: 1.1, w: '90%', h: 0.02, fill: { color: "E2E8F0" } } },
+                        // Texto corporativo en el pie de página
+                        { text: { text: "DevCenterX Enterprise", options: { x: 0.5, y: '94%', w: 3, h: 0.3, color: "94A3B8", fontSize: 9 } } }
+                    ],
+                    slideNumber: { x: '95%', y: '94%', color: '64748B', fontSize: 10, bold: true }
+                });
+
+                // ==========================================
+                // 2. DIAPOSITIVA DE TÍTULO (PORTADA EJECUTIVA)
+                // ==========================================
+                let slideTitle = pptx.addSlide();
+                slideTitle.background = { color: "0B132B" }; // Azul medianoche muy rico
+                slideTitle.transition = { type: 'fade', speed: 'medium' };
+                
+                // Formas geométricas decorativas de la portada
+                slideTitle.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 0.1, fill: { color: "3B82F6" } });
+                slideTitle.addShape(pptx.ShapeType.rect, { x: 0, y: '96%', w: '100%', h: 0.2, fill: { color: "3B82F6" } });
+                
+                // Pequeño identificador superior
+                slideTitle.addText("DEVCENTERX AGENT", { 
+                    x: 0.5, y: 0.5, w: 3, h: 0.5, 
+                    color: "475569", fontSize: 10, bold: true, charSpacing: 2 
+                });
+                
+                // Título principal alineado a la izquierda para un look moderno
+                slideTitle.addText(data.title || "Presentación Ejecutiva", { 
+                    x: 0.5, y: '35%', w: '90%', h: 1.5, 
+                    fontSize: 54, bold: true, color: "FFFFFF", align: "left" 
+                });
+                
+                if (data.subtitle) {
+                    slideTitle.addText(data.subtitle, { 
+                        x: 0.5, y: '55%', w: '90%', h: 1, 
+                        fontSize: 24, italic: false, color: "94A3B8", align: "left" 
+                    });
+                }
+
+                // ==========================================
+                // 3. DIAPOSITIVAS DE CONTENIDO
+                // ==========================================
+                if (data.slides) {
+                    data.slides.forEach(slideData => {
+                        let slide = pptx.addSlide({ masterName: "TEMA_CORP" });
+                        slide.transition = { type: 'cover', direction: 'left', speed: 'fast' };
+                        
+                        // Título de contenido oscuro y elegante
+                        slide.addText(slideData.title, { 
+                            x: 0.5, y: 0.3, w: '90%', h: 0.8, 
+                            fontSize: 32, bold: true, color: "0F172A" 
+                        });
+
+                        // Cuerpo con viñetas espaciadas
+                        if (slideData.bullets) {
+                            let bulletText = slideData.bullets.map(b => ({ 
+                                text: b, 
+                                options: { bullet: { color: "3B82F6" } } 
+                            }));
+                            slide.addText(bulletText, { 
+                                x: 0.5, y: 1.4, w: '90%', h: 3.8, 
+                                fontSize: 20, color: "334155", valign: 'top', margin: 10, lineSpacing: 32 
+                            });
+                        }
+                    });
+                }
+
+                // ==========================================
+                // 4. DIAPOSITIVA DE CIERRE
+                // ==========================================
+                let closingSlide = pptx.addSlide();
+                closingSlide.background = { color: "0B132B" };
+                closingSlide.transition = { type: 'fade', speed: 'medium' };
+                closingSlide.addText("Gracias por su atención", { 
+                    x: 0.5, y: '40%', w: '90%', h: 1, 
+                    fontSize: 44, bold: true, color: "FFFFFF", align: "center" 
+                });
+                closingSlide.addText("Generado por DevCenterX Agent", { 
+                    x: 0.5, y: '55%', w: '90%', h: 0.5, 
+                    fontSize: 18, color: "94A3B8", align: "center" 
+                });
+
+                pptx.writeFile({ fileName: `DevCenterX.pptx` }); 
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function generarExcel(data) {
+            try {
+                if (!data.columns || !data.rows || data.rows.length === 0) throw new Error("Datos de tabla vacíos.");
+                
+                // Usando ExcelJS para estilos Premium
+                const workbook = new ExcelJS.Workbook();
+                workbook.creator = 'DevCenterX Agent';
+                const worksheet = workbook.addWorksheet('Datos DevCenterX');
+
+                // 1. Estilos de la Cabecera (Azul oscuro, texto blanco, bordes)
+                const headerRow = worksheet.addRow(data.columns);
+                headerRow.eachCell((cell) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                    cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12 };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                });
+
+                // 2. Agregar Filas de Datos con diseño de "Cebra" (Colores alternos)
+                data.rows.forEach((row, index) => {
+                    const newRow = worksheet.addRow(row);
+                    const isEven = index % 2 === 0;
+                    
+                    newRow.eachCell((cell) => {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFF8FAFC' : 'FFE2E8F0' } };
+                        cell.border = { 
+                            top: {style:'thin', color: {argb:'FFCBD5E1'}}, left: {style:'thin', color: {argb:'FFCBD5E1'}}, 
+                            bottom: {style:'thin', color: {argb:'FFCBD5E1'}}, right: {style:'thin', color: {argb:'FFCBD5E1'}} 
+                        };
+                        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+                    });
+                });
+
+                // 3. Ajuste Automático del Ancho de Columnas
+                worksheet.columns.forEach(column => {
+                    let maxLength = 0;
+                    column.eachCell({ includeEmpty: true }, function(cell) {
+                        const columnLength = cell.value ? cell.value.toString().length : 10;
+                        if (columnLength > maxLength) maxLength = columnLength;
+                    });
+                    column.width = maxLength < 15 ? 15 : maxLength + 5;
+                });
+
+                // Exportar
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                descargarBlob(blob, "DevCenterX.xlsx");
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        // --- Utilidades ---
+        function descargarBlob(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function reiniciarApp() {
+            document.getElementById('prompt').value = '';
+            cambiarEstadoVisual('resultArea', 'mainContainer');
+        }
+
+        function mostrarError(mensaje) {
+            const errorArea = document.getElementById('errorArea');
+            document.getElementById('errorMsg').innerText = mensaje;
+            errorArea.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
