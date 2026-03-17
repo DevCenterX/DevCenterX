@@ -454,29 +454,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Función para actualizar el placeholder
+  // Función para actualizar el placeholder y el botón
   function updatePlaceholder(mode) {
     const placeholders = {
       chat: 'Escribe tu pregunta o idea...',
-      programar: 'Describe el código que necesitas...'
+      programar: 'Describe el código que necesitas...',
+      docs: 'Describe el documento que necesitas...'
     };
     searchBox.placeholder = placeholders[mode] || 'Escribe tu idea...';
+    
+    // Actualizar texto del botón Iniciar
+    if (startChatBtn) {
+      const buttonTexts = {
+        chat: 'Iniciar chat',
+        programar: 'Iniciar programación',
+        docs: 'Iniciar docs'
+      };
+      startChatBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>' + buttonTexts[mode];
+    }
   }
 
-  // Event listener en el botón "Iniciar Chat" - Forzar modo chat
+  // Event listener en el botón "Iniciar" - Ejecutar acción según modo seleccionado
   if (startChatBtn) {
     startChatBtn.addEventListener('click', () => {
-      selectedMode = 'chat'; // Forzar modo chat
-      console.log('🎯 Botón Iniciar Chat: Modo forzado a chat');
-      // Marcar el botón chat como activo
-      const chatModeBtn = document.querySelector('.mode-selector[data-mode="chat"]');
-      if (chatModeBtn) {
-        modeSelectors.forEach(btn => btn.classList.remove('active'));
-        chatModeBtn.classList.add('active');
-      }
+      console.log('🎯 Ejecutando acción para modo:', selectedMode);
       sendMessage();
     });
   }
+
+  // Función para enviar mensaje localmente sin redirigir
+  const sendMessageLocal = () => {
+    const message = searchBox.value.trim();
+    
+    if (!message) {
+      console.log('⚠️ Empty message');
+      return;
+    }
+
+    console.log('📤 Sending message:', message.substring(0, 50) + '...');
+    console.log('🎯 Modo actual:', selectedMode);
+
+    // Guardar el mensaje en localStorage
+    localStorage.setItem('devcenter_first_message', message);
+    
+    // Limpiar el input
+    searchBox.value = '';
+
+    // Mostrar notificación de que se inició el chat
+    console.log('✅ Chat iniciado con mensaje: ' + message);
+    alert('Chat iniciado. Redirigiendo a la interfaz de chat...');
+    window.location.href = 'chat/';
+  };
 
   // Enviar mensaje al presionar Enter o pulsar el botón
   const sendMessage = async () => {
@@ -500,6 +528,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // Usar setTimeout para asegurar que localStorage se guarde antes de redirigir
       setTimeout(() => {
         window.location.href = 'chat/'; // Ruta relativa para compatibilidad
+      }, 100);
+      return;
+    }
+
+    // Si es modo docs, redireccionar a la carpeta de docs
+    if (selectedMode === 'docs') {
+      console.log('📄 Redirigiendo a Docs...');
+      localStorage.setItem('devcenter_docs_initial_prompt', message);
+      // Usar setTimeout para asegurar que localStorage se guarde antes de redirigir
+      setTimeout(() => {
+        window.location.href = '/docs/'; // Ruta a docs
       }, 100);
       return;
     }
@@ -818,15 +857,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = '/docs/';
   }
 
-  // Click en botón Docs
-  if (docsBtn) {
-    docsBtn.addEventListener('click', () => {
-      window.location.href = '/docs/';
-    });
-  }
+  // El botón Docs ahora es solo un selector de modo (no tiene handler especial)
+  // La acción se ejecuta a través del botón "Iniciar"
 
   // Cargar documentos al inicio
   loadGeneratedDocs();
+
+  // Inicializar placeholder y texto del botón
+  updatePlaceholder('chat');
 
   console.log('✅ Gemini chat integration ready');
 });
