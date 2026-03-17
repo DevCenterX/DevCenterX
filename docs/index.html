@@ -4,55 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevCenter Docs</title>
-    <!-- Tailwind CSS para el diseño -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    animation: {
-                        'gradient-x': 'gradient-x 15s ease infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'float-delayed': 'float 8s ease-in-out 3s infinite',
-                        'epic-enter': 'epicEnter 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'success-pop': 'successPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        'pan-grid': 'panGrid 20s linear infinite',
-                        'spin-slow': 'spin 20s linear infinite',
-                        'spin-reverse': 'spin 25s linear infinite reverse',
-                    },
-                    keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
-                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
-                        },
-                        'float': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        'epicEnter': {
-                            '0%': { opacity: '0', transform: 'scale(0.85) translateY(40px)' },
-                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
-                        },
-                        'pulseGlow': {
-                            '0%, 100%': { opacity: 1, transform: 'scale(1)' },
-                            '50%': { opacity: .7, transform: 'scale(1.1)' },
-                        },
-                        'successPop': {
-                            '0%': { transform: 'scale(0.5)', opacity: '0' },
-                            '70%': { transform: 'scale(1.1)', opacity: '1' },
-                            '100%': { transform: 'scale(1)', opacity: '1' }
-                        },
-                        'panGrid': {
-                            '0%': { transform: 'translateY(0)' },
-                            '100%': { transform: 'translateY(24px)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS compilado localmente -->
+    <link rel="stylesheet" href="./assets/tailwind.css">
     <!-- Iconos de Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Librería para generar Excel con estilos PRO (ExcelJS) -->
@@ -309,31 +262,13 @@
                     // Forzamos el reflow
                     void mainContainer.offsetWidth;
                     mainContainer.classList.remove('opacity-0', 'scale-95');
-                    obtenerApiKey(); // Cargar la API key al mostrar la app
                 }, 1000);
             }, 2500); // La pantalla dura 2.5 segundos visible
         });
 
         // Configuración de la API
-        let apiKey = ""; 
-        let fileData = null; 
+        let fileData = null;
         let currentType = null;
-
-        // Función para obtener la API key del servidor (desde variables de entorno de Vercel)
-        async function obtenerApiKey() {
-            try {
-                const response = await fetch('/api/getGeminiKey');
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener la API key');
-                }
-                const data = await response.json();
-                apiKey = data.apiKey;
-                console.log('API key de Gemini cargada correctamente');
-            } catch (error) {
-                console.error('Error al obtener la API key:', error);
-                mostrarError('Error al cargar la configuración: ' + error.message);
-            }
-        }
 
         // --- Esquemas JSON ---
         const wordSchema = { type: "OBJECT", properties: { title: { type: "STRING" }, subtitle: { type: "STRING" }, sections: { type: "ARRAY", items: { type: "OBJECT", properties: { heading: { type: "STRING" }, content: { type: "STRING" } } } } } };
@@ -422,33 +357,63 @@
         }
 
         async function callGeminiAPI(prompt, schema) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: "Eres una IA corporativa de grado empresarial. Responde EXCLUSIVAMENTE en JSON puro, sin markdown, ni saludos." }] },
-                generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+            const requestBody = {
+                message: prompt,
+                mode: 'docs',
+                schema
             };
+            const retryDelays = [1000, 2000, 4000, 8000, 16000];
 
-            for (let i = 0; i < 5; i++) {
+            for (let attempt = 0; attempt < retryDelays.length; attempt++) {
                 try {
-                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    const result = await response.json();
-                    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!rawText) throw new Error("Respuesta vacía");
-                    
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const text = await response.text();
+                    let payload = null;
+
+                    if (text) {
+                        try {
+                            payload = JSON.parse(text);
+                        } catch (jsonError) {
+                            if (!response.ok) {
+                                throw new Error(text);
+                            }
+                            throw new Error('Respuesta JSON inválida del servidor.');
+                        }
+                    }
+
+                    if (!response.ok) {
+                        const message = payload?.error || text || `HTTP ${response.status}`;
+                        throw new Error(message);
+                    }
+
+                    if (!payload || !payload.success) {
+                        throw new Error(payload?.error || 'Respuesta inválida del servidor.');
+                    }
+
+                    const rawText = payload.reply?.trim();
+                    if (!rawText) {
+                        throw new Error('Respuesta vacía del modelo.');
+                    }
+
                     const startIndex = rawText.indexOf('{');
                     const endIndex = rawText.lastIndexOf('}');
-                    
+
                     if (startIndex === -1 || endIndex === -1) {
-                        throw new Error("La IA no devolvió un JSON válido.");
+                        throw new Error('La IA no devolvió un JSON válido.');
                     }
-                    
+
                     const jsonString = rawText.substring(startIndex, endIndex + 1);
                     return JSON.parse(jsonString);
                 } catch (error) {
-                    if (i === 4) throw new Error("Conexión fallida tras varios intentos.");
-                    await delay([1000, 2000, 4000, 8000, 16000][i]);
+                    if (attempt === retryDelays.length - 1) {
+                        throw new Error(error.message || 'Conexión fallida tras varios intentos.');
+                    }
+                    await delay(retryDelays[attempt]);
                 }
             }
         }

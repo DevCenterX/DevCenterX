@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:tailwind": "tailwindcss -i ./tailwind-input.css -o ./docs/assets/tailwind.css --minify"
   },
   "dependencies": {
     "lit": "^3.3.0",
@@ -14,7 +15,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
-    
+    "tailwindcss": "^3.4.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

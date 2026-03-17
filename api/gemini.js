@@ -22,7 +22,7 @@ export default async function handler(request, response) {
       return;
     }
 
-    const { message, mode, conversationHistory = [] } = request.body;
+    const { message, mode, conversationHistory = [], schema } = request.body;
 
     if (!message) {
       response.status(400).json({ error: 'message required' });
@@ -64,12 +64,19 @@ IMPORTANTE PARA RESPUESTAS CON CÓDIGO:
       parts: [{ text: systemMessage + message }]
     });
 
+    const generationConfig = {
+      temperature: 0.9,
+      maxOutputTokens: 4096,
+    };
+
+    if (schema) {
+      generationConfig.responseMimeType = 'application/json';
+      generationConfig.responseSchema = schema;
+    }
+
     const payload = {
-      contents: contents,
-      generationConfig: {
-        temperature: 0.9,
-        maxOutputTokens: 4096,
-      },
+      contents,
+      generationConfig,
     };
 
     const geminiRes = await fetch(url, {
