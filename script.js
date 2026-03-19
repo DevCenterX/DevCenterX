@@ -425,6 +425,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchBox = document.getElementById('searchBox');
   const startChatBtn = document.getElementById('startChatBtn');
   let selectedMode = 'chat'; // Modo por defecto
+
+  const modeSelectors = document.querySelectorAll('.mode-selector');
+
+  modeSelectors.forEach(selector => {
+    selector.addEventListener('click', () => {
+      // Remove active class from all selectors
+      modeSelectors.forEach(s => s.classList.remove('active'));
+      // Add active class to the clicked one
+      selector.classList.add('active');
+      // Update selectedMode variable
+      selectedMode = selector.dataset.mode;
+      console.log('Modo seleccionado:', selectedMode);
+    });
+  });
   
   if (!searchBox || !startChatBtn) {
     console.log('⚠️ Chat elements not found');

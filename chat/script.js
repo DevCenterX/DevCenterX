@@ -1,5 +1,22 @@
 //====================================================== Configuración ======================================================
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ================= CONFIGURACIÓN DE MODELOS POR MODO =======================
 // Cada modo puede tener su propio modelo de IA optimizado para la tarea específica
 // rpm = Requests Per Minute (peticiones por minuto)
@@ -1282,7 +1299,9 @@ function loadActiveAbility() {
 
 // Función para aplicar habilidades especiales
 function updateModeIcon(ability) {
-    const modeIcon = document.querySelector('.mode-icon');
+    // Buscar específicamente el SVG dentro del botón de abilities (en el input-container)
+    const abilitiesMenuBtn = document.getElementById('abilitiesMenuBtn');
+    const modeIcon = abilitiesMenuBtn ? abilitiesMenuBtn.querySelector('.mode-icon') : null;
     if (!modeIcon) return;
     
     // Iconos SVG para cada modo

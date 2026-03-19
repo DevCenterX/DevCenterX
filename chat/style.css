@@ -487,6 +487,43 @@ body.light-theme .mode-selector.active:hover {
     display: none;
 }
 
+.home-btn {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    min-width: 44px;
+    max-width: 52px;
+    width: auto;
+    height: 44px;
+    padding: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+}
+
+.home-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
+}
+
+.home-btn:active {
+    transform: scale(0.95);
+}
+
+.home-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
 .new-chat-btn {
     background: var(--accent);
     border: none;
