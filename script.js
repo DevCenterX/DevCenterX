@@ -437,6 +437,35 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update selectedMode variable
       selectedMode = selector.dataset.mode;
       console.log('Modo seleccionado:', selectedMode);
+
+      // Update button text based on mode
+      if (startChatBtn) {
+        if (selectedMode === 'programar') {
+          startChatBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            Iniciar Agent
+          `;
+        } else if (selectedMode === 'docs') {
+          startChatBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            Iniciar Docs
+          `;
+        } else {
+          startChatBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+            </svg>
+            Iniciar chat
+          `;
+        }
+      }
     });
   });
   
@@ -455,12 +484,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Función para mostrar notificaciones personalizadas
+  function showNotification(message, icon = '⚠️') {
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.innerHTML = `
+      <div class="notification-icon">${icon}</div>
+      <p>${message}</p>
+    `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  }
+
+  // Estilos para la notificación (inyectados en el head)
+  const notificationStyles = `
+    .custom-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #333;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .custom-notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .notification-icon {
+      font-size: 24px;
+    }
+  `;
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = notificationStyles;
+  document.head.appendChild(styleSheet);
+
+
   // Función para enviar mensaje localmente sin redirigir
   const sendMessageLocal = () => {
     const message = searchBox.value.trim();
     
     if (!message) {
-      console.log('⚠️ Empty message');
+      showNotification('Por favor, escribe algo.');
       return;
     }
 
@@ -484,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = searchBox.value.trim();
     
     if (!message) {
-      console.log('⚠️ Empty message');
+      showNotification('Por favor, escribe algo para empezar.');
       return;
     }
 
