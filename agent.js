@@ -22,30 +22,37 @@ const promptData = [
   {
     app: 'una app',
     audience: 'dueños de mascotas',
-    feature: 'planificar comidas y generar',
-    feature2: 'listas de compras basadas en preferencias',
-    feature3: 'alimenticias'
+    feature: 'planificar comidas, generar',
+    feature2: 'listas de compras y rastrear',
+    feature3: 'la salud de sus mascotas'
   },
   {
-    app: 'una plataforma',
-    audience: 'estudiantes universitarios',
-    feature: 'crear cronogramas de estudio y',
-    feature2: 'organizar tareas por materia con',
-    feature3: 'recordatorios automáticos'
-  },
-  {
-    app: 'un dashboard',
-    audience: 'emprendedores',
-    feature: 'monitorear ventas, gastos e',
-    feature2: 'inventario en tiempo real con',
-    feature3: 'reportes analíticos'
-  },
-  {
-    app: 'una aplicación',
-    audience: 'equipos remotos',
+    app: 'un dashboard profesional',
+    audience: 'agencias creativas',
     feature: 'gestionar proyectos, asignar tareas y',
-    feature2: 'colaborar en documentos con',
-    feature3: 'integración de video llamadas'
+    feature2: 'monitorear cronogramas con',
+    feature3: 'reportes en tiempo real'
+  },
+  {
+    app: 'una plataforma SaaS',
+    audience: 'educadores',
+    feature: 'impartir clases, asignar trabajos y',
+    feature2: 'calificar con comentarios y',
+    feature3: 'analítica de desempeño'
+  },
+  {
+    app: 'una tienda online',
+    audience: 'pequeños negocios',
+    feature: 'vender productos, procesar pagos y',
+    feature2: 'gestionar inventario con',
+    feature3: 'seguimiento de pedidos automático'
+  },
+  {
+    app: 'una herramienta colaborativa',
+    audience: 'equipos remotos',
+    feature: 'colaborar en documentos, compartir',
+    feature2: 'archivos y comunicarse en tiempo real',
+    feature3: 'desde cualquier lugar'
   }
 ];
 
