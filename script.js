@@ -433,47 +433,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('✅ Gemini chat elements loaded');
 
-  // Event listeners para los botones de modo selector
-  const modeSelectors = document.querySelectorAll('.mode-selector');
-  modeSelectors.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Remover clase active de todos los botones
-      modeSelectors.forEach(btn => btn.classList.remove('active'));
-      
-      // Agregar clase active al botón clickeado
-      button.classList.add('active');
-      
-      // Actualizar modo seleccionado
-      selectedMode = button.dataset.mode;
-      console.log('🎯 Modo seleccionado:', selectedMode);
-      
-      // Actualizar placeholder basado en el modo
-      updatePlaceholder(selectedMode);
-    });
-  });
-
-  // Función para actualizar el placeholder y el botón
-  function updatePlaceholder(mode) {
-    const placeholders = {
-      chat: 'Escribe tu pregunta o idea...',
-      programar: 'Describe el código que necesitas...',
-      docs: 'Describe el documento que necesitas...'
-    };
-    searchBox.placeholder = placeholders[mode] || 'Escribe tu idea...';
-    
-    // Actualizar texto del botón Iniciar
-    if (startChatBtn) {
-      const buttonTexts = {
-        chat: 'Iniciar chat',
-        programar: 'Iniciar programación',
-        docs: 'Iniciar docs'
-      };
-      startChatBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>' + buttonTexts[mode];
-    }
-  }
-
   // Event listener en el botón "Iniciar" - Ejecutar acción según modo seleccionado
   if (startChatBtn) {
     startChatBtn.addEventListener('click', () => {
@@ -864,7 +823,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGeneratedDocs();
 
   // Inicializar placeholder y texto del botón
-  updatePlaceholder('chat');
-
   console.log('✅ Gemini chat integration ready');
 });
