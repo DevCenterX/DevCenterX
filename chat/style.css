@@ -917,6 +917,7 @@ body {
     padding: 2.5rem 0 3rem;
     position: relative;
     margin-top: auto;
+    flex-shrink: 0;
 }
 
 .input-container {
