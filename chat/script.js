@@ -1,65 +1,61 @@
 //====================================================== Configuración ======================================================
+// CLAVE DE API ÚNICA PARA TODOS LOS MODELOS
+// Todas las APIs de los modelos usarán esta clave. Simplifica la gestión al no tener que configurar cada modelo por separado.
+const API_KEY = 'AIzaSyAKCtl0AmF0Vqjp_lJQdNVCPY92V4hF4QY';
 
+// ================= URLs DE LOS MODELOS DE IA =======================
+// URLs base para cada modelo de IA. Facilita la actualización si las URLs cambian en el futuro.
+const MODEL_URLS = {
+    program: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
+    memory: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+    info: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
+    agent: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+};
 
+// ================= CONFIGURACIÓN DE GENERACIÓN INTELIGENTE ================
+// Ajusta la creatividad y diversidad de las respuestas de la IA.
+// TEMPERATURE: Controla la aleatoriedad. Más alto = más creativo.
+// TOP_K: Considera un número menor de tokens probables. Reduce la aleatoriedad.
+// TOP_P: Selecciona tokens cuya probabilidad acumulada supera un umbral. Más diversidad.
+let TEMPERATURE = 1.0;    // Máxima creatividad para respuestas únicas y variadas
+let TOP_K = 50;           // Tokens candidatos amplios para mayor variación
+let TOP_P = 0.95;         // Probabilidad alta para máxima diversidad
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// ================= CONFIGURACIÓN DE TOKENS BASE POR MODO =======================
+// Define la cantidad de tokens que cada modo puede usar como máximo en sus respuestas.
+// Esto ayuda a controlar la longitud y el detalle de las respuestas según la tarea.
+const BASE_TOKENS_BY_MODE = {
+    info: 7000,      // Modo Información: Respuestas informativas normales.
+    memory: 8000,    // Modo Memoria Extendida: Mayor capacidad para análisis con historial.
+    program: 90000,  // Modo Programador: SÚPER ALTA CAPACIDAD para código extenso.
+    agent: 7000      // Modo Agente: Balance general para tareas variadas.
+};
 
 // ================= CONFIGURACIÓN DE MODELOS POR MODO =======================
-// Cada modo puede tener su propio modelo de IA optimizado para la tarea específica
+// Asigna URLs y límites de peticiones a cada modo de IA.
 // rpm = Requests Per Minute (peticiones por minuto)
 // tpm = Tokens Per Minute (tokens por minuto)
 // rpd = Requests Per Day (peticiones por día)
-
 const MODE_SPECIFIC_MODELS = {
-    // Modo PROGRAMADOR: Optimizado para generación de código extenso
     program: {
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
-        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
-        rpm: 30,        // 30 peticiones por minuto - Alta frecuencia para desarrollo rápido
-        tpm: 1000000,   // 1 millón de tokens por minuto - Capacidad masiva para código
-        rpd: 200        // 200 peticiones por día - Suficiente para desarrollo intensivo
+        url: MODEL_URLS.program,
+        apiKey: API_KEY,
+        rpm: 30, tpm: 1000000, rpd: 200
     },
-
-    // Modo MEMORIA EXTENDIDA: Optimizado para análisis contextual profundo
     memory: {
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
-        rpm: 5,         // 5 peticiones por minuto - Más lento pero más preciso
-        tpm: 125000,    // 125K tokens por minuto - Alto para análisis detallado
-        rpd: 100        // 100 peticiones por día - Moderado para análisis profundos
+        url: MODEL_URLS.memory,
+        apiKey: API_KEY,
+        rpm: 5, tpm: 125000, rpd: 100
     },
-
-    // Modo INFORMACIÓN: Optimizado para respuestas rápidas y útiles
     info: {
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
-        apiKey: 'AIzaSyBAQEmCdI6JPrUwZq1GpkhxeZstQpwqEeM',
-        rpm: 15,        // 15 peticiones por minuto - Buen balance velocidad/precisión
-        tpm: 250000,    // 250K tokens por minuto - Suficiente para respuestas informativas
-        rpd: 1000       // 1000 peticiones por día - Alto volumen para consultas generales
+        url: MODEL_URLS.info,
+        apiKey: API_KEY,
+        rpm: 15, tpm: 250000, rpd: 1000
     },
-
-
-
-    // Modo AGENTE (por defecto): Balance general entre velocidad y capacidad
     agent: {
-        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-        apiKey: 'AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY',
-        rpm: 15,        // 15 peticiones por minuto - Buen balance general
-        tpm: 1000000,   // 1 millón de tokens por minuto - Alta capacidad
-        rpd: 200        // 200 peticiones por día - Suficiente para uso general
+        url: MODEL_URLS.agent,
+        apiKey: API_KEY,
+        rpm: 15, tpm: 1000000, rpd: 200
     }
 };
 // ===========================================================================
@@ -69,20 +65,6 @@ let MAX_MESSAGES_PER_CHAT = 30; // <--- Cambia este valor para ajustar el límit
 const RESET_LIMIT_MINUTES = 60; // Tiempo en minutos para restablecer el límite
 // ===========================================================================
 
-// ================= CONFIGURACIÓN DE GENERACIÓN INTELIGENTE ================
-let TEMPERATURE = 1.0;        // Máxima creatividad para respuestas únicas y variadas
-let TOP_K = 50;               // Tokens candidatos amplios para mayor variación
-let TOP_P = 0.95;             // Probabilidad alta para máxima diversidad
-
-// ================= CONFIGURACIÓN DE TOKENS BASE POR MODO =======================
-// Configuración de tokens base para cada modo (antes de aplicar el multiplicador de modo de respuesta)
-const BASE_TOKENS_BY_MODE = {
-    info: 7000,      // Modo Información - Respuestas informativas normales
-    memory: 8000,    // Modo Memoria Extendida - Mayor capacidad para análisis con historial
-    program: 90000,  // Modo Programador - SÚPER ALTA CAPACIDAD para código extenso
-
-    agent: 7000      // Modo Agente - Balance general
-};
 // ===========================================================================
 
 // ================= SISTEMA DE MODO DE RESPUESTA ===========================
@@ -1306,10 +1288,10 @@ function updateModeIcon(ability) {
     
     // Iconos SVG para cada modo
     const icons = {
-        agent: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>',
-        info: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
-        memory: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M9 10h6M9 14h6"></path>',
-        program: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line>'
+        agent: '<path d="M12 2a10 10 0 0 0-9.2 13.34c.2.45.1.98-.22 1.39a.5.5 0 0 0 .32.87H19.1a.5.5 0 0 0 .32-.87c-.32-.41-.42-.94-.22-1.39A10 10 0 0 0 12 2zm0 18H5.98c.2-.47.33-1 .33-1.55a2.5 2.5 0 0 1 5-2.18 2.5 2.5 0 0 1 5 2.18c0 .55.13 1.08.33 1.55H12zM10 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm8 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>',
+        info: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-6m0-2h.01M16 11h-4"/>',
+        memory: '<path d="M12 2a9 9 0 0 0-9 9c0 4.42 2.87 8.17 6.84 8.83a.5.5 0 0 0 .36-.05.5.5 0 0 0 .1-.94A7 7 0 1 1 12 5a.5.5 0 0 0 0-1z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2 4a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/>',
+        program: '<path d="M10 9.5l-2.5 2.5 2.5 2.5m4-5l2.5 2.5-2.5 2.5M12 4l-4 16h8l4-16h-8z"/>'
     };
     
     // Actualizar el contenido del SVG
