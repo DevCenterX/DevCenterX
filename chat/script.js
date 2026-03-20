@@ -1,8 +1,4 @@
 //====================================================== Configuración ======================================================
-// CLAVE DE API ÚNICA PARA TODOS LOS MODELOS
-// Todas las APIs de los modelos usarán esta clave. Simplifica la gestión al no tener que configurar cada modelo por separado.
-const API_KEY = 'AIzaSyAKCtl0AmF0Vqjp_lJQdNVCPY92V4hF4QY';
-
 // ================= URLs DE LOS MODELOS DE IA =======================
 // URLs base para cada modelo de IA. Facilita la actualización si las URLs cambian en el futuro.
 const MODEL_URLS = {
@@ -39,25 +35,66 @@ const BASE_TOKENS_BY_MODE = {
 const MODE_SPECIFIC_MODELS = {
     program: {
         url: MODEL_URLS.program,
-        apiKey: API_KEY,
         rpm: 30, tpm: 1000000, rpd: 200
     },
     memory: {
         url: MODEL_URLS.memory,
-        apiKey: API_KEY,
         rpm: 5, tpm: 125000, rpd: 100
     },
     info: {
         url: MODEL_URLS.info,
-        apiKey: API_KEY,
         rpm: 15, tpm: 250000, rpd: 1000
     },
     agent: {
         url: MODEL_URLS.agent,
-        apiKey: API_KEY,
         rpm: 15, tpm: 1000000, rpd: 200
     }
 };
+
+async function callChatGemini({ url, payload, apiKeyOverride, contextLabel }) {
+    if (!url) {
+        throw new Error('URL requerida para la llamada a ChatGemini');
+    }
+
+    const requestBody = {
+        url,
+        payload: payload || {},
+    };
+
+    if (apiKeyOverride) {
+        requestBody.apiKey = apiKeyOverride;
+    }
+
+    const response = await fetch('/api/ChatGemini', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    const rawResponse = await response.text();
+    let parsedResponse = null;
+
+    if (rawResponse) {
+        try {
+            parsedResponse = JSON.parse(rawResponse);
+        } catch (parseError) {
+            parsedResponse = null;
+        }
+    }
+
+    if (!response.ok) {
+        const errorFromServer =
+            (parsedResponse && parsedResponse.error) ||
+            rawResponse ||
+            `Error HTTP ${response.status}`;
+        const label = contextLabel ? `${contextLabel}: ` : '';
+        throw new Error(`${label}${errorFromServer}`);
+    }
+
+    return parsedResponse ?? rawResponse;
+}
 // ===========================================================================
 
 // ================= LIMITE DE MESAJES Y TIEMPO POR CHAT =====================
@@ -2911,7 +2948,7 @@ RESPUESTA FINAL:
 Devuelve solo el número del modo correcto:
 1, 2 o 3`;
 
-const requestBody = {
+        const payload = {
             contents: [{
                 parts: [{
                     text: decisionPrompt
@@ -2925,20 +2962,14 @@ const requestBody = {
             }
         };
 
-        const response = await fetch(`${url}?key=${apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
+        const data = await callChatGemini({
+            url,
+            payload,
+            apiKeyOverride: apiKey,
+            contextLabel: `decideAgentMode (${selectedAi.name})`
         });
 
-        if (!response.ok) {
-            throw new Error(`Error en la API: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const decision = data.candidates[0].content.parts[0].text.trim();
+        const decision = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
         
         // Extraer el número de la respuesta
         const modeNumber = parseInt(decision.match(/\d+/)?.[0]);
@@ -3571,59 +3602,32 @@ El resultado debe ser una obra maestra digital que combine la elegancia de Apple
     const apiCall = async (ai) => {
         console.log(`🌐 Llamando a API generateWebpage: ${ai.name}`);
 
-        const response = await fetch(`${ai.url}?key=${ai.apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: systemPrompt,
-                            },
-                        ],
-                    },
-                ],
-                generationConfig: {
-                    temperature: TEMPERATURE,
-                    topK: TOP_K,
-                    topP: TOP_P,
-                    maxOutputTokens: getCurrentMaxTokens(), // Tokens dinámicos según modo activo
-                }
+        const payload = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: systemPrompt,
+                        },
+                    ],
+                },
+            ],
+            generationConfig: {
+                temperature: TEMPERATURE,
+                topK: TOP_K,
+                topP: TOP_P,
+                maxOutputTokens: getCurrentMaxTokens(), // Tokens din�micos seg�n modo activo
+            }
+        };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            }),
+        const data = await callChatGemini({
+            url: ai.url,
+            payload,
+            apiKeyOverride: ai.apiKey,
+            contextLabel: `generateWebpage (${ai.name})`
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Error:', errorText);
-            throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        const code = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const code = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
         if (!code) {
             throw new Error('No se pudo generar código HTML');
@@ -3804,38 +3808,32 @@ Responde de manera:
     const apiCall = async (ai) => {
         console.log(`🌐 Llamando a API generateChatResponse: ${ai.name}`);
 
-        const response = await fetch(`${ai.url}?key=${ai.apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: systemPrompt + `\n\nMensaje del usuario: ${prompt}`,
-                            },
-                        ],
-                    },
-                ],
-                generationConfig: {
-                    temperature: TEMPERATURE,
-                    topK: TOP_K,
-                    topP: TOP_P,
-                    maxOutputTokens: getCurrentMaxTokens(),
-                }
-            }),
+        const payload = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: systemPrompt + `\n\nMensaje del usuario: ${prompt}`,
+                        },
+                    ],
+                },
+            ],
+            generationConfig: {
+                temperature: TEMPERATURE,
+                topK: TOP_K,
+                topP: TOP_P,
+                maxOutputTokens: getCurrentMaxTokens(),
+            }
+        };
+
+        const data = await callChatGemini({
+            url: ai.url,
+            payload,
+            apiKeyOverride: ai.apiKey,
+            contextLabel: `generateChatResponse (${ai.name})`
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Error:', errorText);
-            throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        const message = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const message = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
         if (!message) {
             throw new Error('No se pudo generar respuesta');
