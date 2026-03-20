@@ -278,23 +278,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const greetingText = document.getElementById('greetingText');
       if (greetingText) {
 const greetings = [
-  `${username}, ¿creamos algo hoy?`,
-  `¿Listo ${username}? Vamos a crear`,
-  `${username}, ¿qué haremos?`,
-  `¡Bienvenido ${username}! ¿Qué construimos?`,
-  `${username}, es hora de crear`,
-  `¿Qué le parece ${username}? Empecemos`,
-  `${username}, ¡creemos juntos!`,
-  `${username}, manos a la obra`,
+  `${username}, ¿qué tal?`,
+  `Hola ${username}, ¿en qué andas?`,
+  `Hey ${username}, ¿todo bien?`,
+  `¿Qué onda ${username}?`,
+  `Hola ${username}, ¿qué quieres hacer hoy?`,
+  `${username}, ¿qué se te antoja hacer?`,
+  `¿Cómo vas ${username}?`,
+  `${username}, ¿en qué te ayudo?`,
+  `Hey ${username}, dime qué necesitas`,
+  `${username}, ¿qué traes en mente?`,
+  `Hola ${username}, aquí estoy`,
+  `${username}, ¿todo listo?`,
+  `¿Qué plan hoy, ${username}?`,
+  `${username}, ¿qué quieres probar?`,
+  `Hola ${username}, ¿qué sigue?`,
+  `${username}, ¿qué hacemos ahora?`,
+  `Hey ${username}, ¿qué quieres crear?`,
+  `${username}, ¿todo tranquilo?`,
+  `Hola ${username}, ¿en qué te doy una mano?`,
+  `${username}, ¿qué necesitas hoy?`,
+  `¿Qué cuentas, ${username}?`,
+  `${username}, dime qué quieres hacer`,
+  `Hola ${username}, ¿qué idea traes?`,
+  `${username}, ¿empezamos o qué?`,
+  `Hey ${username}, listo cuando tú digas`,
+  `${username}, ¿qué quieres armar?`,
+  `Hola ${username}, ¿cómo te ayudo hoy?`,
+  `${username}, ¿todo en orden?`,
   `¿Qué sigue, ${username}?`,
-  `¡A darle, ${username}!`,
-  `${username}, ¿qué sigue en la lista?`,
-  `¡Hola ${username}! A diseñar`,
-  `${username}, materializa tu idea`,
-  `¿Inspirado, ${username}?`,
-  `${username}, hagamos magia`,
-  `¡Dale, ${username}! Empieza ahora`,
-  `${username}, el lienzo es tuyo`
+  `${username}, tú dime y empezamos`
 ];
         
         const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -877,15 +890,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const createDocEmptyBtn = document.getElementById('createDocEmptyBtn');
 
   const docMeta = {
-    word: { label: 'Documento Word', icon: '📄', short: 'Word' },
-    powerpoint: { label: 'Presentación PowerPoint', icon: '📊', short: 'PowerPoint' },
-    excel: { label: 'Hoja de cálculo Excel', icon: '📈', short: 'Excel' }
-  };
-
-  const docsPageType = {
-    word: 'word',
-    powerpoint: 'ppt',
-    excel: 'xls'
+    word: {
+      label: 'Documento Word',
+      short: 'Word',
+      iconClass: 'fa-file-word',
+      themeClass: 'recent-doc-icon-word'
+    },
+    powerpoint: {
+      label: 'Presentación PowerPoint',
+      short: 'PowerPoint',
+      iconClass: 'fa-file-powerpoint',
+      themeClass: 'recent-doc-icon-ppt'
+    },
+    excel: {
+      label: 'Hoja de cálculo Excel',
+      short: 'Excel',
+      iconClass: 'fa-file-excel',
+      themeClass: 'recent-doc-icon-excel'
+    }
   };
 
   function formatDocTimestamp(value) {
@@ -900,20 +922,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function openDocPreview(doc) {
-    const docType = docsPageType[doc.docType] || 'word';
-    const payload = {
-      docType,
-      fileName: doc.fileName || 'Documento',
-      timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('devcenter_docs_config', JSON.stringify(payload));
-    window.location.href = '/docs/';
+  function getDocMeta(type) {
+    const generator = window.DevCenterXDocGenerator;
+    const normalized = generator && typeof generator.normalizeDocType === 'function'
+      ? generator.normalizeDocType(type)
+      : (type || 'word');
+    return docMeta[normalized] || docMeta.word;
+  }
+
+  function sanitizeFileName(value) {
+    if (!value) return 'Documento-DevCenterX';
+    return value
+      .toString()
+      .trim()
+      .replace(/[\\/:*?"<>|]+/g, '')
+      .replace(/\s+/g, ' ')
+      .replace(/ /g, '_');
+  }
+
+  async function downloadRecentDoc(doc) {
+    const generator = window.DevCenterXDocGenerator;
+    if (!doc || !doc.data || !generator) {
+      window.location.href = '/docs/';
+      return;
+    }
+
+    const typeKey = generator.normalizeDocType
+      ? generator.normalizeDocType(doc.docType)
+      : (doc.docType || 'word');
+    const normalizedType = ['powerpoint', 'excel'].includes(typeKey) ? typeKey : 'word';
+    const baseName = sanitizeFileName(doc.fileName || `Documento-${new Date(doc.timestamp || Date.now()).toISOString().slice(0, 10)}`) || `Documento-${Date.now()}`;
+
+    try {
+      let blob;
+      if (normalizedType === 'powerpoint') {
+        blob = await generator.generatePptxBlob(doc.data);
+      } else if (normalizedType === 'excel') {
+        blob = await generator.generateExcelBlob(doc.data);
+      } else {
+        blob = await generator.generateWordBlob(doc.data);
+      }
+
+      const extension = normalizedType === 'powerpoint'
+        ? 'pptx'
+        : normalizedType === 'excel'
+          ? 'xlsx'
+          : 'docx';
+
+      generator.downloadBlob(blob, `${baseName}.${extension}`);
+    } catch (error) {
+      console.error('Error descargando doc reciente', error);
+      alert('No se pudo descargar el documento. Se abrirá la sección de Docs para reintentar.');
+      window.location.href = '/docs/';
+    }
   }
 
   function createDocCard(doc) {
-    const normalizedType = doc.docType || 'word';
-    const meta = docMeta[normalizedType] || docMeta.word;
+    const meta = getDocMeta(doc.docType);
     const fileName = doc.fileName || 'Documento sin nombre';
     const dateLabel = formatDocTimestamp(doc.timestamp);
 
@@ -922,15 +987,26 @@ document.addEventListener('DOMContentLoaded', () => {
     card.className = 'recent-doc-card';
     card.title = fileName;
 
+    const iconWrapper = document.createElement('span');
+    iconWrapper.className = `recent-doc-icon ${meta.themeClass}`;
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${meta.iconClass}`;
+    icon.setAttribute('aria-hidden', 'true');
+    iconWrapper.appendChild(icon);
+
     const top = document.createElement('div');
     top.className = 'recent-doc-card-top';
     const badge = document.createElement('span');
     badge.className = 'recent-doc-badge';
-    badge.textContent = `${meta.icon} ${meta.short}`;
+    badge.textContent = meta.short;
     const dateEl = document.createElement('span');
     dateEl.className = 'recent-doc-date';
     dateEl.textContent = dateLabel;
     top.append(badge, dateEl);
+
+    const header = document.createElement('div');
+    header.className = 'recent-doc-card-header';
+    header.append(iconWrapper, top);
 
     const nameEl = document.createElement('p');
     nameEl.className = 'recent-doc-name';
@@ -946,8 +1022,15 @@ document.addEventListener('DOMContentLoaded', () => {
     action.textContent = 'Abrir';
     footer.append(tag, action);
 
-    card.append(top, nameEl, footer);
-    card.addEventListener('click', () => openDocPreview(doc));
+    card.append(header, nameEl, footer);
+    card.addEventListener('click', async () => {
+      card.classList.add('recent-doc-card-loading');
+      try {
+        await downloadRecentDoc(doc);
+      } finally {
+        card.classList.remove('recent-doc-card-loading');
+      }
+    });
     return card;
   }
 

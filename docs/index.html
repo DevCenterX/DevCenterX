@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
     <!-- Librería para generar Word (docx) -->
     <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+    <script src="assets/doc-generator.js"></script>
     
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -195,6 +196,20 @@
     </style>
 </head>
 <body class="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-8 text-slate-100 relative overflow-x-hidden">
+    <script>
+        (function() {
+            try {
+                var isLogged = localStorage.getItem('devcenter_isLoggedIn');
+                var uid = localStorage.getItem('devcenter_user_id');
+                if (!(isLogged === 'true' && uid)) {
+                    window.location.replace('/agent.html');
+                }
+            } catch (e) {
+                console.error('Storage check failed', e);
+                window.location.replace('/agent.html');
+            }
+        })();
+    </script>
 
     <!-- PANTALLA DE BIENVENIDA ÉPICA -->
     <div id="welcomeScreen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020617] transition-all duration-1000 ease-in-out">
@@ -603,260 +618,41 @@
 
         async function generarWord(data) {
             try {
-                // Acceder correctamente a la librería docx
-                const docxLib = window.docx;
-                if (!docxLib) {
-                    throw new Error("Librería docx no cargada. Recarga la página.");
+                const generator = window.DevCenterXDocGenerator;
+                if (!generator || !generator.generateWordBlob) {
+                    throw new Error('El generador de documentos no está disponible');
                 }
-                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = docxLib;
-                
-                const children = [];
-                
-                // Título principal
-                children.push(new Paragraph({ 
-                    text: data.title || "DevCenterX Documento", 
-                    heading: HeadingLevel.TITLE, 
-                    alignment: AlignmentType.CENTER,
-                    spacing: { after: 200 } 
-                }));
-
-                // Subtítulo
-                if (data.subtitle) {
-                    children.push(new Paragraph({ 
-                        alignment: AlignmentType.CENTER,
-                        spacing: { after: 600 },
-                        children: [new TextRun({ text: data.subtitle, color: "64748B", italics: true, size: 28 })]
-                    }));
-                }
-                
-                if (data.sections) {
-                    data.sections.forEach(sec => {
-                        // Subtítulos con borde inferior (Estilo PRO)
-                        children.push(new Paragraph({ 
-                            text: sec.heading, 
-                            heading: HeadingLevel.HEADING_1, 
-                            spacing: { before: 400, after: 200 },
-                            border: {
-                                bottom: { color: "3B82F6", space: 1, style: "single", size: 12 }
-                            }
-                        }));
-                        // Contenido
-                        children.push(new Paragraph({ 
-                            alignment: AlignmentType.JUSTIFIED,
-                            children: [new TextRun({ text: sec.content, size: 24, font: "Calibri", color: "334155" })], 
-                            spacing: { after: 300, line: 360 } 
-                        }));
-                    });
-                }
-
-                const doc = new Document({ 
-                    styles: {
-                        paragraphStyles: [
-                            { id: "Title", name: "Title", basedOn: "Normal", next: "Normal", run: { color: "1E3A8A", size: 64, bold: true, font: "Arial" } },
-                            { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", run: { color: "0F172A", size: 32, bold: true, font: "Arial" } }
-                        ]
-                    },
-                    sections: [{ 
-                        properties: {}, 
-                        // Encabezado Corporativo
-                        headers: {
-                            default: new Header({
-                                children: [
-                                    new Paragraph({
-                                        alignment: AlignmentType.RIGHT,
-                                        children: [
-                                            new TextRun({ text: "Generado por ", color: "94A3B8", size: 20 }),
-                                            new TextRun({ text: "DevCenterX Agent", color: "3B82F6", bold: true, size: 20 })
-                                        ]
-                                    })
-                                ]
-                            })
-                        },
-                        // Pie de página con numeración
-                        footers: {
-                            default: new Footer({
-                                children: [
-                                    new Paragraph({
-                                        alignment: AlignmentType.CENTER,
-                                        children: [
-                                            new TextRun({ text: "Página ", color: "94A3B8", size: 20 }),
-                                            new TextRun({ children: [PageNumber.CURRENT], color: "94A3B8", size: 20 }),
-                                            new TextRun({ text: " de ", color: "94A3B8", size: 20 }),
-                                            new TextRun({ children: [PageNumber.TOTAL_PAGES], color: "94A3B8", size: 20 })
-                                        ]
-                                    })
-                                ]
-                            })
-                        },
-                        children: children 
-                    }] 
-                });
-                
-                const blob = await Packer.toBlob(doc);
-                descargarBlob(blob, "DevCenterX.docx");
-            } catch (err) { alert("Error: " + err.message); }
+                const blob = await generator.generateWordBlob(data);
+                generator.downloadBlob(blob, "DevCenterX.docx");
+            } catch (err) {
+                alert("Error: " + (err.message || "No se pudo generar el Word"));
+            }
         }
 
-        function generarPPT(data) {
+        async function generarPPT(data) {
             try {
-                let pptx = new PptxGenJS();
-                pptx.layout = 'LAYOUT_16x9';
-
-                // ==========================================
-                // 1. DIAPOSITIVA MAESTRA (Estilo Corporativo Premium)
-                // ==========================================
-                pptx.defineSlideMaster({
-                    title: "TEMA_CORP",
-                    background: { color: "F8FAFC" }, 
-                    objects: [
-                        // Línea superior delgada y elegante
-                        { rect: { x: 0, y: 0, w: '100%', h: 0.05, fill: { color: "1D4ED8" } } },
-                        // Línea separadora sutil bajo el título
-                        { rect: { x: 0.5, y: 1.1, w: '90%', h: 0.02, fill: { color: "E2E8F0" } } },
-                        // Texto corporativo en el pie de página
-                        { text: { text: "DevCenterX Enterprise", options: { x: 0.5, y: '94%', w: 3, h: 0.3, color: "94A3B8", fontSize: 9 } } }
-                    ],
-                    slideNumber: { x: '95%', y: '94%', color: '64748B', fontSize: 10, bold: true }
-                });
-
-                // ==========================================
-                // 2. DIAPOSITIVA DE TÍTULO (PORTADA EJECUTIVA)
-                // ==========================================
-                let slideTitle = pptx.addSlide();
-                slideTitle.background = { color: "0B132B" }; // Azul medianoche muy rico
-                slideTitle.transition = { type: 'fade', speed: 'medium' };
-                
-                // Formas geométricas decorativas de la portada
-                slideTitle.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 0.1, fill: { color: "3B82F6" } });
-                slideTitle.addShape(pptx.ShapeType.rect, { x: 0, y: '96%', w: '100%', h: 0.2, fill: { color: "3B82F6" } });
-                
-                // Pequeño identificador superior
-                slideTitle.addText("DEVCENTERX AGENT", { 
-                    x: 0.5, y: 0.5, w: 3, h: 0.5, 
-                    color: "475569", fontSize: 10, bold: true, charSpacing: 2 
-                });
-                
-                // Título principal alineado a la izquierda para un look moderno
-                slideTitle.addText(data.title || "Presentación Ejecutiva", { 
-                    x: 0.5, y: '35%', w: '90%', h: 1.5, 
-                    fontSize: 54, bold: true, color: "FFFFFF", align: "left" 
-                });
-                
-                if (data.subtitle) {
-                    slideTitle.addText(data.subtitle, { 
-                        x: 0.5, y: '55%', w: '90%', h: 1, 
-                        fontSize: 24, italic: false, color: "94A3B8", align: "left" 
-                    });
+                const generator = window.DevCenterXDocGenerator;
+                if (!generator || !generator.generatePptxBlob) {
+                    throw new Error('El generador de presentaciones no está disponible');
                 }
-
-                // ==========================================
-                // 3. DIAPOSITIVAS DE CONTENIDO
-                // ==========================================
-                if (data.slides) {
-                    data.slides.forEach(slideData => {
-                        let slide = pptx.addSlide({ masterName: "TEMA_CORP" });
-                        slide.transition = { type: 'cover', direction: 'left', speed: 'fast' };
-                        
-                        // Título de contenido oscuro y elegante
-                        slide.addText(slideData.title, { 
-                            x: 0.5, y: 0.3, w: '90%', h: 0.8, 
-                            fontSize: 32, bold: true, color: "0F172A" 
-                        });
-
-                        // Cuerpo con viñetas espaciadas
-                        if (slideData.bullets) {
-                            let bulletText = slideData.bullets.map(b => ({ 
-                                text: b, 
-                                options: { bullet: { color: "3B82F6" } } 
-                            }));
-                            slide.addText(bulletText, { 
-                                x: 0.5, y: 1.4, w: '90%', h: 3.8, 
-                                fontSize: 20, color: "334155", valign: 'top', margin: 10, lineSpacing: 32 
-                            });
-                        }
-                    });
-                }
-
-                // ==========================================
-                // 4. DIAPOSITIVA DE CIERRE
-                // ==========================================
-                let closingSlide = pptx.addSlide();
-                closingSlide.background = { color: "0B132B" };
-                closingSlide.transition = { type: 'fade', speed: 'medium' };
-                closingSlide.addText("Gracias por su atención", { 
-                    x: 0.5, y: '40%', w: '90%', h: 1, 
-                    fontSize: 44, bold: true, color: "FFFFFF", align: "center" 
-                });
-                closingSlide.addText("Generado por DevCenterX Agent", { 
-                    x: 0.5, y: '55%', w: '90%', h: 0.5, 
-                    fontSize: 18, color: "94A3B8", align: "center" 
-                });
-
-                pptx.writeFile({ fileName: `DevCenterX.pptx` }); 
-            } catch (err) { alert("Error: " + err.message); }
+                const blob = await generator.generatePptxBlob(data);
+                generator.downloadBlob(blob, "DevCenterX.pptx");
+            } catch (err) {
+                alert("Error: " + (err.message || "No se pudo generar el PowerPoint"));
+            }
         }
 
         async function generarExcel(data) {
             try {
-                if (!data.columns || !data.rows || data.rows.length === 0) throw new Error("Datos de tabla vacíos.");
-                
-                // Usando ExcelJS para estilos Premium
-                const workbook = new ExcelJS.Workbook();
-                workbook.creator = 'DevCenterX Agent';
-                const worksheet = workbook.addWorksheet('Datos DevCenterX');
-
-                // 1. Estilos de la Cabecera (Azul oscuro, texto blanco, bordes)
-                const headerRow = worksheet.addRow(data.columns);
-                headerRow.eachCell((cell) => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
-                    cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12 };
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-                });
-
-                // 2. Agregar Filas de Datos con diseño de "Cebra" (Colores alternos)
-                data.rows.forEach((row, index) => {
-                    const newRow = worksheet.addRow(row);
-                    const isEven = index % 2 === 0;
-                    
-                    newRow.eachCell((cell) => {
-                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFF8FAFC' : 'FFE2E8F0' } };
-                        cell.border = { 
-                            top: {style:'thin', color: {argb:'FFCBD5E1'}}, left: {style:'thin', color: {argb:'FFCBD5E1'}}, 
-                            bottom: {style:'thin', color: {argb:'FFCBD5E1'}}, right: {style:'thin', color: {argb:'FFCBD5E1'}} 
-                        };
-                        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-                    });
-                });
-
-                // 3. Ajuste Automático del Ancho de Columnas
-                worksheet.columns.forEach(column => {
-                    let maxLength = 0;
-                    column.eachCell({ includeEmpty: true }, function(cell) {
-                        const columnLength = cell.value ? cell.value.toString().length : 10;
-                        if (columnLength > maxLength) maxLength = columnLength;
-                    });
-                    column.width = maxLength < 15 ? 15 : maxLength + 5;
-                });
-
-                // Exportar
-                const buffer = await workbook.xlsx.writeBuffer();
-                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                descargarBlob(blob, "DevCenterX.xlsx");
-            } catch (err) { alert("Error: " + err.message); }
-        }
-
-        // --- Utilidades ---
-        function descargarBlob(blob, filename) {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            document.body.appendChild(a);
-            a.style = "display: none";
-            a.href = url;
-            a.download = filename;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+                const generator = window.DevCenterXDocGenerator;
+                if (!generator || !generator.generateExcelBlob) {
+                    throw new Error('El generador de tablas no está disponible');
+                }
+                const blob = await generator.generateExcelBlob(data);
+                generator.downloadBlob(blob, "DevCenterX.xlsx");
+            } catch (err) {
+                alert("Error: " + (err.message || "No se pudo generar el Excel"));
+            }
         }
 
         function reiniciarApp() {

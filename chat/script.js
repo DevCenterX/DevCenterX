@@ -1910,8 +1910,8 @@ function loadCurrentChat() {
                 addMessage(message.type, message.content, message.generatedCode, false, message.id, message.timestamp, null, message.aiModel, message.mode);
             }
         });
+        scrollToBottom();
     }
-    scrollToBottom();
 }
 
 function clearMessages() {
