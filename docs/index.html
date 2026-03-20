@@ -525,7 +525,12 @@
                     try {
                         const docs = JSON.parse(localStorage.getItem('devcenter_generated_docs') || '[]');
                         const docTypeLabel = currentType === 'word' ? 'word' : currentType === 'ppt' ? 'powerpoint' : 'excel';
+                        const idSeed = `doc-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+                        const entryId = (window.crypto && crypto.randomUUID)
+                            ? crypto.randomUUID()
+                            : idSeed;
                         docs.push({
+                            id: entryId,
                             docType: docTypeLabel,
                             fileName: fileData.title || filename,
                             timestamp: timestamp,

@@ -940,6 +940,17 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/ /g, '_');
   }
 
+  function ensureDocId(doc) {
+    if (!doc) return '';
+    if (doc.id) return doc.id;
+    const safeName = sanitizeFileName(doc.fileName || 'Documento');
+    const timestamp = doc.timestamp || Date.now();
+    const suffix = Math.random().toString(36).slice(2, 7);
+    const newId = `doc-${safeName}-${timestamp}-${suffix}`;
+    doc.id = newId;
+    return newId;
+  }
+
   async function downloadRecentDoc(doc) {
     const generator = window.DevCenterXDocGenerator;
     if (!doc || !doc.data || !generator) {
@@ -977,15 +988,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function deleteDocById(docId) {
+    if (!docId) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem('devcenter_generated_docs') || '[]');
+      const filtered = Array.isArray(stored) ? stored.filter((entry) => entry.id !== docId) : [];
+      if (!filtered.length && !stored.length) return;
+      localStorage.setItem('devcenter_generated_docs', JSON.stringify(filtered));
+      renderRecentDocs();
+    } catch (error) {
+      console.error('Error eliminando documento:', error);
+    }
+  }
+
   function createDocCard(doc) {
     const meta = getDocMeta(doc.docType);
     const fileName = doc.fileName || 'Documento sin nombre';
     const dateLabel = formatDocTimestamp(doc.timestamp);
+    ensureDocId(doc);
 
-    const card = document.createElement('button');
-    card.type = 'button';
+    const card = document.createElement('div');
     card.className = 'recent-doc-card';
     card.title = fileName;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Abrir ${fileName}`);
 
     const iconWrapper = document.createElement('span');
     iconWrapper.className = `recent-doc-icon ${meta.themeClass}`;
@@ -1017,18 +1044,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const tag = document.createElement('span');
     tag.className = 'recent-doc-tag';
     tag.textContent = meta.label;
-    const action = document.createElement('span');
-    action.className = 'recent-doc-action';
-    action.textContent = 'Abrir';
-    footer.append(tag, action);
 
-    card.append(header, nameEl, footer);
-    card.addEventListener('click', async () => {
+    const actions = document.createElement('div');
+    actions.className = 'recent-doc-footer-actions';
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'recent-doc-action';
+    actionSpan.textContent = 'Abrir';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'recent-doc-delete';
+    deleteBtn.textContent = 'Eliminar';
+    deleteBtn.title = 'Eliminar este documento';
+    deleteBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      if (!doc.id) return;
+      if (!confirm('¿Eliminar este documento de la lista?')) return;
+      deleteDocById(doc.id);
+    });
+    actions.append(actionSpan, deleteBtn);
+    footer.append(tag, actions);
+
+    const handleCardClick = async () => {
       card.classList.add('recent-doc-card-loading');
       try {
         await downloadRecentDoc(doc);
       } finally {
         card.classList.remove('recent-doc-card-loading');
+      }
+    };
+
+    card.addEventListener('click', handleCardClick);
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleCardClick();
       }
     });
     return card;
@@ -1046,7 +1096,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const validDocs = Array.isArray(docs) ? docs : [];
-    const count = validDocs.length;
+    let needsSave = false;
+    const normalizedDocs = validDocs.map((doc) => {
+      const hadId = !!doc.id;
+      ensureDocId(doc);
+      if (!hadId && doc.id) {
+        needsSave = true;
+      }
+      return doc;
+    });
+    if (needsSave) {
+      try {
+        localStorage.setItem('devcenter_generated_docs', JSON.stringify(normalizedDocs));
+      } catch (error) {
+        console.warn('Error guardando IDs generados:', error);
+      }
+    }
+
+    const count = normalizedDocs.length;
 
     if (recentDocsCountEl) {
       const label = count === 1 ? 'documento' : 'documentos';
@@ -1064,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recentDocsEmptyEl.style.display = 'none';
     recentDocsListEl.style.display = 'grid';
 
-    const previewDocs = validDocs.slice(-6).reverse();
+    const previewDocs = normalizedDocs.slice(-6).reverse();
     previewDocs.forEach((doc) => recentDocsListEl.appendChild(createDocCard(doc)));
   }
 
