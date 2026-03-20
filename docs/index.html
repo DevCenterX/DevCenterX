@@ -49,6 +49,19 @@
             border-left: 6px solid transparent;
             animation: rotation 1s ease-in-out infinite alternate;
         }
+
+        .result-check-badge {
+            width: clamp(160px, 55vw, 220px);
+            aspect-ratio: 1 / 1;
+            min-width: 150px;
+            position: relative;
+        }
+
+        @media (max-width: 640px) {
+            .result-check-badge {
+                width: clamp(140px, 65vw, 200px);
+            }
+        }
         @keyframes rotation {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -331,7 +344,7 @@
         <div id="resultArea" class="hidden flex-col items-center justify-center space-y-10 absolute inset-0 z-30 w-full h-full transition-all duration-700 ease-in-out opacity-0 scale-105 origin-center">
             
             <!-- Super animación de Checkmark -->
-            <div class="relative flex items-center justify-center w-48 h-48 group">
+            <div class="relative flex items-center justify-center result-check-badge group">
                 <div class="absolute inset-0 border-[6px] border-green-500/30 rounded-full animate-ping"></div>
                 <div class="absolute inset-4 border-[6px] border-green-400/50 rounded-full animate-pulse"></div>
                 <div class="absolute inset-8 bg-gradient-to-tr from-green-500 to-emerald-400 rounded-full shadow-[0_0_80px_rgba(16,185,129,0.8)] z-10 flex items-center justify-center transform transition-transform group-hover:scale-105 duration-300">
@@ -591,11 +604,11 @@
         async function generarWord(data) {
             try {
                 // Acceder correctamente a la librería docx
-                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = window.docx || docx;
-                
-                if (!Document) {
+                const docxLib = window.docx;
+                if (!docxLib) {
                     throw new Error("Librería docx no cargada. Recarga la página.");
                 }
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber } = docxLib;
                 
                 const children = [];
                 
