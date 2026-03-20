@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /agent.html
+Allow: /login/
+Allow: /create/
+Allow: /Apps/
+Allow: /terminos-de-servicio/
+Allow: /politica-de-privacidad/
+Disallow: /api/
+Disallow: /admin/
+Sitemap: https://devcenterx.vercel.app/sitemap.xml
+
+# Google
+User-agent: Googlebot
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
