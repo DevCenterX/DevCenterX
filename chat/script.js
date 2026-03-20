@@ -1288,11 +1288,16 @@ function updateModeIcon(ability) {
     
     // Iconos SVG para cada modo
     const icons = {
-        agent: '<path d="M12 2a10 10 0 0 0-9.2 13.34c.2.45.1.98-.22 1.39a.5.5 0 0 0 .32.87H19.1a.5.5 0 0 0 .32-.87c-.32-.41-.42-.94-.22-1.39A10 10 0 0 0 12 2zm0 18H5.98c.2-.47.33-1 .33-1.55a2.5 2.5 0 0 1 5-2.18 2.5 2.5 0 0 1 5 2.18c0 .55.13 1.08.33 1.55H12zM10 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm8 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>',
-        info: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-6m0-2h.01M16 11h-4"/>',
-        memory: '<path d="M12 2a9 9 0 0 0-9 9c0 4.42 2.87 8.17 6.84 8.83a.5.5 0 0 0 .36-.05.5.5 0 0 0 .1-.94A7 7 0 1 1 12 5a.5.5 0 0 0 0-1z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2 4a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/>',
-        program: '<path d="M10 9.5l-2.5 2.5 2.5 2.5m4-5l2.5 2.5-2.5 2.5M12 4l-4 16h8l4-16h-8z"/>'
+        agent: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+        info: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="13" x2="13" y2="13"/>',
+        memory: '<circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="13" cy="10" r="1" fill="currentColor"/><path d="M9 13.5s.8 1.5 2 1.5 2-1.5 2-1.5"/>',
+        program: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="12" y1="5" x2="12" y2="19" stroke-dasharray="2 2"/>'
     };
+    
+    // Asegurar atributos correctos para iconos stroke-based
+    modeIcon.setAttribute('stroke-width', '1.75');
+    modeIcon.setAttribute('stroke-linecap', 'round');
+    modeIcon.setAttribute('stroke-linejoin', 'round');
     
     // Actualizar el contenido del SVG
     modeIcon.innerHTML = icons[ability] || icons.agent;

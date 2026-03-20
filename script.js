@@ -1,4 +1,4 @@
-// ==================== MENU & NAVIGATION ====================
+﻿// ==================== MENU & NAVIGATION ====================
 // Funciones del menú home y navegación principal
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -869,57 +869,134 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ==================== GENERATED DOCUMENTS MANAGEMENT ====================
-  const docsBtn = document.getElementById('docsBtn');
-  const generatedDocsSection = document.getElementById('generatedDocsSection');
-  const generatedDocsList = document.getElementById('generatedDocsList');
+  // ==================== RECENT DOCS PREVIEW ====================
+  const recentDocsCountEl = document.getElementById('recentDocsCount');
+  const recentDocsListEl = document.getElementById('recentDocsList');
+  const recentDocsEmptyEl = document.getElementById('recentDocsEmpty');
+  const createDocHeaderBtn = document.getElementById('createDocHeaderBtn');
+  const createDocEmptyBtn = document.getElementById('createDocEmptyBtn');
 
-  // Cargar y mostrar documentos generados
-  function loadGeneratedDocs() {
-    try {
-      const docs = JSON.parse(localStorage.getItem('devcenter_generated_docs') || '[]');
-      if (docs.length === 0) {
-        if (generatedDocsSection) generatedDocsSection.classList.add('hidden');
-        return;
-      }
+  const docMeta = {
+    word: { label: 'Documento Word', icon: '📄', short: 'Word' },
+    powerpoint: { label: 'Presentación PowerPoint', icon: '📊', short: 'PowerPoint' },
+    excel: { label: 'Hoja de cálculo Excel', icon: '📈', short: 'Excel' }
+  };
 
-      if (generatedDocsSection) generatedDocsSection.classList.remove('hidden');
-      if (generatedDocsList) {
-        generatedDocsList.innerHTML = '';
-        docs.slice(-5).reverse().forEach((doc, index) => {
-          const docEl = document.createElement('button');
-          docEl.type = 'button';
-          docEl.className = 'w-full text-left px-3 py-2 rounded bg-slate-700/50 hover:bg-slate-600 text-xs text-slate-300 hover:text-slate-100 transition-colors flex justify-between items-center';
-          const date = new Date(doc.timestamp).toLocaleDateString('es-ES', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
-          docEl.innerHTML = `
-            <span>${doc.docType === 'word' ? '📄 Word' : doc.docType === 'powerpoint' ? '📊 PowerPoint' : '📋 Excel'} - ${doc.fileName || 'Sin nombre'}</span>
-            <span class="text-slate-500 text-xs">${date}</span>
-          `;
-          docEl.addEventListener('click', () => goToDocsWithConfig(doc.docType, doc.fileName));
-          if (generatedDocsList) generatedDocsList.appendChild(docEl);
-        });
-      }
-    } catch (e) {
-      console.warn('Error al cargar documentos generados:', e);
-    }
+  const docsPageType = {
+    word: 'word',
+    powerpoint: 'ppt',
+    excel: 'xls'
+  };
+
+  function formatDocTimestamp(value) {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toLocaleString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
-  // Ir a docs con configuración preseleccionada
-  function goToDocsWithConfig(docType, fileName) {
-    localStorage.setItem('devcenter_docs_config', JSON.stringify({
-      docType: docType,
-      fileName: fileName,
+  function openDocPreview(doc) {
+    const docType = docsPageType[doc.docType] || 'word';
+    const payload = {
+      docType,
+      fileName: doc.fileName || 'Documento',
       timestamp: new Date().toISOString()
-    }));
+    };
+    localStorage.setItem('devcenter_docs_config', JSON.stringify(payload));
     window.location.href = '/docs/';
   }
 
-  // El botón Docs ahora es solo un selector de modo (no tiene handler especial)
-  // La acción se ejecuta a través del botón "Iniciar"
+  function createDocCard(doc) {
+    const normalizedType = doc.docType || 'word';
+    const meta = docMeta[normalizedType] || docMeta.word;
+    const fileName = doc.fileName || 'Documento sin nombre';
+    const dateLabel = formatDocTimestamp(doc.timestamp);
 
-  // Cargar documentos al inicio
-  loadGeneratedDocs();
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'recent-doc-card';
+    card.title = fileName;
 
-  // Inicializar placeholder y texto del botón
+    const top = document.createElement('div');
+    top.className = 'recent-doc-card-top';
+    const badge = document.createElement('span');
+    badge.className = 'recent-doc-badge';
+    badge.textContent = `${meta.icon} ${meta.short}`;
+    const dateEl = document.createElement('span');
+    dateEl.className = 'recent-doc-date';
+    dateEl.textContent = dateLabel;
+    top.append(badge, dateEl);
+
+    const nameEl = document.createElement('p');
+    nameEl.className = 'recent-doc-name';
+    nameEl.textContent = fileName;
+
+    const footer = document.createElement('div');
+    footer.className = 'recent-doc-card-footer';
+    const tag = document.createElement('span');
+    tag.className = 'recent-doc-tag';
+    tag.textContent = meta.label;
+    const action = document.createElement('span');
+    action.className = 'recent-doc-action';
+    action.textContent = 'Abrir';
+    footer.append(tag, action);
+
+    card.append(top, nameEl, footer);
+    card.addEventListener('click', () => openDocPreview(doc));
+    return card;
+  }
+
+  function renderRecentDocs() {
+    if (!recentDocsListEl || !recentDocsCountEl || !recentDocsEmptyEl) return;
+    let docs = [];
+    try {
+      const stored = localStorage.getItem('devcenter_generated_docs');
+      docs = stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.warn('Error parseando docs recientes:', error);
+      docs = [];
+    }
+
+    const validDocs = Array.isArray(docs) ? docs : [];
+    const count = validDocs.length;
+
+    if (recentDocsCountEl) {
+      const label = count === 1 ? 'documento' : 'documentos';
+      recentDocsCountEl.textContent = `${count} ${label}`;
+    }
+
+    recentDocsListEl.innerHTML = '';
+
+    if (count === 0) {
+      recentDocsListEl.style.display = 'none';
+      recentDocsEmptyEl.style.display = 'flex';
+      return;
+    }
+
+    recentDocsEmptyEl.style.display = 'none';
+    recentDocsListEl.style.display = 'grid';
+
+    const previewDocs = validDocs.slice(-6).reverse();
+    previewDocs.forEach((doc) => recentDocsListEl.appendChild(createDocCard(doc)));
+  }
+
+  const goToDocsPage = () => window.location.href = '/docs/';
+  [createDocHeaderBtn, createDocEmptyBtn].forEach((btn) => {
+    if (btn) btn.addEventListener('click', goToDocsPage);
+  });
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'devcenter_generated_docs') {
+      renderRecentDocs();
+    }
+  });
+
+  renderRecentDocs();
+
   console.log('✅ Gemini chat integration ready');
 });
