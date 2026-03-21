@@ -20,11 +20,23 @@
 <body>
     <script>
         (function() {
-            const user = localStorage.getItem('devcenter_user');
-            window.isLoggedIn = !!user;
-            window.currentPath = window.location.pathname;
-            if (window.isLoggedIn) {
-                console.log('Usuario detectado desde localStorage:', user);
+            try {
+                var id = localStorage.getItem('devcenter_user_id');
+                var isLogged = localStorage.getItem('devcenter_isLoggedIn');
+                if (!(isLogged === 'true' && id)) {
+                    window.location.replace('/agent.html');
+                    return;
+                }
+
+                const user = localStorage.getItem('devcenter_user');
+                window.isLoggedIn = !!user;
+                window.currentPath = window.location.pathname;
+                if (window.isLoggedIn) {
+                    console.log('Usuario detectado desde localStorage:', user);
+                }
+            } catch (e) {
+                console.error('Storage check failed', e);
+                window.location.replace('/agent.html');
             }
         })();
     </script>
