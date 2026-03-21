@@ -300,18 +300,52 @@
                 </div>
             </div>
 
+            <!-- Find & Replace Panel -->
+            <div class="find-replace-panel" id="findReplacePanel" style="display:none;">
+                <div class="find-replace-inner">
+                    <div class="find-row">
+                        <i class="fas fa-search find-icon"></i>
+                        <input type="text" id="findInput" placeholder="Buscar..." class="find-input">
+                        <span class="find-count" id="findCount">0/0</span>
+                        <button class="fr-btn" id="findPrevBtn" title="Anterior (Shift+Enter)"><i class="fas fa-chevron-up"></i></button>
+                        <button class="fr-btn" id="findNextBtn" title="Siguiente (Enter)"><i class="fas fa-chevron-down"></i></button>
+                        <button class="fr-btn fr-toggle" id="caseBtn" title="Aa - Mayúsculas/Minúsculas">Aa</button>
+                        <button class="fr-btn fr-toggle" id="regexBtn" title=".*  - Expresión Regular">.*</button>
+                        <button class="fr-btn fr-close" id="closeFindBtn" title="Cerrar (Esc)"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="replace-row" id="replaceRow" style="display:none;">
+                        <i class="fas fa-exchange-alt find-icon"></i>
+                        <input type="text" id="replaceInput" placeholder="Reemplazar..." class="find-input">
+                        <button class="fr-btn fr-action" id="replaceOneBtn">Reemplazar</button>
+                        <button class="fr-btn fr-action" id="replaceAllBtn">Todo</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Code Editors with Syntax Highlighting -->
             <div id="htmlEditorWrapper" class="editor-wrapper active">
-                <pre id="htmlHighlight" class="highlight-layer" aria-hidden="true"><code class="language-html"></code></pre>
-                <textarea id="htmlEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código HTML aquí..."></textarea>
+                <div class="editor-gutter" id="htmlGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="htmlHighlight" class="highlight-layer" aria-hidden="true"><code class="language-html"></code></pre>
+                    <textarea id="htmlEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código HTML aquí..."></textarea>
+                </div>
+                <div class="minimap-container" id="htmlMinimap"><canvas id="htmlMinimapCanvas"></canvas><div class="minimap-viewport" id="htmlMinimapViewport"></div></div>
             </div>
             <div id="jsEditorWrapper" class="editor-wrapper">
-                <pre id="jsHighlight" class="highlight-layer" aria-hidden="true"><code class="language-javascript"></code></pre>
-                <textarea id="jsEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código JavaScript aquí..."></textarea>
+                <div class="editor-gutter" id="jsGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="jsHighlight" class="highlight-layer" aria-hidden="true"><code class="language-javascript"></code></pre>
+                    <textarea id="jsEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código JavaScript aquí..."></textarea>
+                </div>
+                <div class="minimap-container" id="jsMinimap"><canvas id="jsMinimapCanvas"></canvas><div class="minimap-viewport" id="jsMinimapViewport"></div></div>
             </div>
             <div id="cssEditorWrapper" class="editor-wrapper">
-                <pre id="cssHighlight" class="highlight-layer" aria-hidden="true"><code class="language-css"></code></pre>
-                <textarea id="cssEditor" class="code-editor" spellcheck="false" placeholder="Escribe tus estilos CSS aquí..."></textarea>
+                <div class="editor-gutter" id="cssGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="cssHighlight" class="highlight-layer" aria-hidden="true"><code class="language-css"></code></pre>
+                    <textarea id="cssEditor" class="code-editor" spellcheck="false" placeholder="Escribe tus estilos CSS aquí..."></textarea>
+                </div>
+                <div class="minimap-container" id="cssMinimap"><canvas id="cssMinimapCanvas"></canvas><div class="minimap-viewport" id="cssMinimapViewport"></div></div>
             </div>
         </div>
     </div>
@@ -319,26 +353,52 @@
     <!-- Footer Status Bar -->
     <div class="status-bar">
         <div class="status-left">
-            <span class="status-item">
+            <span class="status-item status-lang" id="statusLang">
                 <i class="fab fa-html5"></i>
                 HTML
             </span>
-            <span class="status-item">
-                <i class="fas fa-circle" style="font-size: 8px;"></i>
-                0
+            <span class="status-item" id="statusErrors" title="Errores">
+                <i class="fas fa-times-circle"></i>
+                <span id="errorCount">0</span>
             </span>
-            <span class="status-item">
+            <span class="status-item" id="statusWarnings" title="Advertencias">
                 <i class="fas fa-exclamation-triangle"></i>
-                0
+                <span id="warnCount">0</span>
+            </span>
+            <span class="status-item" id="statusLineCount">
+                <span id="lineCountDisplay">1 líneas</span>
             </span>
         </div>
         <div class="status-right">
             <span class="status-item" id="cursorPosition">Ln 1, Col 1</span>
-            <span class="status-item">Spaces: 2</span>
-            <span class="status-item">History</span>
-            <button class="status-btn">
-                <i class="fas fa-chevron-down"></i>
-            </button>
+            <span class="status-item" id="selectionInfo" style="display:none;">Sel <span id="selCount">0</span></span>
+            <span class="status-item">UTF-8</span>
+            <span class="status-item">Espacios: 2</span>
+            <span class="status-item" id="shortcutsHintBtn" style="cursor:pointer;" title="Atajos de teclado">
+                <i class="fas fa-keyboard"></i> Atajos
+            </span>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="shortcuts-modal" id="shortcutsModal" style="display:none;">
+        <div class="shortcuts-content">
+            <div class="shortcuts-header">
+                <h3><i class="fas fa-keyboard"></i> Atajos de Teclado</h3>
+                <button id="closeShortcutsBtn">×</button>
+            </div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>S</kbd><span>Guardar</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>F</kbd><span>Buscar</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>H</kbd><span>Buscar y Reemplazar</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>/</kbd><span>Comentar línea</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>D</kbd><span>Duplicar línea</span></div>
+                <div class="shortcut-item"><kbd>Alt</kbd>+<kbd>↑↓</kbd><span>Mover línea</span></div>
+                <div class="shortcut-item"><kbd>Tab</kbd><span>Indentar (2 esp.)</span></div>
+                <div class="shortcut-item"><kbd>Shift</kbd>+<kbd>Tab</kbd><span>Quitar indent.</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Enter</kbd><span>Actualizar Preview</span></div>
+                <div class="shortcut-item"><kbd>Esc</kbd><span>Cerrar paneles</span></div>
+            </div>
         </div>
     </div>
 

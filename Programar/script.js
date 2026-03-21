@@ -3820,3 +3820,681 @@ Puedes revisar el código en las pestañas de arriba o hacer cambios directament
         console.error('Error cargando código generado:', error);
     }
 }
+
+// ============================================================
+// VS CODE POWER FEATURES - DevCenterX Enhanced Editor
+// ============================================================
+
+// ---- LINE NUMBERS (GUTTER) ----
+function updateGutter(editorId) {
+    const editor = document.getElementById(editorId);
+    const gutterId = editorId.replace('Editor', 'Gutter');
+    const gutter = document.getElementById(gutterId);
+    if (!editor || !gutter) return;
+
+    const lines = editor.value.split('\n');
+    const totalLines = lines.length;
+    const cursorLine = getCursorLine(editor);
+
+    // Only rebuild if line count changed
+    const existing = gutter.querySelectorAll('.gutter-line').length;
+    if (existing !== totalLines) {
+        gutter.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        for (let i = 1; i <= totalLines; i++) {
+            const span = document.createElement('span');
+            span.className = 'gutter-line' + (i === cursorLine ? ' active-line' : '');
+            span.textContent = i;
+            span.dataset.line = i;
+            frag.appendChild(span);
+        }
+        gutter.appendChild(frag);
+    } else {
+        // Just update active line class
+        gutter.querySelectorAll('.gutter-line').forEach((el, idx) => {
+            el.classList.toggle('active-line', idx + 1 === cursorLine);
+        });
+    }
+
+    // Sync scroll
+    gutter.scrollTop = editor.scrollTop;
+
+    // Update status bar
+    updateStatusBar(editor, editorId);
+}
+
+function getCursorLine(editor) {
+    const text = editor.value.substring(0, editor.selectionStart);
+    return text.split('\n').length;
+}
+
+function updateStatusBar(editor, editorId) {
+    const text = editor.value.substring(0, editor.selectionStart);
+    const lines = text.split('\n');
+    const line = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+
+    const pos = document.getElementById('cursorPosition');
+    if (pos) pos.textContent = `Ln ${line}, Col ${col}`;
+
+    // Line count
+    const totalLines = editor.value.split('\n').length;
+    const lc = document.getElementById('lineCountDisplay');
+    if (lc) lc.textContent = `${totalLines} líneas`;
+
+    // Selection info
+    const selInfo = document.getElementById('selectionInfo');
+    const selCount = document.getElementById('selCount');
+    const selLen = Math.abs(editor.selectionEnd - editor.selectionStart);
+    if (selInfo && selCount) {
+        if (selLen > 0) {
+            selInfo.style.display = 'flex';
+            selCount.textContent = selLen;
+        } else {
+            selInfo.style.display = 'none';
+        }
+    }
+
+    // Update status bar language
+    const statusLang = document.getElementById('statusLang');
+    if (statusLang) {
+        const langMap = { htmlEditor: 'HTML', jsEditor: 'JS', cssEditor: 'CSS' };
+        const lang = langMap[editorId] || 'Code';
+        const icons = {
+            htmlEditor: '<i class="fab fa-html5" style="color:#f97316"></i>',
+            jsEditor: '<i class="fab fa-js-square" style="color:#fbbf24"></i>',
+            cssEditor: '<i class="fab fa-css3-alt" style="color:#06b6d4"></i>'
+        };
+        statusLang.innerHTML = (icons[editorId] || '') + ' ' + lang;
+    }
+}
+
+// ---- MINIMAP ----
+function updateMinimap(editorId) {
+    const editor = document.getElementById(editorId);
+    const mapId = editorId.replace('Editor', '') + 'MinimapCanvas';
+    const viewId = editorId.replace('Editor', '') + 'MinimapViewport';
+    const canvas = document.getElementById(mapId);
+    const viewport = document.getElementById(viewId);
+    if (!canvas || !editor) return;
+
+    const container = canvas.parentElement;
+    const W = container.clientWidth;
+    const H = container.clientHeight;
+    canvas.width = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+    ctx.fillRect(0, 0, W, H);
+
+    const lines = editor.value.split('\n');
+    const totalLines = lines.length;
+    const lineH = Math.max(1, H / totalLines);
+
+    // Color palette for minimap based on content
+    lines.forEach((line, idx) => {
+        const y = idx * lineH;
+        const trimmed = line.trim();
+        let color = isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.3)';
+
+        if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*') || trimmed.startsWith('<!--')) {
+            color = 'rgba(107,114,128,0.4)';
+        } else if (/\b(function|class|const|let|var|if|for|while|return|import|export)\b/.test(trimmed)) {
+            color = 'rgba(244,114,182,0.5)';
+        } else if (/<[a-zA-Z]/.test(trimmed)) {
+            color = 'rgba(125,211,252,0.5)';
+        } else if (/{/.test(trimmed)) {
+            color = 'rgba(196,181,253,0.4)';
+        }
+
+        if (trimmed.length > 0) {
+            const len = Math.min(trimmed.length * (W / 80), W - 2);
+            const indentPx = (line.length - trimmed.length) * (W / 120);
+            ctx.fillStyle = color;
+            ctx.fillRect(indentPx, y, len, Math.max(1, lineH - 0.5));
+        }
+    });
+
+    // Viewport indicator
+    if (viewport && totalLines > 0) {
+        const visibleLines = editor.clientHeight / (editor.scrollHeight / totalLines);
+        const scrollFraction = editor.scrollTop / (editor.scrollHeight || 1);
+        const vpH = Math.max(20, (visibleLines / totalLines) * H);
+        const vpTop = scrollFraction * H;
+        viewport.style.top = vpTop + 'px';
+        viewport.style.height = vpH + 'px';
+    }
+}
+
+// Minimap click to scroll
+function setupMinimapClick(editorId) {
+    const mapId = editorId.replace('Editor', '') + 'MinimapCanvas';
+    const canvas = document.getElementById(mapId);
+    const editor = document.getElementById(editorId);
+    if (!canvas || !editor) return;
+
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const fraction = (e.clientY - rect.top) / rect.height;
+        editor.scrollTop = fraction * editor.scrollHeight;
+        updateMinimap(editorId);
+    });
+}
+
+// ---- FIND & REPLACE ----
+let findState = {
+    query: '',
+    matches: [],
+    currentMatch: -1,
+    caseSensitive: false,
+    useRegex: false,
+    mode: 'find' // 'find' or 'replace'
+};
+
+function openFindPanel(mode = 'find') {
+    const panel = document.getElementById('findReplacePanel');
+    const replaceRow = document.getElementById('replaceRow');
+    if (!panel) return;
+
+    panel.style.display = 'block';
+    findState.mode = mode;
+
+    if (replaceRow) {
+        replaceRow.style.display = mode === 'replace' ? 'flex' : 'none';
+    }
+
+    const findInput = document.getElementById('findInput');
+    if (findInput) {
+        findInput.focus();
+        findInput.select();
+        // If text selected in editor, use it
+        const activeEditor = getActiveEditor();
+        if (activeEditor) {
+            const sel = activeEditor.value.substring(activeEditor.selectionStart, activeEditor.selectionEnd);
+            if (sel && sel.length < 100) findInput.value = sel;
+        }
+        runFind();
+    }
+}
+
+function closeFindPanel() {
+    const panel = document.getElementById('findReplacePanel');
+    if (panel) panel.style.display = 'none';
+    clearFindHighlights();
+    findState.matches = [];
+    findState.currentMatch = -1;
+    updateFindCount();
+}
+
+function getActiveEditor() {
+    const map = { html: 'htmlEditor', js: 'jsEditor', css: 'cssEditor' };
+    return document.getElementById(map[currentTab] || 'htmlEditor');
+}
+
+function runFind() {
+    clearFindHighlights();
+    const query = document.getElementById('findInput')?.value || '';
+    findState.query = query;
+    findState.matches = [];
+    findState.currentMatch = -1;
+
+    if (!query) { updateFindCount(); return; }
+
+    const editor = getActiveEditor();
+    if (!editor) return;
+
+    const text = editor.value;
+    let regex;
+    try {
+        const flags = findState.caseSensitive ? 'g' : 'gi';
+        regex = findState.useRegex ? new RegExp(query, flags) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
+    } catch (e) { updateFindCount(); return; }
+
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        findState.matches.push({ start: match.index, end: match.index + match[0].length });
+        if (findState.matches.length > 500) break;
+    }
+
+    if (findState.matches.length > 0) {
+        findState.currentMatch = 0;
+        scrollToMatch(editor, findState.matches[0]);
+    }
+
+    updateFindCount();
+}
+
+function scrollToMatch(editor, match) {
+    if (!match) return;
+    editor.setSelectionRange(match.start, match.end);
+    const linesBefore = editor.value.substring(0, match.start).split('\n').length - 1;
+    const lineHeight = 14 * 1.8;
+    const targetScroll = linesBefore * lineHeight - editor.clientHeight / 2;
+    editor.scrollTop = Math.max(0, targetScroll);
+    editor.focus();
+}
+
+function findNext() {
+    if (!findState.matches.length) return;
+    findState.currentMatch = (findState.currentMatch + 1) % findState.matches.length;
+    scrollToMatch(getActiveEditor(), findState.matches[findState.currentMatch]);
+    updateFindCount();
+}
+
+function findPrev() {
+    if (!findState.matches.length) return;
+    findState.currentMatch = (findState.currentMatch - 1 + findState.matches.length) % findState.matches.length;
+    scrollToMatch(getActiveEditor(), findState.matches[findState.currentMatch]);
+    updateFindCount();
+}
+
+function replaceOne() {
+    const editor = getActiveEditor();
+    if (!editor || !findState.matches.length) return;
+    const replaceVal = document.getElementById('replaceInput')?.value || '';
+    const match = findState.matches[findState.currentMatch];
+    if (!match) return;
+    const before = editor.value.substring(0, match.start);
+    const after = editor.value.substring(match.end);
+    editor.value = before + replaceVal + after;
+    editor.dispatchEvent(new Event('input'));
+    runFind();
+}
+
+function replaceAll() {
+    const editor = getActiveEditor();
+    if (!editor || !findState.query) return;
+    const replaceVal = document.getElementById('replaceInput')?.value || '';
+    let text = editor.value;
+    let regex;
+    try {
+        const flags = findState.caseSensitive ? 'g' : 'gi';
+        regex = findState.useRegex ? new RegExp(findState.query, flags) : new RegExp(findState.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
+    } catch (e) { return; }
+    editor.value = text.replace(regex, replaceVal);
+    editor.dispatchEvent(new Event('input'));
+    runFind();
+}
+
+function clearFindHighlights() {
+    // Nothing visual to clear (we use selection)
+}
+
+function updateFindCount() {
+    const el = document.getElementById('findCount');
+    if (!el) return;
+    if (!findState.matches.length) {
+        el.textContent = findState.query ? '0/0' : '';
+    } else {
+        el.textContent = `${findState.currentMatch + 1}/${findState.matches.length}`;
+        el.style.color = findState.matches.length > 0 ? 'var(--accent-primary)' : 'var(--accent-red)';
+    }
+}
+
+// ---- POWER KEYBOARD SHORTCUTS ----
+function setupPowerKeyboard() {
+    const editors = [
+        { id: 'htmlEditor', lang: 'html' },
+        { id: 'jsEditor', lang: 'js' },
+        { id: 'cssEditor', lang: 'css' }
+    ];
+
+    editors.forEach(({ id, lang }) => {
+        const editor = document.getElementById(id);
+        if (!editor) return;
+
+        editor.addEventListener('keydown', (e) => {
+            const ctrl = e.ctrlKey || e.metaKey;
+
+            // Tab → 2 spaces
+            if (e.key === 'Tab' && !ctrl) {
+                e.preventDefault();
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                if (start !== end) {
+                    // Indent selection
+                    const lines = editor.value.split('\n');
+                    const startLine = editor.value.substring(0, start).split('\n').length - 1;
+                    const endLine = editor.value.substring(0, end).split('\n').length - 1;
+                    if (e.shiftKey) {
+                        // Unindent
+                        for (let i = startLine; i <= endLine; i++) {
+                            if (lines[i].startsWith('  ')) lines[i] = lines[i].substring(2);
+                        }
+                    } else {
+                        for (let i = startLine; i <= endLine; i++) {
+                            lines[i] = '  ' + lines[i];
+                        }
+                    }
+                    editor.value = lines.join('\n');
+                } else {
+                    if (e.shiftKey) {
+                        // Remove 2 spaces before cursor
+                        const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
+                        const lineContent = editor.value.substring(lineStart, start);
+                        if (lineContent.endsWith('  ')) {
+                            editor.value = editor.value.substring(0, start - 2) + editor.value.substring(start);
+                            editor.selectionStart = editor.selectionEnd = start - 2;
+                        }
+                    } else {
+                        editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+                        editor.selectionStart = editor.selectionEnd = start + 2;
+                    }
+                }
+                editor.dispatchEvent(new Event('input'));
+                return;
+            }
+
+            // Ctrl+/ → comment line
+            if (ctrl && e.key === '/') {
+                e.preventDefault();
+                toggleLineComment(editor, lang);
+                return;
+            }
+
+            // Ctrl+D → duplicate line
+            if (ctrl && e.key === 'd') {
+                e.preventDefault();
+                duplicateLine(editor);
+                return;
+            }
+
+            // Alt+ArrowUp / Alt+ArrowDown → move line
+            if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                e.preventDefault();
+                moveLine(editor, e.key === 'ArrowUp' ? -1 : 1);
+                return;
+            }
+
+            // Ctrl+Enter → update preview
+            if (ctrl && e.key === 'Enter') {
+                e.preventDefault();
+                if (typeof updatePreview === 'function') updatePreview();
+                switchTab('preview');
+                return;
+            }
+
+            // Escape → close panels
+            if (e.key === 'Escape') {
+                closeFindPanel();
+                const sm = document.getElementById('shortcutsModal');
+                if (sm) sm.style.display = 'none';
+                return;
+            }
+
+            // Auto-close brackets/quotes
+            const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
+            if (pairs[e.key] && !ctrl) {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const sel = editor.value.substring(start, end);
+                if (sel) {
+                    // Wrap selection
+                    e.preventDefault();
+                    editor.value = editor.value.substring(0, start) + e.key + sel + pairs[e.key] + editor.value.substring(end);
+                    editor.selectionStart = start + 1;
+                    editor.selectionEnd = end + 1;
+                    editor.dispatchEvent(new Event('input'));
+                    return;
+                }
+                // Auto-close at cursor
+                const nextChar = editor.value[editor.selectionStart];
+                if (['"', "'", '`'].includes(e.key) && nextChar === e.key) {
+                    // Just move past
+                    e.preventDefault();
+                    editor.selectionStart = editor.selectionEnd = start + 1;
+                    return;
+                }
+                e.preventDefault();
+                editor.value = editor.value.substring(0, start) + e.key + pairs[e.key] + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + 1;
+                editor.dispatchEvent(new Event('input'));
+                return;
+            }
+
+            // Auto-delete brackets
+            if (e.key === 'Backspace') {
+                const start = editor.selectionStart;
+                const before = editor.value[start - 1];
+                const after = editor.value[start];
+                const pairs2 = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
+                if (before && pairs2[before] === after && editor.selectionStart === editor.selectionEnd) {
+                    e.preventDefault();
+                    editor.value = editor.value.substring(0, start - 1) + editor.value.substring(start + 1);
+                    editor.selectionStart = editor.selectionEnd = start - 1;
+                    editor.dispatchEvent(new Event('input'));
+                    return;
+                }
+            }
+
+            // Enter → auto-indent
+            if (e.key === 'Enter' && !ctrl) {
+                const start = editor.selectionStart;
+                const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
+                const line = editor.value.substring(lineStart, start);
+                const indent = line.match(/^(\s*)/)[1];
+                const charBefore = editor.value[start - 1];
+                const charAfter = editor.value[start];
+                if ((charBefore === '{' && charAfter === '}') ||
+                    (charBefore === '(' && charAfter === ')') ||
+                    (charBefore === '[' && charAfter === ']')) {
+                    e.preventDefault();
+                    const newText = '\n' + indent + '  \n' + indent;
+                    editor.value = editor.value.substring(0, start) + newText + editor.value.substring(start);
+                    editor.selectionStart = editor.selectionEnd = start + indent.length + 3;
+                    editor.dispatchEvent(new Event('input'));
+                    return;
+                }
+                // Normal indent continuation
+                if (indent) {
+                    e.preventDefault();
+                    const extra = charBefore === '{' || charBefore === '(' || charBefore === '[' ? '  ' : '';
+                    const newText = '\n' + indent + extra;
+                    editor.value = editor.value.substring(0, start) + newText + editor.value.substring(start);
+                    editor.selectionStart = editor.selectionEnd = start + newText.length;
+                    editor.dispatchEvent(new Event('input'));
+                    return;
+                }
+            }
+        });
+    });
+
+    // Global shortcuts
+    document.addEventListener('keydown', (e) => {
+        const ctrl = e.ctrlKey || e.metaKey;
+        if (ctrl && e.key === 'f') {
+            e.preventDefault();
+            openFindPanel('find');
+        }
+        if (ctrl && e.key === 'h') {
+            e.preventDefault();
+            openFindPanel('replace');
+        }
+        if (ctrl && e.key === 's') {
+            e.preventDefault();
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn) saveBtn.click();
+        }
+    });
+}
+
+function toggleLineComment(editor, lang) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const lines = editor.value.split('\n');
+    const startLine = editor.value.substring(0, start).split('\n').length - 1;
+    const endLine = editor.value.substring(0, end).split('\n').length - 1;
+
+    const commentMap = { html: ['<!--', '-->'], js: ['//'], css: ['/*', '*/'] };
+    const [open, close] = commentMap[lang] || ['//'];
+
+    const allCommented = lines.slice(startLine, endLine + 1).every(l => {
+        const t = l.trim();
+        return close ? (t.startsWith(open) && t.endsWith(close)) : t.startsWith(open);
+    });
+
+    for (let i = startLine; i <= endLine; i++) {
+        const t = lines[i].trim();
+        const indent = lines[i].match(/^(\s*)/)[1];
+        if (allCommented) {
+            if (close) {
+                lines[i] = indent + t.slice(open.length, -close.length).trim();
+            } else {
+                lines[i] = indent + t.slice(open.length).trimStart();
+            }
+        } else {
+            if (close) {
+                lines[i] = indent + open + ' ' + t + ' ' + close;
+            } else {
+                lines[i] = indent + open + ' ' + t.replace(/^\/\/\s?/, '');
+            }
+        }
+    }
+
+    editor.value = lines.join('\n');
+    editor.dispatchEvent(new Event('input'));
+}
+
+function duplicateLine(editor) {
+    const start = editor.selectionStart;
+    const lines = editor.value.split('\n');
+    const lineIdx = editor.value.substring(0, start).split('\n').length - 1;
+    const line = lines[lineIdx];
+    lines.splice(lineIdx + 1, 0, line);
+    editor.value = lines.join('\n');
+    editor.dispatchEvent(new Event('input'));
+}
+
+function moveLine(editor, dir) {
+    const start = editor.selectionStart;
+    const lines = editor.value.split('\n');
+    const lineIdx = editor.value.substring(0, start).split('\n').length - 1;
+    const targetIdx = lineIdx + dir;
+    if (targetIdx < 0 || targetIdx >= lines.length) return;
+    const temp = lines[lineIdx];
+    lines[lineIdx] = lines[targetIdx];
+    lines[targetIdx] = temp;
+    editor.value = lines.join('\n');
+    // Move cursor to new position
+    const newPos = lines.slice(0, targetIdx).join('\n').length + (targetIdx > 0 ? 1 : 0);
+    editor.selectionStart = editor.selectionEnd = newPos + (start - editor.value.split('\n').slice(0, lineIdx).join('\n').length);
+    editor.dispatchEvent(new Event('input'));
+}
+
+// ---- FIND PANEL EVENT BINDINGS ----
+function initFindPanel() {
+    const findInput = document.getElementById('findInput');
+    const findNextBtn = document.getElementById('findNextBtn');
+    const findPrevBtn = document.getElementById('findPrevBtn');
+    const closeFindBtn = document.getElementById('closeFindBtn');
+    const caseBtn = document.getElementById('caseBtn');
+    const regexBtn = document.getElementById('regexBtn');
+    const replaceOneBtn = document.getElementById('replaceOneBtn');
+    const replaceAllBtn = document.getElementById('replaceAllBtn');
+
+    if (findInput) {
+        findInput.addEventListener('input', runFind);
+        findInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.shiftKey ? findPrev() : findNext(); }
+            if (e.key === 'Escape') closeFindPanel();
+        });
+    }
+    if (findNextBtn) findNextBtn.addEventListener('click', findNext);
+    if (findPrevBtn) findPrevBtn.addEventListener('click', findPrev);
+    if (closeFindBtn) closeFindBtn.addEventListener('click', closeFindPanel);
+
+    if (caseBtn) caseBtn.addEventListener('click', () => {
+        findState.caseSensitive = !findState.caseSensitive;
+        caseBtn.classList.toggle('active', findState.caseSensitive);
+        runFind();
+    });
+
+    if (regexBtn) regexBtn.addEventListener('click', () => {
+        findState.useRegex = !findState.useRegex;
+        regexBtn.classList.toggle('active', findState.useRegex);
+        runFind();
+    });
+
+    if (replaceOneBtn) replaceOneBtn.addEventListener('click', replaceOne);
+    if (replaceAllBtn) replaceAllBtn.addEventListener('click', replaceAll);
+}
+
+// ---- SHORTCUTS MODAL ----
+function initShortcutsModal() {
+    const btn = document.getElementById('shortcutsHintBtn');
+    const modal = document.getElementById('shortcutsModal');
+    const close = document.getElementById('closeShortcutsBtn');
+
+    if (btn) btn.addEventListener('click', () => {
+        if (modal) modal.style.display = 'flex';
+    });
+    if (close) close.addEventListener('click', () => {
+        if (modal) modal.style.display = 'none';
+    });
+    if (modal) modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+}
+
+// ---- INIT ALL VS CODE FEATURES ----
+function initVSCodeFeatures() {
+    const editorIds = ['htmlEditor', 'jsEditor', 'cssEditor'];
+
+    editorIds.forEach(id => {
+        const editor = document.getElementById(id);
+        if (!editor) return;
+
+        // Line numbers
+        editor.addEventListener('input', () => updateGutter(id));
+        editor.addEventListener('keyup', () => updateGutter(id));
+        editor.addEventListener('click', () => updateGutter(id));
+        editor.addEventListener('scroll', () => {
+            const gutter = document.getElementById(id.replace('Editor', 'Gutter'));
+            if (gutter) gutter.scrollTop = editor.scrollTop;
+            updateMinimap(id);
+        });
+
+        // Minimap
+        setupMinimapClick(id);
+        editor.addEventListener('scroll', () => updateMinimap(id));
+
+        // Initial state
+        setTimeout(() => {
+            updateGutter(id);
+            updateMinimap(id);
+        }, 300);
+    });
+
+    // Update minimap on resize
+    window.addEventListener('resize', () => {
+        editorIds.forEach(id => updateMinimap(id));
+    });
+
+    setupPowerKeyboard();
+    initFindPanel();
+    initShortcutsModal();
+
+    // Update gutter/minimap when tab changes (hook into switchTab)
+    const origSwitchTab = window.switchTab || switchTab;
+    window.switchTab = function(fileType) {
+        origSwitchTab(fileType);
+        setTimeout(() => {
+            const map = { html: 'htmlEditor', js: 'jsEditor', css: 'cssEditor' };
+            const id = map[fileType];
+            if (id) {
+                updateGutter(id);
+                updateMinimap(id);
+            }
+        }, 50);
+    };
+
+    console.log('✅ VS Code features initialized: line numbers, minimap, find/replace, power keyboard');
+}
+
+// Boot VS Code features
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initVSCodeFeatures, 500);
+});
+
