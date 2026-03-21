@@ -1038,6 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameEl = document.createElement('p');
     nameEl.className = 'recent-doc-name';
     nameEl.textContent = fileName;
+    nameEl.style.color = 'red'; // DEBUG: Make text red to check visibility
 
     const footer = document.createElement('div');
     footer.className = 'recent-doc-card-footer';
