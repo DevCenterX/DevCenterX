@@ -1135,6 +1135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     previewDocs.forEach((doc) => recentDocsListEl.appendChild(createDocCard(doc)));
   }
 
+  window.renderRecentDocs = renderRecentDocs;
+
   const goToDocsPage = () => window.location.href = '/docs/';
   [createDocHeaderBtn, createDocEmptyBtn].forEach((btn) => {
     if (btn) btn.addEventListener('click', goToDocsPage);
