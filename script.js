@@ -1065,6 +1065,8 @@ document.addEventListener('DOMContentLoaded', () => {
     actions.append(actionSpan, deleteBtn);
     footer.append(tag, actions);
 
+    card.append(header, nameEl, footer);
+
     const handleCardClick = async () => {
       card.classList.add('recent-doc-card-loading');
       try {
