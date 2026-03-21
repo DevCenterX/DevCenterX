@@ -425,8 +425,8 @@ window.addEventListener('resize', () => {
 
 console.log('✅ Menu functions loaded');
 
-// ==================== GEMINI CHAT INTEGRATION ====================
-// Integración con Gemini 1.5 Flash para el input de búsqueda
+// ==================== CHAT CONTROLS ====================
+// Integración para el input de búsqueda y los distintos modos de interacción
 
 // Prompts personalizados para cada modo
 const modePrompts = {
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  console.log('✅ Gemini chat elements loaded');
+  console.log('✅ Chat controls ready');
 
   // Event listener en el botón "Iniciar" - Ejecutar acción según modo seleccionado
   if (startChatBtn) {
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Para mensajes de programación, hacer una solicitud a Gemini
+    // Para mensajes de programación, hacer una solicitud al endpoint de chat
     let originalText = ''; // Declarar fuera del try
     
     try {
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('🎯 Modo seleccionado:', selectedMode.toUpperCase());
       console.log('📝 Prompt usado:', selectedMode === 'chat' ? 'Respuesta conversacional' : modePrompts[selectedMode]);
 
-      console.log('📡 Contacting /api/gemini with mode:', selectedMode);
+      console.log('📡 Contactando la API de chat con modo:', selectedMode);
 
       // Construir el mensaje con el prompt del modo
       let finalMessage = message;
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!data.reply) {
         closeProgressBar();
-        throw new Error('Sin respuesta de Gemini');
+      throw new Error('Sin respuesta del generador de chat');
       }
 
       console.log('✅ Got response:\n', data.reply);
@@ -1150,5 +1150,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderRecentDocs();
 
-  console.log('✅ Gemini chat integration ready');
+  console.log('✅ Chat integration ready');
 });
