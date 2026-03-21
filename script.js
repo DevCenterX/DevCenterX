@@ -215,6 +215,281 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const userProjectsSection = document.getElementById('userProjectsSection');
+  const recentAppsCountEl = document.getElementById('recentAppsCount');
+  const recentAppsListEl = document.getElementById('userProjectsGrid');
+  const recentAppsEmptyEl = document.getElementById('userProjectsEmpty');
+  const createAppHeaderBtn = document.getElementById('createAppHeaderBtn');
+  const createFirstAppBtn = document.getElementById('createFirstAppBtn');
+  const createAppUrl = '/Programar/crear-app';
+
+  const goToCreateApp = () => {
+    window.location.href = createAppUrl;
+  };
+
+  [createAppHeaderBtn, createFirstAppBtn].forEach((btn) => {
+    if (!btn) return;
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      goToCreateApp();
+    });
+  });
+
+  function loadLocalProjects() {
+    try {
+      const stored = localStorage.getItem('userProjects');
+      const parsed = stored ? JSON.parse(stored) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('Error leyendo apps locales:', error);
+      return [];
+    }
+  }
+
+  function getProjectField(project, keys) {
+    if (!project || !keys.length) return '';
+    for (const key of keys) {
+      if (!(key in project)) continue;
+      const value = project[key];
+      if (value === null || value === undefined) continue;
+      if (typeof value === 'string' && value.trim().length === 0) continue;
+      return value;
+    }
+    return '';
+  }
+
+  function getAppInitials(text) {
+    const value = (text || '').toString().trim();
+    if (!value) return 'AP';
+    const words = value.split(/\s+/).filter(Boolean);
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+
+  function parseProjectDate(value) {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === 'number') return new Date(value);
+    if (typeof value === 'string') {
+      const cleaned = value.trim();
+      if (cleaned.length === 0) return null;
+      const numeric = Number(cleaned);
+      if (!Number.isNaN(numeric)) {
+        return new Date(numeric);
+      }
+      const iso = new Date(cleaned);
+      if (!Number.isNaN(iso.getTime())) {
+        return iso;
+      }
+      const parts = cleaned.split(/[^0-9]+/).filter(Boolean);
+      if (parts.length >= 3) {
+        const [first, second, third] = parts;
+        if (third.length === 4) {
+          // dd mm yyyy or yyyy mm dd?
+          if (Number(first) > 31) {
+            return new Date(Number(first), Number(second) - 1, Number(third));
+          }
+          return new Date(Number(third), Number(second) - 1, Number(first));
+        }
+      }
+    }
+    return null;
+  }
+
+  function getProjectDate(project) {
+    if (!project) return null;
+    const candidates = ['updatedAt', 'createdAt', 'fecha', 'created_at', 'fechaCreacion', 'fecha_actualizacion', 'createdAtTimestamp'];
+    for (const key of candidates) {
+      const value = project[key];
+      const parsed = parseProjectDate(value);
+      if (parsed) return parsed;
+    }
+    return null;
+  }
+
+  function formatProjectTimestamp(project) {
+    const date = getProjectDate(project);
+    if (!date) return '';
+    return date.toLocaleString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function flattenProjectEntries(entries = []) {
+    const aggregated = [];
+    if (!Array.isArray(entries)) return aggregated;
+    entries.forEach((entry) => {
+      if (!entry) return;
+      if (Array.isArray(entry.apps) && entry.apps.length) {
+        entry.apps.forEach((app) => {
+          aggregated.push({
+            ...app,
+            parentTitle: entry.titulo || entry.title || entry.name || entry.nombre,
+          });
+        });
+      } else {
+        aggregated.push(entry);
+      }
+    });
+    return aggregated;
+  }
+
+  function getProjectTitle(project) {
+    return getProjectField(project, ['title', 'titulo', 'name', 'nombre']) || 'App sin nombre';
+  }
+
+  function getProjectDescription(project) {
+    return getProjectField(project, ['description', 'descripcion', 'desc', 'detalles']) || '';
+  }
+
+  function getProjectStatus(project) {
+    return (
+      getProjectField(project, ['status', 'estado', 'state', 'visibility', 'visibilidad', 'devcenter']) ||
+      'Privada'
+    );
+  }
+
+  function getProjectIdentifier(project) {
+    return (
+      getProjectField(project, ['id', 'numeroProyecto', 'numero_proyecto', 'projectId', 'project_id', 'slug']) ||
+      ''
+    );
+  }
+
+  function navigateToProject(project) {
+    if (!project) {
+      window.location.href = '/Programar/';
+      return;
+    }
+    const projectId = getProjectIdentifier(project);
+    if (projectId) {
+      window.location.href = `/Programar/?project=${encodeURIComponent(projectId)}`;
+      return;
+    }
+    window.location.href = '/Programar/';
+  }
+
+  function createAppCard(project) {
+    const title = getProjectTitle(project);
+    const description = getProjectDescription(project);
+    const statusLabel = getProjectStatus(project);
+    const timestampLabel = formatProjectTimestamp(project);
+
+    const card = document.createElement('article');
+    card.className = 'project-card recent-app-card';
+    card.setAttribute('role', 'button');
+    card.tabIndex = 0;
+    card.setAttribute('aria-label', `Abrir ${title}`);
+
+    const meta = document.createElement('div');
+    meta.className = 'recent-app-card-meta';
+
+    const initials = document.createElement('span');
+    initials.className = 'recent-app-card-initials';
+    initials.textContent = getAppInitials(title);
+
+    const titleWrapper = document.createElement('div');
+    const titleEl = document.createElement('h3');
+    titleEl.className = 'recent-app-card-title';
+    titleEl.textContent = title;
+    titleWrapper.appendChild(titleEl);
+
+    meta.append(initials, titleWrapper);
+
+    const descriptionEl = document.createElement('p');
+    descriptionEl.className = 'recent-app-card-description';
+    descriptionEl.textContent = description || 'Sin descripción';
+
+    const footer = document.createElement('div');
+    footer.className = 'recent-app-card-footer';
+
+    const statusEl = document.createElement('span');
+    statusEl.className = 'recent-app-card-status';
+    statusEl.textContent = statusLabel;
+
+    footer.appendChild(statusEl);
+
+    if (timestampLabel) {
+      const timeEl = document.createElement('span');
+      timeEl.className = 'recent-app-card-timestamp';
+      timeEl.textContent = timestampLabel;
+      footer.appendChild(timeEl);
+    }
+
+    card.append(meta, descriptionEl, footer);
+
+    const openProject = () => navigateToProject(project);
+    card.addEventListener('click', openProject);
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openProject();
+      }
+    });
+
+    return card;
+  }
+
+  function setProjectsEmptyState(isEmpty) {
+    if (!userProjectsSection) return;
+    userProjectsSection.classList.toggle('has-empty-state', isEmpty);
+  }
+
+  function renderRecentApps(remoteProjects) {
+    if (!recentAppsListEl || !recentAppsEmptyEl) return;
+
+    const localProjects = loadLocalProjects();
+    const sourceProjects = Array.isArray(remoteProjects) ? remoteProjects : [];
+    const appsToRender = flattenProjectEntries(
+      sourceProjects.length ? sourceProjects : localProjects
+    );
+
+    const total = appsToRender.length;
+    if (recentAppsCountEl) {
+      const label = total === 1 ? 'app' : 'apps';
+      recentAppsCountEl.textContent = `${total} ${label}`;
+    }
+
+    recentAppsListEl.innerHTML = '';
+
+    if (total === 0) {
+      recentAppsListEl.style.display = 'none';
+      recentAppsEmptyEl.style.display = 'flex';
+      setProjectsEmptyState(true);
+      return;
+    }
+
+    recentAppsEmptyEl.style.display = 'none';
+    recentAppsListEl.style.display = 'grid';
+    setProjectsEmptyState(false);
+
+    const sorted = appsToRender
+      .map((app) => ({ app, date: getProjectDate(app) }))
+      .sort((a, b) => {
+        const aTime = a.date ? a.date.getTime() : 0;
+        const bTime = b.date ? b.date.getTime() : 0;
+        return bTime - aTime;
+      })
+      .slice(0, 6)
+      .map((entry) => entry.app);
+
+    sorted.forEach((app) => {
+      const card = createAppCard(app);
+      recentAppsListEl.appendChild(card);
+    });
+  }
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'userProjects') {
+      renderRecentApps();
+    }
+  });
+
+  renderRecentApps();
+
   // Cargar nombre de usuario desde Firestore y actualizar greeting
   async function loadUserAndUpdateGreeting() {
     try {
@@ -323,9 +598,13 @@ const greetings = [
         const proyectosRef = doc(db, 'proyectos', uid);
         const proyectosSnap = await getDoc(proyectosRef);
         let createdCount = 0;
+        let storedProjects = [];
         if (proyectosSnap.exists()) {
           const pData = proyectosSnap.data();
-          if (Array.isArray(pData.proyectos)) createdCount = pData.proyectos.length;
+          if (Array.isArray(pData.proyectos)) {
+            createdCount = pData.proyectos.length;
+            storedProjects = pData.proyectos;
+          }
         }
 
         function normalizePlan(p) {
@@ -380,6 +659,8 @@ const greetings = [
             upgradeBtn.innerHTML = '<span>+</span> Mejorar Agente';
           }
         }
+
+        renderRecentApps(storedProjects);
 
         try {
           // Guardar el tema actual antes de agregar clases de plan

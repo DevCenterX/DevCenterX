@@ -400,7 +400,7 @@
         </div>
       </div>
 
-      <div class="projects-section projects-section-premium">
+      <div id="userProjectsSection" class="projects-section projects-section-premium">
         <div class="section-header-premium">
           <div class="section-header-left">
             <div class="section-icon">
@@ -411,7 +411,10 @@
                 <rect x="14" y="14" width="7" height="7" rx="1"/>
               </svg>
             </div>
-            <h2>Apps recientes</h2>
+            <div>
+              <h2>Apps recientes</h2>
+              <p class="text-xs text-slate-400" id="recentAppsCount">0 apps</p>
+            </div>
           </div>
           <button id="createAppHeaderBtn" class="create-app-btn-premium">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -424,26 +427,26 @@
         
         <div id="userProjectsGrid" class="projects-grid projects-grid-premium"></div>
         
-      <div id="userProjectsEmpty" class="empty-state empty-state-premium">
-        <div class="empty-state-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="9" y1="9" x2="15" y2="9"/>
-            <line x1="9" y1="15" x2="15" y2="15"/>
-          </svg>
+        <div id="userProjectsEmpty" class="empty-state empty-state-premium">
+          <div class="empty-state-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="9" x2="15" y2="9"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <h3 id="emptyStateTitle">Aún no has creado ninguna aplicación</h3>
+          <p id="emptyStateDescription">Empieza a crear tu primera aplicación ahora.</p>
+          <button id="createFirstAppBtn" class="create-app-btn-premium create-app-btn-large">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            <span id="createFirstAppBtnText">Crear App</span>
+          </button>
         </div>
-        <h3 id="emptyStateTitle">Aún no has creado ninguna aplicación</h3>
-        <p id="emptyStateDescription">Empieza a crear tu primera aplicación ahora.</p>
-        <button id="createFirstAppBtn" class="create-app-btn-premium create-app-btn-large">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-          <span id="createFirstAppBtnText">Crear App</span>
-        </button>
       </div>
-    </div>
     <div id="recentDocsSection" class="projects-section projects-section-premium mt-8">
       <div class="section-header-premium">
         <div class="section-header-left">

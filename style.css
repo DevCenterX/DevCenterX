@@ -1840,6 +1840,75 @@ body.light-theme #home-section .mode-selector.active:hover {
   display: none;
 }
 
+.recent-app-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 190px;
+}
+
+.recent-app-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recent-app-card-initials {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recent-app-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.recent-app-card-description {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  min-height: 2.4rem;
+  color: var(--text-secondary);
+}
+
+.recent-app-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  gap: 0.5rem;
+}
+
+.recent-app-card-status {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+}
+
+.recent-app-card-timestamp {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
 /* ============================================
    PROJECT CARDS GRID
    ============================================ */
