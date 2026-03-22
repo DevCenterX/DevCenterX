@@ -1,4500 +1,596 @@
-// API Keys from window
-const GEMINI_API_KEY = window.GEMINI_API_KEY;
-const GEMINI_API_URL = window.GEMINI_API_URL;
-
-window.GITHUB_TOKEN = window.GITHUB_TOKEN;
-window.GITHUB_API_URL = window.GITHUB_API_URL;
-
-// ===== CHAT MANAGEMENT =====
-let chatHistory = [];
-let currentChatId = null;
-
-// ===== THEME MANAGEMENT =====
-class ThemeManager {
-    constructor() {
-        this.currentTheme = localStorage.getItem('theme');
-        this.userHasSetTheme = localStorage.getItem('userSetTheme') === 'true';
-        this.init();
-    }
-
-    init() {
-        // Determine initial theme - always follow system preference
-        this.followSystemTheme();
-
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            this.setTheme(e.matches ? 'dark' : 'light', false);
-        });
-    }
-
-    followSystemTheme() {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.setTheme(prefersDark ? 'dark' : 'light', false);
-    }
-
-    setTheme(theme, isUserAction = false) {
-        this.currentTheme = theme;
-        document.documentElement.setAttribute('data-theme', theme);
-
-        if (isUserAction) {
-            // User manually changed theme
-            localStorage.setItem('theme', theme);
-            localStorage.setItem('userSetTheme', 'true');
-            this.userHasSetTheme = true;
-        } else {
-            // System theme or initial load
-            localStorage.setItem('theme', theme);
-            // Don't set userSetTheme to true for system changes
-        }
-    }
-
-    getCurrentTheme() {
-        return this.currentTheme;
-    }
-
-    resetToSystemTheme() {
-        localStorage.removeItem('userSetTheme');
-        this.userHasSetTheme = false;
-        this.followSystemTheme();
-    }
-
-    // Force theme update (useful for testing)
-    forceUpdate() {
-        this.followSystemTheme();
-    }
-}
-
-// Initialize theme manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.themeManager = new ThemeManager();
-    initializeChatSystem();
-    loadGeneratedCode(); // Load code from sessionStorage if exists
-
-    // Debug: Log current theme
-    console.log('Tema inicial aplicado:', window.themeManager.getCurrentTheme());
-    console.log('Preferencia del sistema:', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-});
-
-// Función para detectar tipo de dispositivo del usuario
-function detectUserDevice() {
-    const ua = navigator.userAgent;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    
-    let deviceType = 'desktop';
-    let deviceDetails = '';
-    let optimizationAdvice = '';
-    
-    if (/iPhone|iPad|iPod/i.test(ua)) {
-        deviceType = 'mobile';
-        deviceDetails = 'dispositivo iOS';
-        optimizationAdvice = 'OPTIMIZACIÓN MÓVIL iOS: Usar -webkit-touch-callout, -webkit-user-select, touch-action, scroll-behavior smooth, font iOS optimizado, colores vibrantes, botones grandes táctiles, navegación inferior, scroll horizontal, gestos swipe.';
-    } else if (/Android/i.test(ua)) {
-        deviceType = 'mobile';
-        deviceDetails = 'dispositivo Android';
-        optimizationAdvice = 'OPTIMIZACIÓN MÓVIL ANDROID: Material Design principles, ripple effects, floating action buttons, colores Material, navegación con tabs, scroll snap, touch feedback, density-independent pixels.';
-    } else if (/Mobi/i.test(ua) || (width <= 768 && hasTouch)) {
-        deviceType = 'mobile';
-        deviceDetails = 'dispositivo móvil';
-        optimizationAdvice = 'OPTIMIZACIÓN MÓVIL GENERAL: Mobile-first design, thumb-friendly navigation, large touch targets (44px min), stack layouts verticalmente, ocultar elementos no esenciales, usar sticky headers, bottom navigation, hamburger menu.';
-    } else if (/Tablet|iPad/i.test(ua) || (width > 768 && width <= 1024 && hasTouch)) {
-        deviceType = 'tablet';
-        deviceDetails = 'tablet';
-        optimizationAdvice = 'OPTIMIZACIÓN TABLET: Hybrid desktop/mobile approach, aprovechar pantalla más grande, sidebar navigation, grid layouts, touch gestures, landscape/portrait adaptation, split views.';
-    } else if (width > 1024) {
-        deviceType = 'desktop';
-        deviceDetails = 'computadora de escritorio';
-        optimizationAdvice = 'OPTIMIZACIÓN DESKTOP: Hover effects, keyboard navigation, cursor interactions, wide layouts, sidebar navigation, multi-column layouts, parallax effects, video backgrounds, complex animations.';
-    }
-    
-    return {
-        type: deviceType,
-        details: deviceDetails,
-        screenWidth: width,
-        screenHeight: height,
-        hasTouch: hasTouch,
-        optimizationAdvice: optimizationAdvice,
-        devicePixelRatio: devicePixelRatio
-    };
-}
-
-// Función para determinar la estación
-function getSeason(month) {
-    if (month >= 3 && month <= 5) return 'primavera';
-    if (month >= 6 && month <= 8) return 'verano';
-    if (month >= 9 && month <= 11) return 'otoño';
-    return 'invierno';
-}
-
-// Función para obtener información contextual del usuario
-function getContextualInfo() {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.toLocaleDateString('es-ES', { month: 'long' });
-    const currentDay = now.getDate();
-    const currentWeekDay = now.toLocaleDateString('es-ES', { weekday: 'long' });
-    
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let detectedTheme = prefersDark ? 'oscuro' : 'claro';
-    
-    return {
-        year: currentYear,
-        month: currentMonth,
-        day: currentDay,
-        weekDay: currentWeekDay,
-        theme: detectedTheme,
-        season: getSeason(now.getMonth() + 1)
-    };
-}
-
-// Elements
-const elements = {
-    chatInput: document.getElementById('chatInput'),
-    sendBtn: document.getElementById('sendBtn'),
-    htmlEditor: document.getElementById('htmlEditor'),
-    jsEditor: document.getElementById('jsEditor'),
-    cssEditor: document.getElementById('cssEditor'),
-    previewTab: document.getElementById('previewTab'),
-    previewContainer: document.getElementById('previewContainer'),
-    previewFrame: document.getElementById('previewFrame'),
-    refreshPreview: document.getElementById('refreshPreview'),
-    chatToggleBtn: document.getElementById('chatToggleBtn'),
-    homeBtn: document.getElementById('homeBtn'),
-    leftSidebar: document.getElementById('leftSidebar'),
-    cursorPosition: document.getElementById('cursorPosition'),
-    chatMessages: document.getElementById('chatMessages'),
-    toggleLogs: document.getElementById('toggleLogs'),
-    consoleLogs: document.getElementById('consoleLogs'),
-    consoleContent: document.getElementById('consoleContent'),
-    clearLogs: document.getElementById('clearLogs')
-};
-
-// Console logs storage
-let consoleLogs = [];
-
-// State
+'use strict';
+// ==================== GLOBALS ====================
 let currentTab = 'html';
 let isGenerating = false;
-let currentZoom = 1;
-let currentPreviewSize = 'desktop';
-
-let currentProject = null;
-
-async function loadProject() {
-    const projectData = localStorage.getItem('currentProject');
-    if (projectData) {
-        currentProject = JSON.parse(projectData);
-        
-        const projectNameEl = document.getElementById('projectName');
-        if (projectNameEl) {
-            const projectTitle = currentProject.title || 'Proyecto';
-            
-            projectNameEl.textContent = projectTitle;
-            
-            document.title = projectTitle;
-        }
-        
-        if (currentProject.code && currentProject.code.html) {
-            elements.htmlEditor.value = currentProject.code.html;
-            elements.cssEditor.value = currentProject.code.css;
-            elements.jsEditor.value = currentProject.code.js;
-        }
-        
-        const hasBackup = await initBackupMode();
-        
-        if (!hasBackup) {
-            await loadProjectFromSupabase();
-        }
-        
-        updateDevCenterXButton();
-        updatePublishButtons();
-    }
-}
-
-// Cargar proyecto desde Supabase
-async function loadProjectFromSupabase() {
-    try {
-        const supabase = initSupabase();
-        if (!supabase || !currentProject) return;
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.log('No hay sesión activa en Supabase');
-            return;
-        }
-        
-        // Obtener nombre de usuario desde localStorage
-        const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!nombreUsuario) {
-            console.log('No se encontró el nombre de usuario en localStorage');
-            return;
-        }
-        
-        // Buscar el usuario en la tabla personas
-        const { data: personaData, error } = await supabase
-            .from('personas')
-            .select('proyectos')
-            .eq('nombrepersona', nombreUsuario)
-            .single();
-        
-        if (error || !personaData) {
-            console.log('Usuario no encontrado en Supabase');
-            return;
-        }
-        
-        // Buscar el proyecto en el array de proyectos
-        const proyectos = personaData.proyectos || [];
-        const proyecto = proyectos.find(p => p.numeroProyecto === currentProject.id);
-        
-        if (proyecto) {
-            // Actualizar currentProject con datos de Supabase (NUNCA cargar code de Supabase)
-            // El código solo debe cargarse desde localStorage o backup slots
-            currentProject.title = proyecto.titulo || currentProject.title;
-            currentProject.description = proyecto.descripcion || currentProject.description;
-            currentProject.tags = proyecto.tags || currentProject.tags;
-            currentProject.status = proyecto.status || currentProject.status;
-            currentProject.link = proyecto.link || currentProject.link;
-            currentProject.devcenter = proyecto.devcenter || currentProject.devcenter;
-            
-            // Cargar código desde localStorage si existe
-            const projectId = currentProject.id || currentProject.numeroProyecto;
-            const codeKey = `dc_project_code_${projectId}`;
-            const savedCode = localStorage.getItem(codeKey);
-            if (savedCode) {
-                try {
-                    const codeData = JSON.parse(savedCode);
-                    if (codeData.code) {
-                        currentProject.code = codeData.code;
-                        elements.htmlEditor.value = codeData.code.html || '';
-                        elements.cssEditor.value = codeData.code.css || '';
-                        elements.jsEditor.value = codeData.code.js || '';
-                        console.log(`💾 Código cargado desde localStorage (${codeKey})`);
-                    }
-                } catch (e) {
-                    console.log('Error parseando código de localStorage');
-                }
-            }
-            
-            if (!activeBackupSlot) {
-                localStorage.setItem('currentProject', JSON.stringify(currentProject));
-            }
-            
-            console.log('✅ Proyecto cargado desde Supabase');
-        } else {
-            console.log('Proyecto no encontrado en Supabase, usando localStorage');
-        }
-    } catch (error) {
-        console.error('Error al cargar desde Supabase:', error);
-    }
-}
-
-async function saveProjectCode() {
-    if (currentProject) {
-        const html = elements.htmlEditor.value;
-        const css = elements.cssEditor.value;
-        const js = elements.jsEditor.value;
-        
-        if (html || css || js) {
-            currentProject.code = { html, css, js };
-        } else {
-            delete currentProject.code;
-        }
-        
-        if (activeBackupSlot) {
-            await saveToBackupSlot();
-            return;
-        }
-        
-        localStorage.setItem('currentProject', JSON.stringify(currentProject));
-        
-        const projectId = currentProject.id || currentProject.numeroProyecto;
-        if (projectId && currentProject.code) {
-            const codeKey = `dc_project_code_${projectId}`;
-            const codeData = {
-                numeroProyecto: projectId,
-                titulo: currentProject.title || currentProject.titulo,
-                code: currentProject.code,
-                savedAt: new Date().toISOString()
-            };
-            localStorage.setItem(codeKey, JSON.stringify(codeData));
-            console.log(`💾 Código guardado en localStorage (${codeKey})`);
-        }
-        
-        let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-        const index = userProjects.findIndex(p => p.id === currentProject.id);
-        if (index !== -1) {
-            userProjects[index] = currentProject;
-            localStorage.setItem('userProjects', JSON.stringify(userProjects));
-        }
-        
-        await saveProjectToSupabase();
-    }
-}
-
-// Guardar proyecto en Supabase
-async function saveProjectToSupabase() {
-    try {
-        const supabase = initSupabase();
-        if (!supabase || !currentProject) return;
-        
-        // Obtener nombre de usuario desde localStorage (no depender de sesión auth)
-        const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!nombreUsuario) {
-            console.log('No se encontró el nombre de usuario en localStorage');
-            return;
-        }
-        
-        console.log('📤 Guardando proyecto en Supabase para usuario:', nombreUsuario);
-        
-        // Buscar el usuario en la tabla personas
-        const { data: personaData, error: fetchError } = await supabase
-            .from('personas')
-            .select('id, proyectos')
-            .eq('nombrepersona', nombreUsuario)
-            .single();
-        
-        if (fetchError || !personaData) {
-            console.error('Usuario no encontrado en Supabase:', fetchError);
-            return;
-        }
-        
-        // Obtener array de proyectos actual
-        let proyectos = personaData.proyectos || [];
-        
-        // Buscar si el proyecto ya existe
-        const projectIndex = proyectos.findIndex(p => p.numeroProyecto === currentProject.id);
-        
-        if (projectIndex !== -1) {
-            // Actualizar proyecto existente - NUNCA guardar código en proyectos JSONB
-            const existingProject = proyectos[projectIndex];
-            const { code, ...existingSinCode } = existingProject;
-            
-            const updatedProject = {
-                ...existingSinCode,
-                titulo: currentProject.title,
-                inicialesTitulo: currentProject.initials,
-                descripcion: currentProject.description,
-                tags: currentProject.tags,
-                status: currentProject.status,
-                devcenter: currentProject.devcenter || 'private'
-            };
-            
-            console.log(`📦 Código NO se guarda en JSONB - solo en backup slots`);
-            
-            proyectos[projectIndex] = updatedProject;
-        } else {
-            // Agregar nuevo proyecto - NUNCA guardar código en proyectos JSONB
-            const newProject = {
-                numeroProyecto: currentProject.id,
-                titulo: currentProject.title,
-                inicialesTitulo: currentProject.initials,
-                descripcion: currentProject.description,
-                tags: currentProject.tags,
-                status: currentProject.status,
-                fecha: currentProject.createdAt || new Date().toLocaleDateString('es-ES'),
-                link: '',
-                devcenter: 'private'
-            };
-            
-            proyectos.push(newProject);
-        }
-        
-        // Asegurar que ningún proyecto tenga campo code antes de guardar
-        const proyectosParaGuardar = proyectos.map(p => {
-            const { code, ...proyectoSinCode } = p;
-            return proyectoSinCode;
-        });
-        
-        // Guardar array actualizado en Supabase
-        const { error: updateError } = await supabase
-            .from('personas')
-            .update({ proyectos: proyectosParaGuardar })
-            .eq('id', personaData.id);
-        
-        if (updateError) {
-            console.error('Error al guardar en Supabase:', updateError);
-        } else {
-            console.log('✅ Proyecto guardado en Supabase correctamente');
-        }
-    } catch (error) {
-        console.error('Error al guardar en Supabase:', error);
-    }
-}
-
-function showProjectInfo() {
-    const modal = document.getElementById('projectInfoModal');
-    if (!currentProject || !modal) return;
-    
-    document.getElementById('modalProjectName').textContent = currentProject.title;
-    document.getElementById('modalInitials').textContent = currentProject.initials;
-    const tagsDisplay = Array.isArray(currentProject.tags) ? currentProject.tags.join(', ') : (currentProject.tags || 'Sin tags');
-    document.getElementById('modalTags').textContent = tagsDisplay;
-    document.getElementById('modalDescription').textContent = currentProject.description || 'Sin descripción';
-    
-    const statusBadge = document.getElementById('modalStatus');
-    statusBadge.textContent = currentProject.status;
-    statusBadge.className = 'status-badge ' + currentProject.status.toLowerCase();
-    
-    const createdDate = new Date(currentProject.createdAt);
-    document.getElementById('modalCreated').textContent = createdDate.toLocaleDateString('es-ES');
-    
-    modal.style.display = 'block';
-}
-
-function closeProjectInfo() {
-    const modal = document.getElementById('projectInfoModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// Estados disponibles con sus colores (sin OFICIAL)
-const availableStatuses = [
-    { value: 'Activo', label: 'Activo', color: '#10b981', description: 'Proyecto activo en desarrollo' },
-    { value: 'Beta', label: 'Beta', color: '#f59e0b', description: 'Versión beta en pruebas' },
-    { value: 'Stable', label: 'Stable', color: '#3b82f6', description: 'Versión estable' },
-    { value: 'Experimental', label: 'Experimental', color: '#a78bfa', description: 'Proyecto experimental' },
-    { value: 'Community', label: 'Community', color: '#ec4899', description: 'Proyecto comunitario' },
-    { value: 'Premium', label: 'Premium', color: '#fbbf24', description: 'Contenido premium' },
-    { value: 'Free', label: 'Free', color: '#34d399', description: 'Gratis para todos' },
-    { value: 'Demo', label: 'Demo', color: '#60a5fa', description: 'Demostración' },
-    { value: 'Archived', label: 'Archived', color: '#6b7280', description: 'Archivado' },
-    { value: 'Paused', label: 'Paused', color: '#9ca3af', description: 'En pausa' },
-    { value: 'Planning', label: 'Planning', color: '#8b5cf6', description: 'En planificación' },
-    { value: 'Completed', label: 'Completed', color: '#059669', description: 'Completado' }
-];
-
-// Show edit project modal
-function showEditProjectModal() {
-    if (!currentProject) return;
-    
-    // Si no tiene estado, asignar "Activo" por defecto
-    if (!currentProject.status) {
-        currentProject.status = 'Activo';
-    }
-    
-    const statusOptions = availableStatuses.map(s => 
-        `<div class="status-option" data-value="${s.value}" data-color="${s.color}">
-            <div class="status-color-dot" style="background: ${s.color};"></div>
-            <div class="status-info">
-                <div class="status-label">${s.label}</div>
-                <div class="status-description">${s.description}</div>
-            </div>
-        </div>`
-    ).join('');
-    
-    const currentStatus = availableStatuses.find(s => s.value === currentProject.status) || availableStatuses[0];
-    
-    const modalHTML = `
-        <div id="editProjectModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 21, 37, 0.98); backdrop-filter: blur(12px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'IBM Plex Sans', sans-serif; overflow-y: auto;">
-            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); margin: 20px 0;">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, var(--accent), #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0, 112, 243, 0.4);">
-                        <i class="fas fa-pencil-alt" style="font-size: 36px; color: white;"></i>
-                    </div>
-                    <h2 style="color: var(--text-primary); font-size: 28px; font-weight: 700; margin-bottom: 12px;">Editar Proyecto</h2>
-                    <p style="color: var(--text-secondary); font-size: 15px;">Modifica la información completa de tu proyecto</p>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
-                    <div>
-                        <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 10px;">
-                            <i class="fas fa-signature" style="margin-right: 6px; color: var(--icon-purple);"></i>
-                            Iniciales <span style="color: var(--text-tertiary); font-weight: 400;">(máx. 2)</span>
-                        </label>
-                        <input type="text" id="editProjectInitials" value="${currentProject.initials || ''}" maxlength="2" style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s; text-transform: uppercase; font-weight: 600;" />
-                        <div style="text-align: right; margin-top: 6px;">
-                            <span id="initialsCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 500;">0/2</span>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 10px;">
-                            <i class="fas fa-heading" style="margin-right: 6px; color: var(--icon-blue);"></i>
-                            Título <span style="color: var(--text-tertiary); font-weight: 400;">(máx. 15)</span>
-                        </label>
-                        <input type="text" id="editProjectTitle" value="${currentProject.title || ''}" maxlength="15" style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s;" />
-                        <div style="text-align: right; margin-top: 6px;">
-                            <span id="titleCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 500;">0/15</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 10px;">
-                        <i class="fas fa-align-left" style="margin-right: 6px; color: var(--icon-green);"></i>
-                        Descripción <span style="color: var(--text-tertiary); font-weight: 400;">(máx. 500)</span>
-                    </label>
-                    <textarea id="editProjectDescription" maxlength="500" style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 15px; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s; resize: vertical; min-height: 120px; line-height: 1.6;">${currentProject.description || ''}</textarea>
-                    <div style="text-align: right; margin-top: 6px;">
-                        <span id="descriptionCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 500;">0/500</span>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 10px;">
-                        <i class="fas fa-tags" style="margin-right: 6px; color: var(--icon-yellow);"></i>
-                        Tags <span style="color: var(--text-tertiary); font-weight: 400;">(máx. 150)</span>
-                    </label>
-                    <input type="text" id="editProjectTags" value="${Array.isArray(currentProject.tags) ? currentProject.tags.join(', ') : (currentProject.tags || '')}" maxlength="150" placeholder="ej: web, design, portfolio" style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 15px; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s;" />
-                    <div style="text-align: right; margin-top: 6px;">
-                        <span id="tagsCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 500;">0/150</span>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 32px;">
-                    <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 10px;">
-                        <i class="fas fa-flag" style="margin-right: 6px; color: var(--icon-orange);"></i>
-                        Estado del Proyecto
-                    </label>
-                    <div style="position: relative;">
-                        <div id="statusSelector" style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="status-color-dot" style="width: 12px; height: 12px; border-radius: 50%; background: ${currentStatus.color};"></div>
-                                <span id="selectedStatusText">${currentStatus.label}</span>
-                            </div>
-                            <i class="fas fa-chevron-down" style="color: var(--text-secondary); font-size: 12px;"></i>
-                        </div>
-                        <input type="text" id="statusSearch" placeholder="Buscar estado..." style="width: 100%; padding: 14px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 15px; margin-top: 8px; display: none;" />
-                        <div id="statusDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: var(--bg-primary); border: 2px solid var(--border); border-radius: 8px; max-height: 400px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);">
-                            ${statusOptions}
-                        </div>
-                    </div>
-                    <input type="hidden" id="editProjectStatus" value="${currentProject.status || 'Activo'}" />
-                </div>
-                
-                <div style="display: flex; gap: 16px; padding-top: 24px; border-top: 1px solid var(--border);">
-                    <button onclick="closeEditProjectModal()" style="flex: 1; padding: 16px; background: var(--bg-secondary); color: var(--text-primary); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif;">
-                        <i class="fas fa-times" style="margin-right: 8px;"></i>
-                        Cancelar
-                    </button>
-                    <button onclick="saveProjectDetails()" style="flex: 2; padding: 16px; background: linear-gradient(135deg, var(--accent), #0761d1); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif; box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);">
-                        <i class="fas fa-save" style="margin-right: 8px;"></i>
-                        Guardar Cambios
-                    </button>
-                </div>
-            </div>
-        </div>
-        <style>
-        #editProjectModal input:focus,
-        #editProjectModal textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(0, 112, 243, 0.15);
-        }
-        #editProjectModal button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-        #editProjectModal button:active {
-            transform: translateY(0);
-        }
-        .status-option {
-            padding: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
-            border-bottom: 1px solid var(--border);
-        }
-        .status-option:last-child {
-            border-bottom: none;
-        }
-        .status-option:hover {
-            background: var(--bg-secondary);
-        }
-        .status-color-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .status-info {
-            flex: 1;
-        }
-        .status-label {
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .status-description {
-            color: var(--text-tertiary);
-            font-size: 12px;
-        }
-        #statusSelector:hover {
-            border-color: var(--accent);
-        }
-        #statusDropdown::-webkit-scrollbar {
-            width: 8px;
-        }
-        #statusDropdown::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-            border-radius: 4px;
-        }
-        #statusDropdown::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-        #statusDropdown::-webkit-scrollbar-thumb:hover {
-            background: var(--text-tertiary);
-        }
-        </style>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Setup character counters and status selector
-    setTimeout(() => {
-        setupCharacterCounters();
-        setupStatusSelector();
-        const titleInput = document.getElementById('editProjectTitle');
-        if (titleInput) {
-            titleInput.focus();
-            titleInput.select();
-        }
-    }, 100);
-}
-
-// Setup status selector with search
-function setupStatusSelector() {
-    const selector = document.getElementById('statusSelector');
-    const dropdown = document.getElementById('statusDropdown');
-    const searchInput = document.getElementById('statusSearch');
-    const statusInput = document.getElementById('editProjectStatus');
-    const selectedText = document.getElementById('selectedStatusText');
-    
-    if (!selector || !dropdown || !searchInput || !statusInput) return;
-    
-    let isOpen = false;
-    
-    // Toggle dropdown
-    selector.addEventListener('click', () => {
-        isOpen = !isOpen;
-        if (isOpen) {
-            dropdown.style.display = 'block';
-            searchInput.style.display = 'block';
-            searchInput.focus();
-            filterStatuses('');
-        } else {
-            dropdown.style.display = 'none';
-            searchInput.style.display = 'none';
-            searchInput.value = '';
-        }
-    });
-    
-    // Search functionality
-    searchInput.addEventListener('input', (e) => {
-        filterStatuses(e.target.value);
-    });
-    
-    searchInput.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-    
-    // Filter statuses based on search
-    function filterStatuses(query) {
-        const options = dropdown.querySelectorAll('.status-option');
-        const lowerQuery = query.toLowerCase();
-        
-        options.forEach(option => {
-            const label = option.querySelector('.status-label').textContent.toLowerCase();
-            const description = option.querySelector('.status-description').textContent.toLowerCase();
-            
-            if (label.includes(lowerQuery) || description.includes(lowerQuery)) {
-                option.style.display = 'flex';
-            } else {
-                option.style.display = 'none';
-            }
-        });
-    }
-    
-    // Select status
-    dropdown.addEventListener('click', (e) => {
-        const option = e.target.closest('.status-option');
-        if (option) {
-            const value = option.dataset.value;
-            const color = option.dataset.color;
-            const label = option.querySelector('.status-label').textContent;
-            
-            statusInput.value = value;
-            selectedText.textContent = label;
-            selector.querySelector('.status-color-dot').style.background = color;
-            
-            dropdown.style.display = 'none';
-            searchInput.style.display = 'none';
-            searchInput.value = '';
-            isOpen = false;
-        }
-    });
-    
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!selector.contains(e.target) && !dropdown.contains(e.target) && !searchInput.contains(e.target)) {
-            dropdown.style.display = 'none';
-            searchInput.style.display = 'none';
-            searchInput.value = '';
-            isOpen = false;
-        }
-    });
-}
-
-// Setup character counters for inputs
-function setupCharacterCounters() {
-    const fields = [
-        { id: 'editProjectInitials', counterId: 'initialsCounter', max: 2 },
-        { id: 'editProjectTitle', counterId: 'titleCounter', max: 15 },
-        { id: 'editProjectDescription', counterId: 'descriptionCounter', max: 500 },
-        { id: 'editProjectTags', counterId: 'tagsCounter', max: 150 }
-    ];
-    
-    fields.forEach(field => {
-        const input = document.getElementById(field.id);
-        const counter = document.getElementById(field.counterId);
-        
-        if (input && counter) {
-            const updateCounter = () => {
-                const length = input.value.length;
-                counter.textContent = `${length}/${field.max}`;
-                
-                if (length >= field.max) {
-                    counter.style.color = 'var(--icon-red)';
-                } else if (length >= field.max * 0.9) {
-                    counter.style.color = 'var(--warning-yellow)';
-                } else {
-                    counter.style.color = 'var(--text-tertiary)';
-                }
-            };
-            
-            updateCounter();
-            input.addEventListener('input', updateCounter);
-        }
-    });
-}
-
-// Close edit project modal
-window.closeEditProjectModal = function() {
-    const modal = document.getElementById('editProjectModal');
-    if (modal) {
-        modal.remove();
-    }
-};
-
-// Initialize Supabase client
-let supabaseClient = null;
-
-function initSupabase() {
-    if (!supabaseClient && window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-    }
-    return supabaseClient;
-}
-
-// Save project details
-window.saveProjectDetails = async function() {
-    if (!currentProject) return;
-    
-    const initialsInput = document.getElementById('editProjectInitials');
-    const titleInput = document.getElementById('editProjectTitle');
-    const descriptionInput = document.getElementById('editProjectDescription');
-    const tagsInput = document.getElementById('editProjectTags');
-    const statusSelect = document.getElementById('editProjectStatus');
-    
-    if (!titleInput || !initialsInput || !descriptionInput || !tagsInput || !statusSelect) return;
-    
-    const newInitials = initialsInput.value.trim().toUpperCase();
-    const newTitle = titleInput.value.trim();
-    const newDescription = descriptionInput.value.trim();
-    const newTags = tagsInput.value.trim();
-    const newStatus = statusSelect.value;
-    
-    // Validations
-    if (!newInitials || newInitials.length > 2) {
-        alert('Las iniciales deben tener máximo 2 caracteres');
-        return;
-    }
-    
-    if (!newTitle) {
-        alert('El título no puede estar vacío');
-        return;
-    }
-    
-    if (newTitle.length > 15) {
-        alert('El título no puede tener más de 15 caracteres');
-        return;
-    }
-    
-    if (newDescription.length > 500) {
-        alert('La descripción no puede tener más de 500 caracteres');
-        return;
-    }
-    
-    if (newTags.length > 150) {
-        alert('Los tags no pueden tener más de 150 caracteres');
-        return;
-    }
-    
-    // Update current project
-    currentProject.initials = newInitials;
-    currentProject.title = newTitle;
-    currentProject.description = newDescription;
-    currentProject.tags = newTags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-    currentProject.status = newStatus;
-    
-    // Update localStorage
-    localStorage.setItem('currentProject', JSON.stringify(currentProject));
-    
-    // Update in userProjects list
-    let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-    const index = userProjects.findIndex(p => p.id === currentProject.id);
-    if (index !== -1) {
-        userProjects[index] = currentProject;
-        localStorage.setItem('userProjects', JSON.stringify(userProjects));
-    }
-    
-    // Update UI
-    const projectNameEl = document.getElementById('projectName');
-    if (projectNameEl) {
-        projectNameEl.textContent = newTitle;
-    }
-    
-    // Update document title
-    document.title = newTitle;
-    
-    // Show loading indicator
-    const saveButton = document.querySelector('#editProjectModal button[onclick="saveProjectDetails()"]');
-    if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Guardando...';
-    }
-    
-    // Save to Supabase usando la tabla projects
-    await saveProjectToSupabase();
-    
-    // Close modal
-    closeEditProjectModal();
-};
-
-// Initialize
-function init() {
-    loadDefaultCode(); // Primero inicializa vacío
-    loadProject(); // Luego carga proyecto si existe
-    setupEventListeners();
-    updatePreview();
-    initSupabase();
-}
-
-// Chat state
+let chatHistory = [];
+let currentChatId = null;
 let chatStarted = false;
-
-// Start chat - hide initial header and show chat view
-function startChat() {
-    const chatHeaderBar = document.getElementById('chatHeaderBar');
-    const welcomeMessage = document.getElementById('welcomeMessage');
-
-    if (!chatStarted) {
-        chatStarted = true;
-        if (chatHeaderBar) chatHeaderBar.style.display = 'flex';
-        if (welcomeMessage) welcomeMessage.style.display = 'none';
-    }
-}
-
-// Reset to new chat
-function resetToNewChat() {
-    createNewChat();
-    loadChat(currentChatId);
-}
-
-function initializeChatSystem() {
-    // Load chat history from localStorage
-    const savedChats = localStorage.getItem('devcenter_chats');
-    if (savedChats) {
-        chatHistory = JSON.parse(savedChats);
-    }
-
-    // Create initial chat if none exists
-    if (chatHistory.length === 0) {
-        createNewChat();
-    } else {
-        loadChat(chatHistory[0].id);
-    }
-
-    updateChatDropdown();
-}
-
-function createNewChat() {
-    const chatId = Date.now().toString();
-    const newChat = {
-        id: chatId,
-        title: 'Nuevo Chat',
-        messages: [],
-        created: new Date().toISOString()
-    };
-
-    chatHistory.unshift(newChat);
-    currentChatId = chatId;
-    saveChatHistory();
-    updateChatDropdown();
-    return chatId;
-}
-
-function loadChat(chatId) {
-    const chat = chatHistory.find(c => c.id === chatId);
-    if (!chat) return;
-
-    currentChatId = chatId;
-    const chatMessages = document.getElementById('chatMessages');
-    const currentChatTitle = document.getElementById('currentChatTitle');
-
-    if (currentChatTitle) currentChatTitle.textContent = chat.title;
-
-    // Clear messages and show welcome if no messages
-    if (!chat.messages || chat.messages.length === 0) {
-        chatStarted = false;
-        document.getElementById('chatHeaderBar').style.display = 'none';
-        chatMessages.innerHTML = `
-            <div class="welcome-message" id="welcomeMessage">
-                <h2>¡Hola! Soy tu asistente de desarrollo</h2>
-                <p>Puedo crear aplicaciones web completas, explicar código, depurar bugs, refactorizar, y mucho más. ¿En qué puedo ayudarte hoy?</p>
-            </div>
-        `;
-    } else {
-        chatStarted = true;
-        document.getElementById('chatHeaderBar').style.display = 'flex';
-        
-        // Clear existing messages
-        chatMessages.innerHTML = '';
-        
-        // Load and display saved messages
-        chat.messages.forEach(msg => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${msg.type}`;
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            messageContent.textContent = msg.content;
-            
-            if (msg.type === 'ai') {
-                const messageFeedback = document.createElement('div');
-                messageFeedback.className = 'message-feedback';
-                messageFeedback.innerHTML = `
-                    <button class="feedback-btn" title="Me gusta">
-                        <i class="fas fa-thumbs-up"></i>
-                    </button>
-                    <button class="feedback-btn" title="No me gusta">
-                        <i class="fas fa-thumbs-down"></i>
-                    </button>
-                `;
-                messageDiv.appendChild(messageContent);
-                messageDiv.appendChild(messageFeedback);
-            } else {
-                messageDiv.appendChild(messageContent);
-            }
-            
-            chatMessages.appendChild(messageDiv);
-        });
-        
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-}
-
-function updateChatDropdown() {
-    // This would populate a dropdown menu with chat history
-    // For now, just update the current title
-    const currentChat = chatHistory.find(c => c.id === currentChatId);
-    if (currentChat) {
-        const currentChatTitle = document.getElementById('currentChatTitle');
-        if (currentChatTitle) currentChatTitle.textContent = currentChat.title;
-    }
-}
-
-function saveChatHistory() {
-    localStorage.setItem('devcenter_chats', JSON.stringify(chatHistory));
-}
-
-function generateChatTitle(firstMessage) {
-    // Generate a title based on the first message
-    const words = firstMessage.split(' ').slice(0, 4).join(' ');
-    return words.length > 20 ? words.substring(0, 20) + '...' : words;
-}
-
-function toggleChatDropdown() {
-    // For now, just show an alert with available chats
-    // In a full implementation, this would show a dropdown menu
-    const chatList = chatHistory.map(chat => `${chat.title} (${new Date(chat.created).toLocaleDateString()})`).join('\n');
-    alert(`Chats disponibles:\n${chatList}\n\nFuncionalidad completa próximamente.`);
-}
-
-// Send message function
-function sendMessage() {
-    const message = elements.chatInput.value.trim();
-    if (!message || isGenerating) return;
-    
-    elements.chatInput.value = ''; // Clear input immediately
-    
-    // Generate chat title on first message
-    if (!chatStarted) {
-        const currentChat = chatHistory.find(c => c.id === currentChatId);
-        if (currentChat && currentChat.title === 'Nuevo Chat') {
-            currentChat.title = generateChatTitle(message);
-            updateChatDropdown();
-            saveChatHistory();
-        }
-    }
-    
-    startChat();
-    handleBuild();
-}
-
-// Event Listeners
-function setupEventListeners() {
-    // Send button
-    const sendBtn = document.getElementById('sendBtn');
-    if (sendBtn) {
-        sendBtn.addEventListener('click', sendMessage);
-    }
-    
-    // Chat input - Enter to send
-    elements.chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // New chat button
-    const newChatBtn = document.getElementById('newChatBtn');
-    if (newChatBtn) {
-        newChatBtn.addEventListener('click', resetToNewChat);
-    }
-
-    // Chat dropdown button
-    const chatDropdownBtn = document.getElementById('chatDropdownBtn');
-    if (chatDropdownBtn) {
-        chatDropdownBtn.addEventListener('click', toggleChatDropdown);
-    }
-    
-    // Quick action buttons - send predefined messages
-    const checkBugsBtn = document.getElementById('checkBugsBtn');
-    const addPaymentBtn = document.getElementById('addPaymentBtn');
-    const addDatabaseBtn = document.getElementById('addDatabaseBtn');
-    const addAuthBtn = document.getElementById('addAuthBtn');
-    
-    if (checkBugsBtn) {
-        checkBugsBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Check my app for bugs and fix any issues';
-            sendMessage();
-        });
-    }
-    
-    if (addPaymentBtn) {
-        addPaymentBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Add payment processing to my app';
-            sendMessage();
-        });
-    }
-    
-    if (addDatabaseBtn) {
-        addDatabaseBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Add a database to store data';
-            sendMessage();
-        });
-    }
-    
-    if (addAuthBtn) {
-        addAuthBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Add authenticated user login';
-            sendMessage();
-        });
-    }
-    
-    const optimizeBtn = document.getElementById('optimizeBtn');
-    const explainBtn = document.getElementById('explainBtn');
-    const refactorBtn = document.getElementById('refactorBtn');
-    const testBtn = document.getElementById('testBtn');
-    
-    if (optimizeBtn) {
-        optimizeBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Optimize my code for better performance';
-            sendMessage();
-        });
-    }
-    
-    if (explainBtn) {
-        explainBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Explain what this code does';
-            sendMessage();
-        });
-    }
-    
-    if (refactorBtn) {
-        refactorBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Refactor this code to be more readable';
-            sendMessage();
-        });
-    }
-    
-    if (testBtn) {
-        testBtn.addEventListener('click', () => {
-            elements.chatInput.value = 'Add unit tests for this code';
-            sendMessage();
-        });
-    }
-    
-    // Build button (AI generation) - legacy support
-    if (elements.buildBtn) {
-        elements.buildBtn.addEventListener('click', handleBuild);
-    }
-
-    // Control buttons
-    document.querySelectorAll('.control-icon-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (btn.title === 'Send') {
-                sendMessage();
-            }
-        });
-    });
-
-
-    // Tabs
-    document.querySelectorAll('.file-tab[data-file]').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const fileType = tab.dataset.file;
-            switchTab(fileType);
-        });
-    });
-
-    // Close tabs
-    document.querySelectorAll('.close-tab').forEach(closeBtn => {
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-    });
-
-    // Editors with syntax highlighting
-    elements.htmlEditor.addEventListener('input', () => {
-        updatePreview();
-        updateCursorPosition(elements.htmlEditor);
-        saveProjectCode();
-        highlightCode('html');
-    });
-    elements.htmlEditor.addEventListener('scroll', () => {
-        syncScroll(elements.htmlEditor, document.getElementById('htmlHighlight'));
-    });
-    
-    elements.jsEditor.addEventListener('input', () => {
-        updatePreview();
-        updateCursorPosition(elements.jsEditor);
-        saveProjectCode();
-        highlightCode('js');
-    });
-    elements.jsEditor.addEventListener('scroll', () => {
-        syncScroll(elements.jsEditor, document.getElementById('jsHighlight'));
-    });
-    
-    elements.cssEditor.addEventListener('input', () => {
-        updatePreview();
-        updateCursorPosition(elements.cssEditor);
-        saveProjectCode();
-        highlightCode('css');
-    });
-    elements.cssEditor.addEventListener('scroll', () => {
-        syncScroll(elements.cssEditor, document.getElementById('cssHighlight'));
-    });
-    
-    // Apply initial syntax highlighting for all editors
-    setTimeout(() => {
-        highlightCode('html');
-        highlightCode('js');
-        highlightCode('css');
-    }, 100);
-    
-    const projectDropdown = document.getElementById('projectDropdown');
-    if (projectDropdown) {
-        projectDropdown.addEventListener('click', showProjectInfo);
-    }
-    
-    const editProjectBtn = document.getElementById('editProjectBtn');
-    if (editProjectBtn) {
-        editProjectBtn.addEventListener('click', showEditProjectModal);
-    }
-    
-    document.addEventListener('click', (e) => {
-        const modal = document.getElementById('projectInfoModal');
-        const dropdown = document.getElementById('projectDropdown');
-        if (modal && modal.style.display === 'block' && 
-            !modal.contains(e.target) && !dropdown.contains(e.target)) {
-            closeProjectInfo();
-        }
-    });
-
-    // Cursor position tracking
-    [elements.htmlEditor, elements.jsEditor, elements.cssEditor].forEach(editor => {
-        editor.addEventListener('click', () => updateCursorPosition(editor));
-        editor.addEventListener('keyup', () => updateCursorPosition(editor));
-    });
-
-    // Preview controls
-    elements.refreshPreview.addEventListener('click', updatePreview);
-    
-    // Size controls (desktop, tablet, mobile)
-    document.querySelectorAll('.preview-control-btn[data-size]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const size = btn.dataset.size;
-            currentPreviewSize = size;
-            
-            document.querySelectorAll('.preview-control-btn[data-size]').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            const frame = elements.previewFrame;
-            frame.classList.remove('size-desktop', 'size-tablet', 'size-mobile');
-            frame.classList.add(`size-${size}`);
-        });
-    });
-    
-    // Zoom controls
-    const zoomInBtn = document.getElementById('zoomIn');
-    const zoomOutBtn = document.getElementById('zoomOut');
-    const zoomResetBtn = document.getElementById('zoomReset');
-    const zoomLevel = document.getElementById('zoomLevel');
-    
-    if (zoomInBtn) {
-        zoomInBtn.addEventListener('click', () => {
-            currentZoom = Math.min(currentZoom + 0.1, 2);
-            updateZoom();
-        });
-    }
-    
-    if (zoomOutBtn) {
-        zoomOutBtn.addEventListener('click', () => {
-            currentZoom = Math.max(currentZoom - 0.1, 0.5);
-            updateZoom();
-        });
-    }
-    
-    if (zoomResetBtn) {
-        zoomResetBtn.addEventListener('click', () => {
-            currentZoom = 1;
-            updateZoom();
-        });
-    }
-    
-    function updateZoom() {
-        elements.previewFrame.style.transform = `scale(${currentZoom})`;
-        if (zoomLevel) {
-            zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
-        }
-    }
-
-    // Chat toggle con botón morado
-    if (elements.chatToggleBtn && elements.leftSidebar) {
-        elements.chatToggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            elements.leftSidebar.classList.toggle('hidden');
-        });
-    }
-
-    // Home button
-    if (elements.homeBtn) {
-        elements.homeBtn.addEventListener('click', () => {
-            saveProjectCode();
-            window.location.href = '/';
-        });
-    }
-
-    // Toggle logs button
-    if (elements.toggleLogs) {
-        elements.toggleLogs.addEventListener('click', () => {
-            const isVisible = elements.consoleLogs.style.display !== 'none';
-            elements.consoleLogs.style.display = isVisible ? 'none' : 'flex';
-        });
-        
-        // Fullscreen functionality
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', () => {
-                const previewContainer = elements.previewContainer;
-                const icon = fullscreenBtn.querySelector('i');
-                
-                if (!document.fullscreenElement) {
-                    previewContainer.requestFullscreen().then(() => {
-                        icon.classList.remove('fa-expand');
-                        icon.classList.add('fa-compress');
-                    }).catch(err => {
-                        console.error('Error entering fullscreen:', err);
-                    });
-                } else {
-                    document.exitFullscreen().then(() => {
-                        icon.classList.remove('fa-compress');
-                        icon.classList.add('fa-expand');
-                    });
-                }
-            });
-            
-            // Update icon when exiting fullscreen with ESC key
-            document.addEventListener('fullscreenchange', () => {
-                const icon = fullscreenBtn.querySelector('i');
-                if (!document.fullscreenElement) {
-                    icon.classList.remove('fa-compress');
-                    icon.classList.add('fa-expand');
-                }
-            });
-        }
-    }
-
-    // Clear logs button
-    if (elements.clearLogs) {
-        elements.clearLogs.addEventListener('click', () => {
-            consoleLogs = [];
-            elements.consoleContent.innerHTML = '';
-        });
-    }
-
-    // Format button (republicar)
-    const formatBtn = document.getElementById('formatBtn');
-    if (formatBtn) {
-        formatBtn.addEventListener('click', handleFormatRepublish);
-    }
-
-    // Publish button
-    const publishBtn = document.getElementById('publishBtn');
-    if (publishBtn) {
-        publishBtn.addEventListener('click', handlePublishClick);
-    }
-    
-    // DevCenterX button
-    const devCenterBtn = document.getElementById('devCenterBtn');
-    if (devCenterBtn) {
-        devCenterBtn.addEventListener('click', toggleDevCenterX);
-    }
-    
-    // Initialize publish buttons state
-    updatePublishButtons();
-    updateDevCenterXButton();
-}
-
-// Show new indicator on tab
-function showNewIndicator(fileType) {
-    const tab = document.querySelector(`.file-tab[data-file="${fileType}"]`);
-    if (tab) {
-        const indicator = tab.querySelector('.new-indicator');
-        if (indicator) {
-            indicator.style.display = 'inline-block';
-        }
-    }
-}
-
-// Hide new indicator on tab
-function hideNewIndicator(fileType) {
-    const tab = document.querySelector(`.file-tab[data-file="${fileType}"]`);
-    if (tab) {
-        const indicator = tab.querySelector('.new-indicator');
-        if (indicator) {
-            indicator.style.display = 'none';
-        }
-    }
-}
-
-// Switch Tab
-function switchTab(fileType) {
-    currentTab = fileType;
-
-    // Update tab active state
-    document.querySelectorAll('.file-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    document.querySelector(`.file-tab[data-file="${fileType}"]`).classList.add('active');
-    
-    // Hide indicator when switching to this tab
-    hideNewIndicator(fileType);
-
-    // Get editor wrappers
-    const htmlWrapper = document.getElementById('htmlEditorWrapper');
-    const jsWrapper = document.getElementById('jsEditorWrapper');
-    const cssWrapper = document.getElementById('cssEditorWrapper');
-
-    // Show/hide editors and preview
-    if (fileType === 'preview') {
-        if (htmlWrapper) htmlWrapper.classList.remove('active');
-        if (jsWrapper) jsWrapper.classList.remove('active');
-        if (cssWrapper) cssWrapper.classList.remove('active');
-        elements.previewContainer.style.display = 'flex';
-        updatePreview();
-    } else {
-        elements.previewContainer.style.display = 'none';
-        if (htmlWrapper) htmlWrapper.classList.remove('active');
-        if (jsWrapper) jsWrapper.classList.remove('active');
-        if (cssWrapper) cssWrapper.classList.remove('active');
-        
-        const activeWrapper = document.getElementById(`${fileType}EditorWrapper`);
-        const activeEditor = document.getElementById(`${fileType}Editor`);
-        if (activeWrapper) {
-            activeWrapper.classList.add('active');
-        }
-        if (activeEditor) {
-            updateCursorPosition(activeEditor);
-            // Trigger highlighting for current content
-            highlightCode(fileType);
-        }
-    }
-}
-
-// Update cursor position
-function updateCursorPosition(editor) {
-    const text = editor.value.substring(0, editor.selectionStart);
-    const lines = text.split('\n');
-    const line = lines.length;
-    const col = lines[lines.length - 1].length + 1;
-    elements.cursorPosition.textContent = `Ln ${line}, Col ${col}`;
-}
-
-// Handle Build (AI Generation)
-async function handleBuild() {
-    const message = elements.chatInput.value.trim();
-    if (!message || isGenerating) return;
-
-    await generateCodeWithAI(message);
-}
-
-// Add message to chat
-function addChatMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${type}`;
-    
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-    messageContent.textContent = message;
-    
-    const messageFeedback = document.createElement('div');
-    messageFeedback.className = 'message-feedback';
-    messageFeedback.innerHTML = `
-        <button class="feedback-btn" title="Me gusta">
-            <i class="fas fa-thumbs-up"></i>
-        </button>
-        <button class="feedback-btn" title="No me gusta">
-            <i class="fas fa-thumbs-down"></i>
-        </button>
-    `;
-    
-    messageDiv.appendChild(messageContent);
-    if (type === 'ai') {
-        messageDiv.appendChild(messageFeedback);
-    }
-    
-    elements.chatMessages.appendChild(messageDiv);
-    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-    
-    // Save message to current chat
-    if (currentChatId) {
-        const currentChat = chatHistory.find(c => c.id === currentChatId);
-        if (currentChat) {
-            if (!currentChat.messages) currentChat.messages = [];
-            currentChat.messages.push({
-                content: message,
-                type: type,
-                timestamp: new Date().toISOString()
-            });
-            saveChatHistory();
-        }
-    }
-    
-    return messageDiv;
-}
-
-// Update progress item
-function updateProgress(itemId, status, time = null, isActive = false, isCompleted = false) {
-    const item = document.getElementById(itemId);
-    if (!item) return;
-
-    const icon = item.querySelector('.progress-icon i');
-    const statusText = item.querySelector('.progress-status');
-    const timeText = item.querySelector('.progress-time');
-
-    item.classList.remove('active', 'completed');
-    if (isActive) item.classList.add('active');
-    if (isCompleted) item.classList.add('completed');
-
-    if (isCompleted) {
-        icon.className = 'fas fa-check-circle';
-    } else if (isActive) {
-        icon.className = 'fas fa-circle-notch fa-spin';
-    } else {
-        icon.className = 'fas fa-circle';
-    }
-
-    statusText.textContent = status;
-    if (time !== null) {
-        timeText.textContent = time;
-    }
-}
-
-// Format time in seconds
-function formatTime(ms) {
-    const seconds = (ms / 1000).toFixed(1);
-    return `${seconds}s`;
-}
-
-// Generate code with AI
-async function generateCodeWithAI(prompt) {
-    isGenerating = true;
-    if (elements.sendBtn) elements.sendBtn.disabled = true;
-
-    // Hide sidebar header and show progress list
-    const sidebarHeader = document.getElementById('sidebarHeader');
-    const progressList = document.getElementById('progressList');
-    if (sidebarHeader) sidebarHeader.classList.add('hidden');
-    if (progressList) progressList.style.display = 'block';
-
-    // Add user message
-    addChatMessage(prompt, 'user');
-    
-    // Show thinking indicator
-    const thinkingDiv = document.createElement('div');
-    thinkingDiv.className = 'thinking-indicator';
-    thinkingDiv.innerHTML = `
-        <i class="fas fa-brain"></i>
-        <span>Pensando...</span>
-        <div class="thinking-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    `;
-    elements.chatMessages.appendChild(thinkingDiv);
-    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-
-    try {
-        // Obtener información contextual y del dispositivo
-        const context = getContextualInfo();
-        const device = detectUserDevice();
-        
-        let htmlInstructions = '';
-        let cssInstructions = '';
-        let generatedHtml = '';
-        let generatedCss = '';
-        let generatedJs = '';
-        
-        // PASO 1: Generar HTML con instrucciones para CSS y JS
-        updateProgress('progressHtml', 'Generando...', null, true, false);
-        const startHtml = Date.now();
-        
-        const htmlPrompt = `🚀 ERES UN EXPERTO EN HTML5 Y DISEÑO WEB
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-INFORMACIÓN DEL DISPOSITIVO:
-- Dispositivo: ${device.details} (${device.type})
-- Pantalla: ${device.screenWidth}x${device.screenHeight}px
-- ${device.optimizationAdvice}
-
-TU TAREA:
-1. Genera el código HTML completo y semántico
-2. Deja instrucciones detalladas en comentarios para el CSS sobre qué estilos necesita cada sección
-3. Deja instrucciones detalladas en comentarios para el JavaScript sobre qué funcionalidades interactivas necesita
-
-Responde SOLO con JSON:
-{
-  "html": "código HTML completo con comentarios de instrucciones",
-  "cssInstructions": "instrucciones detalladas para el CSS",
-  "jsInstructions": "instrucciones detalladas para el JavaScript"
-}`;
-
-        const htmlResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: htmlPrompt }] }],
-                generationConfig: {
-                    temperature: 1,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            html: { type: "string" },
-                            cssInstructions: { type: "string" },
-                            jsInstructions: { type: "string" }
-                        },
-                        required: ["html", "cssInstructions", "jsInstructions"]
-                    }
-                }
-            })
-        });
-
-        if (!htmlResponse.ok) throw new Error('Error al generar HTML');
-        const htmlData = await htmlResponse.json();
-        const htmlResult = JSON.parse(htmlData.candidates[0].content.parts[0].text);
-        
-        generatedHtml = htmlResult.html;
-        cssInstructions = htmlResult.cssInstructions;
-        htmlInstructions = htmlResult.jsInstructions;
-        
-        const htmlTime = Date.now() - startHtml;
-        updateProgress('progressHtml', 'Completado', formatTime(htmlTime), false, true);
-        
-        // Actualizar editor HTML inmediatamente
-        elements.htmlEditor.value = generatedHtml;
-        showNewIndicator('html');
-        updatePreview();
-        
-        // PASO 2: Generar CSS basándose en las instrucciones del HTML
-        updateProgress('progressCss', 'Generando...', null, true, false);
-        const startCss = Date.now();
-        
-        const cssPrompt = `🚀 ERES UN EXPERTO EN CSS Y DISEÑO VISUAL
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-INSTRUCCIONES DEL HTML:
-${cssInstructions}
-
-HTML GENERADO (para referencia):
-${generatedHtml.substring(0, 500)}...
-
-TU TAREA:
-1. Genera el código CSS completo siguiendo las instrucciones del HTML
-2. Incluye reglas anti-overflow: * { box-sizing: border-box; }, overflow-x: hidden
-3. Diseño responsive y moderno
-4. Deja instrucciones adicionales para el JavaScript sobre animaciones y efectos visuales
-
-Responde SOLO con JSON:
-{
-  "css": "código CSS completo",
-  "jsInstructions": "instrucciones adicionales para el JavaScript sobre animaciones"
-}`;
-
-        const cssResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: cssPrompt }] }],
-                generationConfig: {
-                    temperature: 1,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            css: { type: "string" },
-                            jsInstructions: { type: "string" }
-                        },
-                        required: ["css", "jsInstructions"]
-                    }
-                }
-            })
-        });
-
-        if (!cssResponse.ok) throw new Error('Error al generar CSS');
-        const cssData = await cssResponse.json();
-        const cssResult = JSON.parse(cssData.candidates[0].content.parts[0].text);
-        
-        generatedCss = cssResult.css;
-        cssInstructions = cssResult.jsInstructions;
-        
-        const cssTime = Date.now() - startCss;
-        updateProgress('progressCss', 'Completado', formatTime(cssTime), false, true);
-        
-        // Actualizar editor CSS inmediatamente
-        elements.cssEditor.value = generatedCss;
-        showNewIndicator('css');
-        updatePreview();
-        
-        // PASO 3: Generar JavaScript basándose en todas las instrucciones
-        updateProgress('progressJs', 'Generando...', null, true, false);
-        const startJs = Date.now();
-        
-        const jsPrompt = `🚀 ERES UN EXPERTO EN JAVASCRIPT Y DESARROLLO WEB
-
-SOLICITUD DEL USUARIO: "${prompt}"
-
-INSTRUCCIONES DEL HTML:
-${htmlInstructions}
-
-INSTRUCCIONES DEL CSS:
-${cssInstructions}
-
-HTML GENERADO:
-${generatedHtml.substring(0, 500)}...
-
-TU TAREA:
-1. Genera el código JavaScript completo siguiendo todas las instrucciones
-2. Implementa toda la interactividad necesaria
-3. Código limpio y funcional
-
-Responde SOLO con JSON:
-{
-  "js": "código JavaScript completo"
-}`;
-
-        const jsResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: jsPrompt }] }],
-                generationConfig: {
-                    temperature: 1,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            js: { type: "string" }
-                        },
-                        required: ["js"]
-                    }
-                }
-            })
-        });
-
-        if (!jsResponse.ok) throw new Error('Error al generar JavaScript');
-        const jsData = await jsResponse.json();
-        const jsResult = JSON.parse(jsData.candidates[0].content.parts[0].text);
-        
-        generatedJs = jsResult.js;
-        
-        const jsTime = Date.now() - startJs;
-        updateProgress('progressJs', 'Completado', formatTime(jsTime), false, true);
-        
-        // Actualizar editor JavaScript inmediatamente
-        elements.jsEditor.value = generatedJs;
-        showNewIndicator('js');
-        updatePreview();
-
-        // Switch to preview to see the final result
-        switchTab('preview');
-
-        // Clear input
-        elements.chatInput.value = '';
-
-        // Remove thinking indicator
-        if (thinkingDiv && thinkingDiv.parentNode) {
-            thinkingDiv.parentNode.removeChild(thinkingDiv);
-        }
-
-        // Add detailed AI response
-        const aiResponse = `¡Perfecto! He generado tu aplicación web completa basada en: "${prompt}"
-
-**Lo que se creó:**
-• **HTML**: Estructura semántica y responsive optimizada para ${device.type}
-• **CSS**: Estilos modernos con diseño adaptativo para ${device.screenWidth}x${device.screenHeight}px
-• **JavaScript**: Funcionalidades interactivas y dinámicas
-
-La aplicación está lista en la pestaña "Vista Previa". Puedes probar todas las funcionalidades, hacer ajustes visuales en el editor, o pedirme modificaciones específicas. ¿Qué te gustaría cambiar o mejorar?`;
-
-        addChatMessage(aiResponse, 'ai');
-        
-        // Reset progress list but keep chat visible
-        if (progressList) progressList.style.display = 'none';
-
-    } catch (error) {
-        console.error('Error generando código:', error);
-        
-        // Remove thinking indicator
-        if (thinkingDiv && thinkingDiv.parentNode) {
-            thinkingDiv.parentNode.removeChild(thinkingDiv);
-        }
-        
-        // Add error message
-        addChatMessage(`❌ Error: ${error.message}. Por favor intenta de nuevo.`, 'assistant');
-        
-        // Reset UI on error
-        const sidebarHeader = document.getElementById('sidebarHeader');
-        const progressList = document.getElementById('progressList');
-        if (sidebarHeader) sidebarHeader.classList.remove('hidden');
-        if (progressList) progressList.style.display = 'none';
-        updateProgress('progressHtml', 'Esperando...', '-', false, false);
-        updateProgress('progressCss', 'Esperando...', '-', false, false);
-        updateProgress('progressJs', 'Esperando...', '-', false, false);
-    } finally {
-        isGenerating = false;
-        if (elements.sendBtn) elements.sendBtn.disabled = false;
-    }
-}
-
-// Add console log to display
-function addConsoleLog(type, ...args) {
-    const logDiv = document.createElement('div');
-    logDiv.className = `console-${type}`;
-    logDiv.textContent = args.map(arg => {
-        if (typeof arg === 'object') {
-            try {
-                return JSON.stringify(arg, null, 2);
-            } catch (e) {
-                return String(arg);
-            }
-        }
-        return String(arg);
-    }).join(' ');
-    
-    elements.consoleContent.appendChild(logDiv);
-    elements.consoleContent.scrollTop = elements.consoleContent.scrollHeight;
-    
-    consoleLogs.push({ type, args, timestamp: Date.now() });
-}
-
-// Update preview
-function updatePreview() {
-    const html = elements.htmlEditor.value;
-    const css = elements.cssEditor.value;
-    const js = elements.jsEditor.value;
-
-    if (!html && !css && !js) {
-        elements.previewFrame.srcdoc = '';
-        return;
-    }
-
-    const isFullHTML = html.trim().toLowerCase().startsWith('<!doctype');
-
-    // Inject console interceptor
-    const consoleInterceptor = `
-        <script>
-            (function() {
-                const originalLog = console.log;
-                const originalError = console.error;
-                const originalWarn = console.warn;
-                
-                console.log = function(...args) {
-                    originalLog.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'log', args: args.map(a => String(a)) }, '*');
-                };
-                
-                console.error = function(...args) {
-                    originalError.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'error', args: args.map(a => String(a)) }, '*');
-                };
-                
-                console.warn = function(...args) {
-                    originalWarn.apply(console, args);
-                    window.parent.postMessage({ type: 'console-log', level: 'warn', args: args.map(a => String(a)) }, '*');
-                };
-            })();
-        <\/script>
-    `;
-
-    let content;
-    if (isFullHTML) {
-        content = html
-            .replace(/<\/head>/i, `${consoleInterceptor}<style>${css}</style></head>`)
-            .replace(/<\/body>/i, `<script>${js}<\/script></body>`);
-    } else {
-        content = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    ${consoleInterceptor}
-    <style>${css}</style>
-</head>
-<body>
-    ${html}
-    <script>${js}<\/script>
-</body>
-</html>
-        `;
-    }
-
-    elements.previewFrame.srcdoc = content;
-}
-
-// Listen for console messages from iframe
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'console-log') {
-        addConsoleLog(event.data.level, ...event.data.args);
-    }
-});
-
-// Syntax highlighting with Prism.js
-function highlightCode(fileType) {
-    let editor, highlightElement, language;
-    
-    if (fileType === 'html') {
-        editor = elements.htmlEditor;
-        highlightElement = document.querySelector('#htmlHighlight code');
-        language = 'markup';
-    } else if (fileType === 'js') {
-        editor = elements.jsEditor;
-        highlightElement = document.querySelector('#jsHighlight code');
-        language = 'javascript';
-    } else if (fileType === 'css') {
-        editor = elements.cssEditor;
-        highlightElement = document.querySelector('#cssHighlight code');
-        language = 'css';
-    }
-    
-    if (editor && highlightElement) {
-        const code = editor.value;
-        highlightElement.textContent = code;
-        if (window.Prism) {
-            Prism.highlightElement(highlightElement);
-        }
-    }
-}
-
-// Sync scroll between editor and highlight layer
-function syncScroll(editor, highlightLayer) {
-    if (editor && highlightLayer) {
-        highlightLayer.scrollTop = editor.scrollTop;
-        highlightLayer.scrollLeft = editor.scrollLeft;
-    }
-}
-
-// Apply syntax highlighting to editors (called on input)
-function applySyntaxHighlighting() {
-    highlightCode(currentTab);
-}
-
-// Load default code - Editores empiezan vacíos para una experiencia limpia
-function loadDefaultCode() {
-    // Los editores empiezan vacíos - el placeholder del HTML muestra ejemplos
-    // Solo carga código si el proyecto ya tiene código guardado
-    if (!elements.htmlEditor.value && !elements.cssEditor.value && !elements.jsEditor.value) {
-        elements.htmlEditor.value = '';
-        elements.cssEditor.value = '';
-        elements.jsEditor.value = '';
-    }
-}
-
-// Generate or get persistent session ID
-function getSessionId() {
-    let sessionId = localStorage.getItem('current_session_id');
-    if (!sessionId) {
-        sessionId = generateSessionId();
-        localStorage.setItem('current_session_id', sessionId);
-    }
-    return sessionId;
-}
-
-// Generate session ID (lowercase letters and numbers)
-function generateSessionId() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let id = '';
-    for (let i = 0; i < 12; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-
-// Save publish info to localStorage and Supabase
-async function savePublishInfo(username, repoName, pagesUrl) {
-    if (!currentProject) return;
-    
-    const publishInfo = {
-        username: username,
-        repoName: repoName,
-        pagesUrl: pagesUrl,
-        publishedAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem(`publish_info_${currentProject.id}`, JSON.stringify(publishInfo));
-    
-    currentProject.link = pagesUrl;
-    currentProject.url = pagesUrl;
-    
-    localStorage.setItem('currentProject', JSON.stringify(currentProject));
-    
-    let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-    const index = userProjects.findIndex(p => p.id === currentProject.id);
-    if (index !== -1) {
-        userProjects[index].link = pagesUrl;
-        userProjects[index].url = pagesUrl;
-        localStorage.setItem('userProjects', JSON.stringify(userProjects));
-    }
-    
-    try {
-        await updatePublishLinkInSupabase(pagesUrl);
-        await insertIntoProyectosPublicos(currentProject.title || 'Mi Proyecto');
-    } catch (error) {
-        console.error('Error al actualizar link en Supabase:', error);
-    }
-    
-    updatePublishButtons();
-}
-
-async function insertIntoProyectosPublicos(nombreProyecto) {
-    try {
-        const supabase = initSupabase();
-        if (!supabase) return;
-        
-        const { data: existing, error: selectError } = await supabase
-            .from('proyectos_publicos')
-            .select('*')
-            .eq('nombre_proyecto', nombreProyecto)
-            .maybeSingle();
-        
-        if (selectError && selectError.code !== 'PGRST116') {
-            console.error('Error verificando proyecto en proyectos_publicos:', selectError);
-            return;
-        }
-        
-        if (!existing) {
-            const { data, error } = await supabase
-                .from('proyectos_publicos')
-                .insert({ 
-                    nombre_proyecto: nombreProyecto, 
-                    megustas: 0, 
-                    vistas: 0, 
-                    comentario: [] 
-                })
-                .select()
-                .single();
-            
-            if (error) {
-                console.error('Error insertando en proyectos_publicos:', error);
-            } else {
-                console.log('✅ Proyecto agregado a proyectos_publicos:', data);
-            }
-        } else {
-            console.log('ℹ️ Proyecto ya existe en proyectos_publicos');
-        }
-    } catch (err) {
-        console.error('Error en insertIntoProyectosPublicos:', err);
-    }
-}
-
-async function updatePublishLinkInSupabase(pagesUrl) {
-    try {
-        const supabase = initSupabase();
-        if (!supabase || !currentProject) return;
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.log('No hay sesión activa en Supabase, link guardado solo en localStorage');
-            return;
-        }
-        
-        // Obtener nombre de usuario desde localStorage
-        const nombreUsuario = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!nombreUsuario) {
-            console.log('No se encontró el nombre de usuario en localStorage');
-            return;
-        }
-        
-        const { data: personaData, error: fetchError } = await supabase
-            .from('personas')
-            .select('id, proyectos')
-            .eq('nombrepersona', nombreUsuario)
-            .single();
-        
-        if (fetchError || !personaData) {
-            console.error('Usuario no encontrado en Supabase:', fetchError);
-            return;
-        }
-        
-        let proyectos = personaData.proyectos || [];
-        const projectIndex = proyectos.findIndex(p => p.numeroProyecto === currentProject.id);
-        
-        if (projectIndex !== -1) {
-            proyectos[projectIndex].link = pagesUrl;
-            
-            // Eliminar campo code de todos los proyectos antes de guardar
-            const proyectosParaGuardar = proyectos.map(p => {
-                const { code, ...proyectoSinCode } = p;
-                return proyectoSinCode;
-            });
-            
-            const { error: updateError } = await supabase
-                .from('personas')
-                .update({ proyectos: proyectosParaGuardar })
-                .eq('id', personaData.id);
-            
-            if (updateError) {
-                console.error('Error al actualizar link en Supabase:', updateError);
-            } else {
-                console.log('✅ Link de publicación guardado en Supabase correctamente');
-            }
-        }
-    } catch (error) {
-        console.error('Error al actualizar link en Supabase:', error);
-    }
-}
-
-// Get publish info from localStorage
-function getPublishInfo() {
-    if (!currentProject) return null;
-    
-    // Primero intentar desde localStorage
-    const publishInfoStr = localStorage.getItem(`publish_info_${currentProject.id}`);
-    if (publishInfoStr) {
-        try {
-            return JSON.parse(publishInfoStr);
-        } catch (e) {
-            // Si hay error al parsear, continuar con currentProject.link
-        }
-    }
-    
-    // Si no está en localStorage pero currentProject tiene link, sintetizar publishInfo
-    if (currentProject.link) {
-        return {
-            pagesUrl: currentProject.link,
-            repoUrl: currentProject.repoUrl || '',
-            timestamp: new Date().toISOString()
-        };
-    }
-    
-    return null;
-}
-
-// Update publish buttons based on publish state
-function updatePublishButtons() {
-    const publishInfo = getPublishInfo();
-    const formatBtn = document.getElementById('formatBtn');
-    const publishBtn = document.getElementById('publishBtn');
-    const publishBtnText = document.getElementById('publishBtnText');
-    
-    if (publishInfo) {
-        // Ya está publicado
-        if (formatBtn) {
-            formatBtn.style.display = 'flex';
-        }
-        
-        if (publishBtn && publishBtnText) {
-            publishBtnText.style.display = 'none';
-            publishBtn.title = 'Abrir página web';
-        }
-    } else {
-        // No está publicado
-        if (formatBtn) {
-            formatBtn.style.display = 'none';
-        }
-        
-        if (publishBtn && publishBtnText) {
-            publishBtnText.style.display = 'inline';
-            publishBtn.title = 'Publicar proyecto';
-        }
-    }
-}
-
-// Insertar o actualizar proyecto en proyectos_publicos
-async function insertarProyectoPublico(project) {
-    try {
-        const nombreProyecto = project.title || project.titulo;
-        if (!nombreProyecto) {
-            console.error('El proyecto no tiene título');
-            return null;
-        }
-        
-        // Buscar si ya existe
-        const { data: proyectoExistente, error: selectError } = await window.supabase
-            .from('proyectos_publicos')
-            .select('*')
-            .eq('nombre_proyecto', nombreProyecto)
-            .maybeSingle();
-        
-        if (selectError && selectError.code !== 'PGRST116') {
-            console.error('Error buscando proyecto público:', selectError);
-            return null;
-        }
-        
-        // Si ya existe, no hacer nada (mantener megustas y vistas actuales)
-        if (proyectoExistente) {
-            console.log('✅ Proyecto ya existe en proyectos_publicos');
-            return proyectoExistente;
-        }
-        
-        // Si no existe, insertar nuevo
-        const { data: nuevoProyecto, error: insertError } = await window.supabase
-            .from('proyectos_publicos')
-            .insert([{
-                nombre_proyecto: nombreProyecto,
-                megustas: 0,
-                vistas: 0,
-                comentario: []
-            }])
-            .select()
-            .single();
-        
-        if (insertError) {
-            console.error('Error insertando proyecto público:', insertError);
-            return null;
-        }
-        
-        console.log('✅ Proyecto insertado en proyectos_publicos:', nombreProyecto);
-        return nuevoProyecto;
-    } catch (err) {
-        console.error('Error en insertarProyectoPublico:', err);
-        return null;
-    }
-}
-
-// Toggle DevCenterX (private/public)
-async function toggleDevCenterX() {
-    if (!currentProject) {
-        alert('No hay proyecto cargado');
-        return;
-    }
-    
-    const currentState = currentProject.devcenter || 'private';
-    const newState = currentState === 'private' ? 'public' : 'private';
-    
-    currentProject.devcenter = newState;
-    
-    // Guardar en localStorage
-    localStorage.setItem('currentProject', JSON.stringify(currentProject));
-    
-    let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-    const index = userProjects.findIndex(p => p.id === currentProject.id);
-    if (index !== -1) {
-        userProjects[index] = currentProject;
-        localStorage.setItem('userProjects', JSON.stringify(userProjects));
-    }
-    
-    // Guardar en Supabase
-    await saveProjectToSupabase();
-    
-    // Si se hace público, insertar/actualizar en proyectos_publicos
-    if (newState === 'public') {
-        await insertarProyectoPublico(currentProject);
-    }
-    
-    // Actualizar UI
-    updateDevCenterXButton();
-    
-    // Mostrar mensaje
-    const message = newState === 'public' 
-        ? '✅ Proyecto compartido en DevCenterX' 
-        : '✅ Proyecto removido de DevCenterX';
-    showDevCenterXMessage(message);
-}
-
-// Update DevCenterX button based on project state
-function updateDevCenterXButton() {
-    const devCenterBtn = document.getElementById('devCenterBtn');
-    const devCenterIcon = document.getElementById('devCenterIcon');
-    const devCenterBtnText = document.getElementById('devCenterBtnText');
-    
-    if (!devCenterBtn || !currentProject) return;
-    
-    // Solo mostrar el botón si el proyecto tiene link (está publicado)
-    const publishInfo = getPublishInfo();
-    if (!publishInfo || !publishInfo.pagesUrl) {
-        devCenterBtn.style.display = 'none';
-        return;
-    }
-    
-    devCenterBtn.style.display = 'flex';
-    
-    const isPublic = currentProject.devcenter === 'public';
-    
-    if (isPublic) {
-        devCenterBtn.classList.add('public');
-        devCenterBtn.title = 'Remove from DevCenterX';
-        if (devCenterIcon) {
-            devCenterIcon.className = 'fas fa-check-circle';
-        }
-        if (devCenterBtnText) {
-            devCenterBtnText.textContent = 'Public';
-        }
-    } else {
-        devCenterBtn.classList.remove('public');
-        devCenterBtn.title = 'Share to DevCenterX';
-        if (devCenterIcon) {
-            devCenterIcon.className = 'fas fa-cloud-upload-alt';
-        }
-        if (devCenterBtnText) {
-            devCenterBtnText.textContent = 'DevCenterX';
-        }
-    }
-}
-
-// Show DevCenterX message
-function showDevCenterXMessage(message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 60px;
-        right: 20px;
-        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    messageDiv.textContent = message;
-    
-    document.body.appendChild(messageDiv);
-    
-    setTimeout(() => {
-        messageDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => messageDiv.remove(), 300);
-    }, 3000);
-}
-
-// Handle publish button click (publish or open site)
-function handlePublishClick() {
-    const publishInfo = getPublishInfo();
-    
-    if (publishInfo) {
-        // Ya está publicado, abrir la página
-        window.open(publishInfo.pagesUrl, '_blank');
-    } else {
-        // No está publicado, publicar
-        handlePublish();
-    }
-}
-
-// Handle format button click (republicar)
-async function handleFormatRepublish() {
-    const publishInfo = getPublishInfo();
-    
-    if (!publishInfo) {
-        alert('No se ha publicado el proyecto aún');
-        return;
-    }
-    
-    // Llamar a handleRepublish directamente
-    await window.handleRepublish(publishInfo.username, publishInfo.repoName);
-}
-
-// Handle Publish - Create GitHub Repository
-async function handlePublish() {
-    try {
-        const htmlCode = elements.htmlEditor.value;
-        const cssCode = elements.cssEditor.value;
-        const jsCode = elements.jsEditor.value;
-        
-        console.log('🔍 Verificando token de GitHub...');
-        console.log('window.GITHUB_TOKEN:', window.GITHUB_TOKEN ? '✅ Existe' : '❌ No encontrado');
-        console.log('window.GITHUB_API_URL:', window.GITHUB_API_URL);
-        
-        // Check if we have the GitHub token
-        if (!window.GITHUB_TOKEN) {
-            alert('Error: No se encontró el token de GitHub. Por favor verifica keys.js\n\nAsegúrate de que keys.js se esté cargando correctamente.');
-            return;
-        }
-        
-        // Show loading modal
-        showPublishingModal();
-        
-        // Get GitHub username
-        updatePublishStatus('Connecting to GitHub...');
-        const userResponse = await fetch(`${window.GITHUB_API_URL}/user`, {
-            headers: {
-                'Authorization': `token ${window.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        if (!userResponse.ok) {
-            const errorData = await userResponse.json();
-            throw new Error(`Authentication failed: ${errorData.message || 'Invalid GitHub token'}`);
-        }
-        
-        const userData = await userResponse.json();
-        const githubUsername = userData.login;
-        
-        // Get person name from localStorage (saved by main script.js when user logs in)
-        let personName = localStorage.getItem('supabase_nombrepersona') || 'usuario';
-        
-        console.log('✅ Person name from localStorage:', personName);
-        console.log('GitHub username (for API):', githubUsername);
-        
-        // Get project name (only the title, not the full name)
-        const projectName = currentProject?.title || 'mi-proyecto';
-        console.log('Project name:', projectName);
-        
-        // Create repo name: personname-projectname
-        const repoName = `${personName}-${projectName}`.toLowerCase()
-            .replace(/[^a-z0-9-]/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-        
-        console.log('Repository name will be:', repoName);
-        
-        // Create repository
-        updatePublishStatus('Creating repository...');
-        const createRepoResponse = await fetch(`${window.GITHUB_API_URL}/user/repos`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${window.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: repoName,
-                description: `Proyecto web: ${currentProject?.title || 'Mi Proyecto'}`,
-                private: false,
-                auto_init: true
-            })
-        });
-        
-        if (!createRepoResponse.ok) {
-            const errorData = await createRepoResponse.json();
-            if (errorData.errors && errorData.errors[0]?.message.includes('already exists')) {
-                hidePublishingModal();
-                showRepublishModal(githubUsername, repoName);
-                return;
-            }
-            throw new Error(`Failed to create repository: ${errorData.message || 'Unknown error'}`);
-        }
-        
-        const repoData = await createRepoResponse.json();
-        
-        // Wait a moment for repo to be ready
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Upload files to repository
-        updatePublishStatus('Uploading files...');
-        
-        // Upload index.html
-        await uploadFileToGitHub(githubUsername, repoName, 'index.html', htmlCode);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Upload style.css
-        await uploadFileToGitHub(githubUsername, repoName, 'style.css', cssCode);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Upload script.js
-        await uploadFileToGitHub(githubUsername, repoName, 'script.js', jsCode);
-        
-        // Enable GitHub Pages
-        updatePublishStatus('Configuring hosting...');
-        try {
-            await fetch(`${window.GITHUB_API_URL}/repos/${githubUsername}/${repoName}/pages`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${window.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    source: {
-                        branch: 'main',
-                        path: '/'
-                    }
-                })
-            });
-        } catch (error) {
-            console.log('GitHub Pages might already be enabled or requires manual activation');
-        }
-        
-        // Show success with links
-        const repoUrl = repoData.html_url;
-        const pagesUrl = `https://${githubUsername}.github.io/${repoName}/`;
-        
-        // Save publish info
-        await savePublishInfo(githubUsername, repoName, pagesUrl);
-        
-        showSuccessModal(repoUrl, pagesUrl);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        hidePublishingModal();
-        showErrorModal(error.message);
-    }
-}
-
-// Upload file to GitHub
-async function uploadFileToGitHub(username, repoName, filename, content) {
-    const encodedContent = btoa(unescape(encodeURIComponent(content)));
-    
-    const response = await fetch(`${window.GITHUB_API_URL}/repos/${username}/${repoName}/contents/${filename}`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `token ${window.GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            message: `Add ${filename}`,
-            content: encodedContent
-        })
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to upload files: ${errorData.message || 'Unknown error'}`);
-    }
-    
-    return await response.json();
-}
-
-// Show publishing modal
-function showPublishingModal() {
-    const modalHTML = `
-        <div id="publishingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 21, 37, 0.95); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'IBM Plex Sans', sans-serif;">
-            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; max-width: 480px; width: 100%; padding: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); text-align: center;">
-                <div style="width: 48px; height: 48px; margin: 0 auto 20px; border: 3px solid var(--bg-secondary); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                <h2 style="color: var(--text-primary); font-size: 20px; font-weight: 600; margin-bottom: 12px;">Publishing to GitHub</h2>
-                <div id="publishStatus" style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; min-height: 36px; line-height: 1.5;">
-                    Preparing deployment...
-                </div>
-                <div style="width: 100%; height: 3px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden;">
-                    <div id="publishProgress" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--icon-purple)); transition: width 0.4s ease; animation: shimmer 1.5s infinite;"></div>
-                </div>
-            </div>
-        </div>
-        <style>
-        @keyframes shimmer {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        </style>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Update publish status
-function updatePublishStatus(message) {
-    const statusEl = document.getElementById('publishStatus');
-    const progressEl = document.getElementById('publishProgress');
-    
-    if (statusEl) {
-        statusEl.textContent = message;
-    }
-    
-    if (progressEl) {
-        const currentWidth = parseInt(progressEl.style.width) || 0;
-        progressEl.style.width = Math.min(currentWidth + 25, 90) + '%';
-    }
-}
-
-// Hide publishing modal
-function hidePublishingModal() {
-    const modal = document.getElementById('publishingModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// Show success modal with links
-function showSuccessModal(repoUrl, pagesUrl) {
-    hidePublishingModal();
-    
-    const modalHTML = `
-        <div id="successModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 21, 37, 0.95); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'IBM Plex Sans', sans-serif;">
-            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; max-width: 560px; width: 100%; padding: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, var(--success-green), #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-check" style="font-size: 32px; color: white;"></i>
-                    </div>
-                    <h2 style="color: var(--text-primary); font-size: 22px; font-weight: 600; margin-bottom: 8px;">Published Successfully</h2>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Your project is now live on GitHub</p>
-                </div>
-                
-                <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <i class="fas fa-globe" style="color: var(--icon-green); font-size: 16px;"></i>
-                        <h3 style="color: var(--text-primary); font-size: 14px; font-weight: 600; margin: 0;">Live Site</h3>
-                    </div>
-                    <p style="color: var(--text-secondary); font-size: 11px; margin-bottom: 10px; padding: 8px 12px; background: rgba(16, 185, 129, 0.05); border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                        <i class="fas fa-info-circle" style="margin-right: 6px;"></i>May take 1-2 minutes to be available
-                    </p>
-                    <a href="${pagesUrl}" target="_blank" style="color: var(--icon-green); font-size: 13px; word-break: break-all; text-decoration: none; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgba(16, 185, 129, 0.05); border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); transition: all 0.2s;">
-                        <i class="fas fa-external-link-alt" style="font-size: 11px;"></i>
-                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">${pagesUrl.replace('https://', '')}</span>
-                    </a>
-                </div>
-                
-                <button onclick="closeSuccessModal()" style="width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif;">
-                    Done
-                </button>
-            </div>
-        </div>
-        <style>
-        #successModal a:hover {
-            background: rgba(16, 185, 129, 0.1) !important;
-            border-color: var(--icon-green) !important;
-        }
-        #successModal button:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-        }
-        </style>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Close success modal
-window.closeSuccessModal = function() {
-    const modal = document.getElementById('successModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// Show error modal
-function showErrorModal(errorMessage) {
-    const modalHTML = `
-        <div id="errorModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 21, 37, 0.95); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'IBM Plex Sans', sans-serif;">
-            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; max-width: 480px; width: 100%; padding: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, var(--icon-red), #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 28px; color: white;"></i>
-                    </div>
-                    <h2 style="color: var(--text-primary); font-size: 20px; font-weight: 600; margin-bottom: 8px;">Publishing Failed</h2>
-                    <p style="color: var(--text-secondary); font-size: 13px;">An error occurred during deployment</p>
-                </div>
-                
-                <div style="background: rgba(248, 113, 113, 0.05); border: 1px solid rgba(248, 113, 113, 0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                    <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <i class="fas fa-info-circle" style="color: var(--icon-red); font-size: 14px; margin-top: 2px;"></i>
-                        <p style="color: var(--text-primary); font-size: 13px; margin: 0; line-height: 1.5; word-break: break-word;">${errorMessage}</p>
-                    </div>
-                </div>
-                
-                <button onclick="closeErrorModal()" style="width: 100%; padding: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif;">
-                    Close
-                </button>
-            </div>
-        </div>
-        <style>
-        #errorModal button:hover {
-            background: var(--bg-primary);
-            border-color: var(--text-secondary);
-        }
-        </style>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Close error modal
-window.closeErrorModal = function() {
-    const modal = document.getElementById('errorModal');
-    if (modal) {
-        modal.remove();
-    }
-};
-
-// Show republish modal when repository already exists
-function showRepublishModal(username, repoName) {
-    const repoUrl = `https://github.com/${username}/${repoName}`;
-    const pagesUrl = `https://${username}.github.io/${repoName}/`;
-    
-    const modalHTML = `
-        <div id="republishModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 21, 37, 0.95); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'IBM Plex Sans', sans-serif;">
-            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; max-width: 520px; width: 100%; padding: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-sync-alt" style="font-size: 28px; color: white;"></i>
-                    </div>
-                    <h2 style="color: var(--text-primary); font-size: 20px; font-weight: 600; margin-bottom: 8px;">El repositorio ya existe</h2>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Puedes republicar tu proyecto</p>
-                </div>
-                
-                <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                    <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <i class="fas fa-info-circle" style="color: #f59e0b; font-size: 14px; margin-top: 2px;"></i>
-                        <div style="flex: 1;">
-                            <p style="color: var(--text-primary); font-size: 13px; margin: 0 0 12px 0; line-height: 1.6;">
-                                Ya existe un repositorio con el nombre <a href="${pagesUrl}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600; border-bottom: 1px solid var(--accent); transition: all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${repoName}</a>.
-                            </p>
-                            <p style="color: var(--text-secondary); font-size: 12px; margin: 0; line-height: 1.5;">
-                                Al presionar "Republicar", el repositorio existente se eliminará y se creará uno nuevo con tu código actualizado.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 12px;">
-                    <button onclick="closeRepublishModal()" style="flex: 1; padding: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif;">
-                        Cancelar
-                    </button>
-                    <button onclick="handleRepublish('${username}', '${repoName}')" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; font-family: 'IBM Plex Sans', sans-serif; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
-                        <i class="fas fa-sync-alt" style="margin-right: 6px;"></i>
-                        Republicar
-                    </button>
-                </div>
-            </div>
-        </div>
-        <style>
-        #republishModal button:hover {
-            transform: translateY(-1px);
-        }
-        #republishModal button:active {
-            transform: translateY(0px);
-        }
-        </style>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Close republish modal
-window.closeRepublishModal = function() {
-    const modal = document.getElementById('republishModal');
-    if (modal) {
-        modal.remove();
-    }
-};
-
-// Handle republish - delete existing repo and create new one
-window.handleRepublish = async function(username, repoName) {
-    try {
-        closeRepublishModal();
-        showPublishingModal();
-        
-        // Delete existing repository
-        updatePublishStatus('Eliminando repositorio existente...');
-        const deleteResponse = await fetch(`${window.GITHUB_API_URL}/repos/${username}/${repoName}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `token ${window.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        if (!deleteResponse.ok && deleteResponse.status !== 404) {
-            throw new Error('No se pudo eliminar el repositorio existente');
-        }
-        
-        // Wait a moment for GitHub to process the deletion
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Get code from editors
-        const htmlCode = elements.htmlEditor.value;
-        const cssCode = elements.cssEditor.value;
-        const jsCode = elements.jsEditor.value;
-        
-        // Create new repository
-        updatePublishStatus('Creando nuevo repositorio...');
-        const createRepoResponse = await fetch(`${window.GITHUB_API_URL}/user/repos`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${window.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: repoName,
-                description: `Proyecto web: ${currentProject?.title || 'Mi Proyecto'}`,
-                private: false,
-                auto_init: true
-            })
-        });
-        
-        if (!createRepoResponse.ok) {
-            const errorData = await createRepoResponse.json();
-            throw new Error(`Error al crear repositorio: ${errorData.message || 'Error desconocido'}`);
-        }
-        
-        const repoData = await createRepoResponse.json();
-        
-        // Wait for repo to be ready
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Upload files
-        updatePublishStatus('Subiendo archivos...');
-        
-        await uploadFileToGitHub(username, repoName, 'index.html', htmlCode);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        await uploadFileToGitHub(username, repoName, 'style.css', cssCode);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        await uploadFileToGitHub(username, repoName, 'script.js', jsCode);
-        
-        // Enable GitHub Pages
-        updatePublishStatus('Configurando hosting...');
-        try {
-            await fetch(`${window.GITHUB_API_URL}/repos/${username}/${repoName}/pages`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${window.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    source: {
-                        branch: 'main',
-                        path: '/'
-                    }
-                })
-            });
-        } catch (error) {
-            console.log('GitHub Pages might already be enabled or requires manual activation');
-        }
-        
-        // Show success
-        const repoUrl = repoData.html_url;
-        const pagesUrl = `https://${username}.github.io/${repoName}/`;
-        
-        // Save publish info
-        await savePublishInfo(username, repoName, pagesUrl);
-        
-        showSuccessModal(repoUrl, pagesUrl);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        hidePublishingModal();
-        showErrorModal(error.message);
-    }
-};
-
-// Generate unique validation code
-function generateValidationCode() {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 7);
-    return `${timestamp}-${random}`.toUpperCase();
-}
-
-// Download HTML file manually
-window.downloadPublishFile = function() {
-    const sessionId = getSessionId();
-    const validationCode = localStorage.getItem(`session_validation_code_${sessionId}`);
-    
-    if (!validationCode) {
-        alert('No hay archivo para descargar');
-        return;
-    }
-    
-    const projectData = localStorage.getItem(`pending_project_${validationCode}`);
-    if (!projectData) {
-        alert('No se encontró el proyecto');
-        return;
-    }
-    
-    const project = JSON.parse(projectData);
-    const downloadPageHTML = '<!DOCTYPE html>\n' +
-'<html lang="es">\n' +
-'<head>\n' +
-'    <meta charset="UTF-8">\n' +
-'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-'    <title>Descarga tu Página Web</title>\n' +
-'    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>\n' +
-'    <style>\n' +
-'        * {\n' +
-'            margin: 0;\n' +
-'            padding: 0;\n' +
-'            box-sizing: border-box;\n' +
-'        }\n' +
-'        body {\n' +
-'            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;\n' +
-'            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n' +
-'            min-height: 100vh;\n' +
-'            display: flex;\n' +
-'            align-items: center;\n' +
-'            justify-content: center;\n' +
-'            padding: 20px;\n' +
-'        }\n' +
-'        .container {\n' +
-'            background: white;\n' +
-'            border-radius: 20px;\n' +
-'            padding: 60px 40px;\n' +
-'            text-align: center;\n' +
-'            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);\n' +
-'            max-width: 550px;\n' +
-'            width: 100%;\n' +
-'        }\n' +
-'        h1 {\n' +
-'            color: #333;\n' +
-'            font-size: 32px;\n' +
-'            margin-bottom: 20px;\n' +
-'        }\n' +
-'        p {\n' +
-'            color: #666;\n' +
-'            font-size: 16px;\n' +
-'            margin-bottom: 40px;\n' +
-'            line-height: 1.6;\n' +
-'        }\n' +
-'        .buttons {\n' +
-'            display: flex;\n' +
-'            gap: 15px;\n' +
-'            justify-content: center;\n' +
-'            flex-wrap: wrap;\n' +
-'        }\n' +
-'        .download-btn {\n' +
-'            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n' +
-'            color: white;\n' +
-'            border: none;\n' +
-'            padding: 18px 40px;\n' +
-'            font-size: 16px;\n' +
-'            font-weight: 600;\n' +
-'            border-radius: 50px;\n' +
-'            cursor: pointer;\n' +
-'            transition: all 0.3s ease;\n' +
-'            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);\n' +
-'            min-width: 200px;\n' +
-'        }\n' +
-'        .download-btn:hover {\n' +
-'            transform: translateY(-3px);\n' +
-'            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);\n' +
-'        }\n' +
-'        .download-btn:active {\n' +
-'            transform: translateY(-1px);\n' +
-'        }\n' +
-'        .download-btn.txt {\n' +
-'            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);\n' +
-'            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);\n' +
-'        }\n' +
-'        .download-btn.txt:hover {\n' +
-'            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);\n' +
-'        }\n' +
-'        .icon {\n' +
-'            font-size: 80px;\n' +
-'            margin-bottom: 30px;\n' +
-'        }\n' +
-'    </style>\n' +
-'</head>\n' +
-'<body>\n' +
-'    <div class="container">\n' +
-'        <div class="icon">📦</div>\n' +
-'        <h1>Tu Página Web está Lista</h1>\n' +
-'        <p>Elige el formato de descarga que prefieras:</p>\n' +
-'        <div class="buttons">\n' +
-'            <button class="download-btn" onclick="downloadZipNormal()">📄 ZIP Normal</button>\n' +
-'            <button class="download-btn txt" onclick="downloadZipTxt()">📝 ZIP TXT</button>\n' +
-'        </div>\n' +
-'    </div>\n' +
-'    <script>\n' +
-'        const htmlCode = ' + JSON.stringify(project.html) + ';\n' +
-'        const cssCode = ' + JSON.stringify(project.css) + ';\n' +
-'        const jsCode = ' + JSON.stringify(project.js) + ';\n' +
-'        async function downloadZipNormal() {\n' +
-'            try {\n' +
-'                const zip = new JSZip();\n' +
-'                zip.file("index.html", htmlCode);\n' +
-'                zip.file("style.css", cssCode);\n' +
-'                zip.file("script.js", jsCode);\n' +
-'                const blob = await zip.generateAsync({ type: "blob" });\n' +
-'                const link = document.createElement("a");\n' +
-'                link.href = URL.createObjectURL(blob);\n' +
-'                link.download = "pagina-web.zip";\n' +
-'                link.click();\n' +
-'                const btn = event.target;\n' +
-'                const originalText = btn.textContent;\n' +
-'                btn.textContent = "✅ Descargado!";\n' +
-'                setTimeout(function() { btn.textContent = originalText; }, 2000);\n' +
-'            } catch (error) {\n' +
-'                alert("Error al crear ZIP: " + error.message);\n' +
-'            }\n' +
-'        }\n' +
-'        async function downloadZipTxt() {\n' +
-'            try {\n' +
-'                const zip = new JSZip();\n' +
-'                zip.file("index.txt", htmlCode);\n' +
-'                zip.file("style.txt", cssCode);\n' +
-'                zip.file("script.txt", jsCode);\n' +
-'                const blob = await zip.generateAsync({ type: "blob" });\n' +
-'                const link = document.createElement("a");\n' +
-'                link.href = URL.createObjectURL(blob);\n' +
-'                link.download = "pagina-web-txt.zip";\n' +
-'                link.click();\n' +
-'                const btn = event.target;\n' +
-'                const originalText = btn.textContent;\n' +
-'                btn.textContent = "✅ Descargado!";\n' +
-'                setTimeout(function() { btn.textContent = originalText; }, 2000);\n' +
-'            } catch (error) {\n' +
-'                alert("Error al crear ZIP: " + error.message);\n' +
-'            }\n' +
-'        }\n' +
-'    <\/script>\n' +
-'    <!-- VERIFICATION_CODE: ' + validationCode + ' -->\n' +
-'</body>\n' +
-'</html>';
-    
-    const blob = new Blob([downloadPageHTML], { type: 'text/html' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'descarga-pagina.html';
-    link.click();
-};
-
-// Show validation panel
-function showValidationPanel(validationCode, sessionId) {
-    // Create modal overlay
-    const modalHTML = `
-        <div id="publishModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; max-width: 600px; width: 100%; padding: 32px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); position: relative;">
-                <h2 style="color: var(--text-primary); font-size: 24px; margin-bottom: 16px; text-align: center;">Publicar Página Web</h2>
-                
-                <div style="background: rgba(0, 112, 243, 0.1); border: 1px solid rgba(0, 112, 243, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                    <h3 style="color: var(--text-primary); font-size: 16px; margin-bottom: 12px;">📝 Pasos para publicar:</h3>
-                    <ol style="color: var(--text-secondary); font-size: 14px; line-height: 1.8; padding-left: 20px;">
-                        <li>📱 Envía este proyecto a <strong style="color: var(--text-primary);">321 100 2280</strong> por WhatsApp</li>
-                        <li>💬 Escribe: <em>"¿Puedes publicar mi página web?"</em></li>
-                        <li>🔐 Te enviarán un código de validación</li>
-                        <li>✅ Ingresa el código aquí abajo para agregar tu proyecto</li>
-                    </ol>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 8px; font-weight: 600;">Código de Validación:</label>
-                    <input type="text" id="validationCodeInput" placeholder="Ingresa el código aquí..." style="width: 100%; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 16px; font-family: 'Courier New', monospace; letter-spacing: 1px;" />
-                    <div id="validationMessage" style="margin-top: 8px; font-size: 13px; display: none;"></div>
-                </div>
-                
-                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                    <button onclick="closePublishModal()" style="flex: 1; padding: 12px; background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
-                        Cancelar
-                    </button>
-                    <button onclick="downloadPublishFile()" style="flex: 1; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
-                        📥 Descargar Archivo
-                    </button>
-                    <button onclick="validateAndAddProject()" style="flex: 1; padding: 12px; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
-                        ✅ Validar Código
-                    </button>
-                </div>
-                
-                <div style="text-align: center; font-size: 9px; color: rgba(128, 128, 128, 0.3); font-family: 'Courier New', monospace; margin-top: 12px;">
-                    ID: ${sessionId}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Add to body
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Focus on input
-    setTimeout(() => {
-        document.getElementById('validationCodeInput').focus();
-    }, 100);
-}
-
-// Validate and add project
-window.validateAndAddProject = function() {
-    const input = document.getElementById('validationCodeInput');
-    const messageDiv = document.getElementById('validationMessage');
-    const code = input.value.trim().toUpperCase();
-    
-    if (!code) {
-        messageDiv.style.display = 'block';
-        messageDiv.style.color = '#f87171';
-        messageDiv.textContent = '❌ Por favor ingresa un código';
-        return;
-    }
-    
-    // Check if code exists in localStorage
-    const projectData = localStorage.getItem(`pending_project_${code}`);
-    
-    if (!projectData) {
-        messageDiv.style.display = 'block';
-        messageDiv.style.color = '#f87171';
-        messageDiv.textContent = '❌ Código inválido. Por favor verifica e intenta de nuevo.';
-        return;
-    }
-    
-    try {
-        const project = JSON.parse(projectData);
-        
-        // Create project object
-        const newProject = {
-            id: Date.now(),
-            title: currentProject?.title || 'Mi Proyecto Web',
-            initials: currentProject?.initials || 'MP',
-            tags: Array.isArray(currentProject?.tags) ? currentProject.tags : ['web'],
-            description: currentProject?.description || 'Proyecto creado con IA',
-            status: 'Published',
-            createdAt: new Date().toISOString(),
-            code: {
-                html: project.html,
-                css: project.css,
-                js: project.js
-            }
-        };
-        
-        // Save to userProjects
-        let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-        userProjects.push(newProject);
-        localStorage.setItem('userProjects', JSON.stringify(userProjects));
-        
-        // Remove pending project
-        localStorage.removeItem(`pending_project_${code}`);
-        
-        // Show success message
-        messageDiv.style.display = 'block';
-        messageDiv.style.color = '#10b981';
-        messageDiv.textContent = '✅ ¡Proyecto agregado exitosamente!';
-        
-        // Close modal and redirect after 1.5 seconds
-        setTimeout(() => {
-            closePublishModal();
-            if (confirm('¿Quieres ir a ver tus proyectos?')) {
-                window.location.href = '../Creator/app/my-projects.html';
-            }
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Error adding project:', error);
-        messageDiv.style.display = 'block';
-        messageDiv.style.color = '#f87171';
-        messageDiv.textContent = '❌ Error al agregar el proyecto. Intenta de nuevo.';
-    }
-};
-
-// Close modal
-window.closePublishModal = function() {
-    const modal = document.getElementById('publishModal');
-    if (modal) {
-        modal.remove();
-    }
-};
-
-// === SAVE BUTTON STATE MANAGEMENT ===
-let saveState = 'unsaved'; // 'unsaved', 'local', 'db-pending', 'db'
 let hasUnsavedChanges = false;
-let lastLocalSaveTime = null;
-let lastDbSaveTime = null;
-let autoSaveLocalInterval = null;
-let autoSaveDbInterval = null;
+const findState = { query:'', matches:[], currentMatch:-1, caseSensitive:false, useRegex:false };
 
-// Update save button visual state
-function updateSaveButtonState(state) {
-    const saveBtn = document.getElementById('saveBtn');
-    if (!saveBtn) return;
-    
-    // Remove all state classes
-    saveBtn.classList.remove('state-unsaved', 'state-local', 'state-db-pending', 'state-db');
-    
-    // Add the new state class
-    saveBtn.classList.add(`state-${state}`);
-    saveState = state;
-    
-    // Update button text
-    const saveBtnText = document.getElementById('saveBtnText');
-    if (saveBtnText) {
-        switch(state) {
-            case 'unsaved':
-                saveBtnText.textContent = 'Guardar';
-                break;
-            case 'local':
-                saveBtnText.textContent = 'Local';
-                break;
-            case 'db-pending':
-                saveBtnText.textContent = 'Pendiente';
-                break;
-            case 'db':
-                saveBtnText.textContent = 'Guardado';
-                break;
-        }
-    }
+// ==================== THEME ====================
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    const sun = document.querySelector('.icon-sun'), moon = document.querySelector('.icon-moon');
+    if (sun)  sun.style.display  = t === 'dark'  ? 'block' : 'none';
+    if (moon) moon.style.display = t === 'light' ? 'block' : 'none';
+    const sdTheme = document.getElementById('sdThemeBtn');
+    if (sdTheme) sdTheme.textContent = t === 'dark' ? 'Oscuro' : 'Claro';
 }
-
-function markUnsavedChanges() {
-    hasUnsavedChanges = true;
-    if (activeBackupSlot) {
-        updateBackupSaveIndicator('pending');
-    } else if (saveState === 'db') {
-        updateSaveButtonState('db-pending');
-    } else if (saveState !== 'db-pending') {
-        updateSaveButtonState('unsaved');
-    }
-}
-
-async function saveToLocalStorageOnly() {
-    if (activeBackupSlot) {
-        console.log('📦 Modo backup activo - localStorage desactivado');
-        return;
-    }
-    
-    if (currentProject) {
-        const html = elements.htmlEditor.value;
-        const css = elements.cssEditor.value;
-        const js = elements.jsEditor.value;
-        
-        if (html || css || js) {
-            currentProject.code = { html, css, js };
-        } else {
-            delete currentProject.code;
-        }
-        
-        localStorage.setItem('currentProject', JSON.stringify(currentProject));
-        
-        let userProjects = JSON.parse(localStorage.getItem('userProjects') || '[]');
-        const index = userProjects.findIndex(p => p.id === currentProject.id);
-        if (index !== -1) {
-            userProjects[index] = currentProject;
-            localStorage.setItem('userProjects', JSON.stringify(userProjects));
-        }
-        
-        lastLocalSaveTime = new Date();
-        hasUnsavedChanges = false;
-        
-        if (saveState !== 'db') {
-            updateSaveButtonState('local');
-        }
-        
-        console.log('✅ Guardado en localStorage');
-    }
-}
-
-// Save to Supabase only
-async function saveToSupabaseOnly() {
-    try {
-        await saveProjectToSupabase();
-        lastDbSaveTime = new Date();
-        updateSaveButtonState('db');
-        console.log('✅ Guardado en base de datos');
-    } catch (error) {
-        console.error('Error al guardar en base de datos:', error);
-    }
-}
-
-// === SETTINGS PANEL LOGIC ===
-function loadAutoSaveSettings() {
-    const settings = localStorage.getItem('editorAutoSaveSettings');
-    if (settings) {
-        const parsed = JSON.parse(settings);
-        
-        const localEnabled = document.getElementById('autoSaveLocalEnabled');
-        const localInterval = document.getElementById('autoSaveLocalInterval');
-        const dbEnabled = document.getElementById('autoSaveDbEnabled');
-        const dbInterval = document.getElementById('autoSaveDbInterval');
-        
-        if (localEnabled) localEnabled.checked = parsed.localEnabled !== false;
-        if (localInterval) localInterval.value = parsed.localInterval || 1;
-        if (dbEnabled) dbEnabled.checked = parsed.dbEnabled === true;
-        if (dbInterval) dbInterval.value = parsed.dbInterval || 3;
-    }
-}
-
-function saveAutoSaveSettings() {
-    const settings = {
-        localEnabled: document.getElementById('autoSaveLocalEnabled')?.checked ?? true,
-        localInterval: parseInt(document.getElementById('autoSaveLocalInterval')?.value) || 1,
-        dbEnabled: document.getElementById('autoSaveDbEnabled')?.checked ?? false,
-        dbInterval: parseInt(document.getElementById('autoSaveDbInterval')?.value) || 3
-    };
-    
-    localStorage.setItem('editorAutoSaveSettings', JSON.stringify(settings));
-    initAutoSave(); // Reinitialize with new settings
-    
-    console.log('✅ Configuración guardada:', settings);
-}
-
-let activeBackupSlot = null;
-let backupAutoSaveInterval = null;
-
-async function checkProjectHasBackup() {
-    try {
-        if (!currentProject) return false;
-        const projectId = currentProject.id || currentProject.numeroProyecto;
-        if (!projectId) return false;
-        
-        const supabase = initSupabase();
-        if (!supabase) return false;
-        
-        const currentUser = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!currentUser) return false;
-        
-        const { data, error } = await supabase
-            .from('personas')
-            .select('publish_1, publish_2, publish_3, publish_4, publish_5, publish_6, publish_7, publish_8, publish_9, publish_10, publish_11, publish_12, publish_13, publish_14, publish_15, publish_16, publish_17, publish_18, publish_19, publish_20')
-            .eq('nombrepersona', currentUser)
-            .single();
-        
-        if (error || !data) return false;
-        
-        for (let i = 1; i <= 20; i++) {
-            const slot = data[`publish_${i}`];
-            if (slot && slot.numeroProyecto === projectId) {
-                return true;
-            }
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('Error verificando backup:', error);
-        return false;
-    }
-}
-
-async function getProjectBackupSlot() {
-    try {
-        if (!currentProject) return null;
-        const projectId = currentProject.id || currentProject.numeroProyecto;
-        if (!projectId) return null;
-        
-        const supabase = initSupabase();
-        if (!supabase) return null;
-        
-        const currentUser = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!currentUser) return null;
-        
-        const { data, error } = await supabase
-            .from('personas')
-            .select('publish_1, publish_2, publish_3, publish_4, publish_5, publish_6, publish_7, publish_8, publish_9, publish_10, publish_11, publish_12, publish_13, publish_14, publish_15, publish_16, publish_17, publish_18, publish_19, publish_20')
-            .eq('nombrepersona', currentUser)
-            .single();
-        
-        if (error || !data) return null;
-        
-        for (let i = 1; i <= 20; i++) {
-            const slot = data[`publish_${i}`];
-            if (slot && slot.numeroProyecto === projectId) {
-                return { slot: i, data: slot };
-            }
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('Error obteniendo slot de backup:', error);
-        return null;
-    }
-}
-
-async function loadFromBackupSlot() {
-    try {
-        const backupInfo = await getProjectBackupSlot();
-        if (!backupInfo) return false;
-        
-        activeBackupSlot = backupInfo.slot;
-        const backupData = backupInfo.data;
-        
-        if (backupData.code) {
-            elements.htmlEditor.value = backupData.code.html || '';
-            elements.cssEditor.value = backupData.code.css || '';
-            elements.jsEditor.value = backupData.code.js || '';
-            
-            if (currentProject) {
-                currentProject.code = backupData.code;
-            }
-            
-            console.log(`📦 Código cargado desde copia de seguridad (Slot ${backupInfo.slot})`);
-            updatePreview();
-            return true;
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('Error cargando desde backup:', error);
-        return false;
-    }
-}
-
-async function saveToBackupSlot() {
-    try {
-        if (!activeBackupSlot || !currentProject) {
-            console.log('No hay slot de backup activo');
-            return false;
-        }
-        
-        const supabase = initSupabase();
-        if (!supabase) return false;
-        
-        const currentUser = localStorage.getItem('supabase_nombrepersona') || localStorage.getItem('devcenter_user');
-        if (!currentUser) return false;
-        
-        const html = elements.htmlEditor.value;
-        const css = elements.cssEditor.value;
-        const js = elements.jsEditor.value;
-        
-        const projectId = currentProject.id || currentProject.numeroProyecto;
-        
-        const backupData = {
-            titulo: currentProject.title || currentProject.titulo || 'Sin título',
-            numeroProyecto: projectId,
-            code: { html, css, js },
-            descripcion: currentProject.description || currentProject.descripcion || '',
-            fecha: new Date().toISOString(),
-            tags: currentProject.tags || []
-        };
-        
-        const updateData = {};
-        updateData[`publish_${activeBackupSlot}`] = backupData;
-        
-        const { error } = await supabase
-            .from('personas')
-            .update(updateData)
-            .eq('nombrepersona', currentUser);
-        
-        if (error) throw error;
-        
-        console.log(`💾 Guardado en copia de seguridad (Slot ${activeBackupSlot})`);
-        updateBackupSaveIndicator('saved');
-        return true;
-    } catch (error) {
-        console.error('Error guardando en backup:', error);
-        updateBackupSaveIndicator('error');
-        return false;
-    }
-}
-
-function updateBackupSaveIndicator(state) {
-    const indicator = document.getElementById('backupSaveIndicator');
-    const saveBtnText = document.getElementById('saveBtnText');
-    const saveBtn = document.getElementById('saveBtn');
-    
-    if (saveBtn) {
-        saveBtn.classList.remove('state-unsaved', 'state-local', 'state-db-pending', 'state-db', 'state-backup');
-    }
-    
-    if (state === 'saving') {
-        if (indicator) {
-            indicator.innerHTML = '<i class="fas fa-sync fa-spin"></i> Guardando...';
-            indicator.style.color = '#f59e0b';
-        }
-        if (saveBtnText) saveBtnText.textContent = 'Guardando...';
-        if (saveBtn) saveBtn.classList.add('state-db-pending');
-    } else if (state === 'saved') {
-        if (indicator) {
-            indicator.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Guardado en copia de seguridad';
-            indicator.style.color = '#4ade80';
-        }
-        if (saveBtnText) saveBtnText.textContent = 'Guardado';
-        if (saveBtn) saveBtn.classList.add('state-backup');
-        hasUnsavedChanges = false;
-    } else if (state === 'pending') {
-        if (indicator) {
-            indicator.innerHTML = '<i class="fas fa-clock"></i> Cambios pendientes';
-            indicator.style.color = '#f59e0b';
-        }
-        if (saveBtnText) saveBtnText.textContent = 'Guardar';
-        if (saveBtn) saveBtn.classList.add('state-unsaved');
-    } else if (state === 'error') {
-        if (indicator) {
-            indicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al guardar';
-            indicator.style.color = '#ef4444';
-        }
-        if (saveBtnText) saveBtnText.textContent = 'Reintentar';
-        if (saveBtn) saveBtn.classList.add('state-unsaved');
-    }
-}
-
-function initBackupAutoSave() {
-    if (backupAutoSaveInterval) {
-        clearInterval(backupAutoSaveInterval);
-        backupAutoSaveInterval = null;
-    }
-    
-    if (!activeBackupSlot) return;
-    
-    backupAutoSaveInterval = setInterval(async () => {
-        if (hasUnsavedChanges && activeBackupSlot) {
-            updateBackupSaveIndicator('saving');
-            await saveToBackupSlot();
-        }
-    }, 2 * 60 * 1000);
-    
-    console.log('⏰ Auto-guardado de copia de seguridad activado: cada 2 minutos');
-}
-
-function stopBackupAutoSave() {
-    if (backupAutoSaveInterval) {
-        clearInterval(backupAutoSaveInterval);
-        backupAutoSaveInterval = null;
-    }
-    activeBackupSlot = null;
-}
-
-async function initBackupMode() {
-    const backupInfo = await getProjectBackupSlot();
-    
-    if (backupInfo) {
-        activeBackupSlot = backupInfo.slot;
-        console.log(`📦 Modo copia de seguridad activado (Slot ${activeBackupSlot})`);
-        
-        await loadFromBackupSlot();
-        
-        showBackupModeIndicator();
-        
-        initBackupAutoSave();
-        
-        return true;
-    }
-    
-    return false;
-}
-
-function showBackupModeIndicator() {
-    let indicator = document.getElementById('backupSaveIndicator');
-    if (!indicator) {
-        const projectInfo = document.querySelector('.project-info') || document.querySelector('.editor-header');
-        if (projectInfo) {
-            indicator = document.createElement('div');
-            indicator.id = 'backupSaveIndicator';
-            indicator.style.cssText = 'display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4ade80; padding: 4px 10px; background: rgba(74, 222, 128, 0.1); border-radius: 6px; margin-left: 10px;';
-            indicator.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Guardado por copia de seguridad';
-            projectInfo.appendChild(indicator);
-        }
-    }
-    updateBackupSaveIndicator('saved');
-}
-
-async function openSettingsPanel() {
-    const panel = document.getElementById('settingsPanel');
-    if (panel) {
-        loadAutoSaveSettings();
-        
-        const supabaseSection = document.getElementById('supabaseSettingsSection');
-        if (supabaseSection) {
-            const hasBackup = await checkProjectHasBackup();
-            supabaseSection.style.display = hasBackup ? 'block' : 'none';
-            console.log(`📦 Sección Supabase ${hasBackup ? 'visible' : 'oculta'} (backup: ${hasBackup})`);
-        }
-        
-        panel.style.display = 'flex';
-    }
-}
-
-function closeSettingsPanel() {
-    const panel = document.getElementById('settingsPanel');
-    if (panel) {
-        panel.style.display = 'none';
-    }
-}
-
-// === AUTO-SAVE LOGIC ===
-function initAutoSave() {
-    // Clear existing intervals
-    if (autoSaveLocalInterval) {
-        clearInterval(autoSaveLocalInterval);
-        autoSaveLocalInterval = null;
-    }
-    if (autoSaveDbInterval) {
-        clearInterval(autoSaveDbInterval);
-        autoSaveDbInterval = null;
-    }
-    
-    // Get settings
-    const settings = localStorage.getItem('editorAutoSaveSettings');
-    const config = settings ? JSON.parse(settings) : {
-        localEnabled: true,
-        localInterval: 1,
-        dbEnabled: false,
-        dbInterval: 3
-    };
-    
-    if (activeBackupSlot) {
-        console.log('📦 Modo backup activo - auto-guardado local desactivado');
-        return;
-    }
-    
-    if (config.localEnabled) {
-        const intervalMs = (config.localInterval || 1) * 60 * 1000;
-        autoSaveLocalInterval = setInterval(() => {
-            if (hasUnsavedChanges && !activeBackupSlot) {
-                saveToLocalStorageOnly();
-            }
-        }, intervalMs);
-        console.log(`📦 Auto-guardado local configurado: cada ${config.localInterval} minuto(s)`);
-    }
-    
-    if (config.dbEnabled) {
-        const intervalMs = (config.dbInterval || 3) * 60 * 1000;
-        autoSaveDbInterval = setInterval(async () => {
-            if (!activeBackupSlot && (hasUnsavedChanges || saveState === 'local' || saveState === 'db-pending')) {
-                await saveToLocalStorageOnly();
-                await saveToSupabaseOnly();
-            }
-        }, intervalMs);
-        console.log(`☁️ Auto-guardado BD configurado: cada ${config.dbInterval} minuto(s)`);
-    }
-}
-
-function initSaveAndSettings() {
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', async () => {
-            if (activeBackupSlot) {
-                updateBackupSaveIndicator('saving');
-                await saveToBackupSlot();
-            } else {
-                await saveToLocalStorageOnly();
-                await saveToSupabaseOnly();
-            }
-        });
-    }
-    
-    // Settings button click
-    const settingsBtn = document.getElementById('settingsBtn');
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', openSettingsPanel);
-    }
-    
-    // Close settings button click
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    if (closeSettingsBtn) {
-        closeSettingsBtn.addEventListener('click', closeSettingsPanel);
-    }
-    
-    // Save settings button click
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-    if (saveSettingsBtn) {
-        saveSettingsBtn.addEventListener('click', () => {
-            saveAutoSaveSettings();
-            closeSettingsPanel();
-        });
-    }
-    
-    // Close panel when clicking outside
-    const settingsPanel = document.getElementById('settingsPanel');
-    if (settingsPanel) {
-        settingsPanel.addEventListener('click', (e) => {
-            if (e.target === settingsPanel) {
-                closeSettingsPanel();
-            }
-        });
-    }
-    
-    // Load settings and initialize auto-save
-    loadAutoSaveSettings();
-    initAutoSave();
-    
-    // Initial state
-    updateSaveButtonState('unsaved');
-}
-
-// Override the original input listeners to mark unsaved changes
-function setupEditorChangeTracking() {
-    const editors = [elements.htmlEditor, elements.jsEditor, elements.cssEditor];
-    editors.forEach(editor => {
-        if (editor) {
-            editor.addEventListener('input', markUnsavedChanges);
-        }
+function initTheme() {
+    const saved = localStorage.getItem('dcx_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+    document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('dcx_theme', next); applyTheme(next);
     });
 }
 
-// === SYNTAX HIGHLIGHTING FUNCTIONS ===
-function escapeHtml(text) {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+// ==================== SINGLE-PASS TOKENIZER ====================
+// Collects ALL token positions on the escaped string first,
+// then builds output in one forward pass — spans NEVER get re-processed
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function highlightHtml(code) {
-    let escaped = escapeHtml(code);
-    escaped = escaped.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="token comment">$1</span>');
-    escaped = escaped.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)/g, '$1<span class="token tag">$2</span>');
-    escaped = escaped.replace(/([a-zA-Z-]+)(=)(&quot;|&#39;)([^"']*?)(&quot;|&#39;)/g, 
-        '<span class="token attr-name">$1</span><span class="token punctuation">$2</span><span class="token attr-value">$3$4$5</span>');
-    escaped = escaped.replace(/(&lt;|&gt;|\/&gt;)/g, '<span class="token punctuation">$1</span>');
-    return escaped;
+function buildOutput(escaped, hits) {
+    // Sort by start position, longest match wins on tie
+    hits.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+    const kept = []; let fence = 0;
+    for (const h of hits) {
+        if (h.start >= fence && h.end > h.start) { kept.push(h); fence = h.end; }
+    }
+    let out = '', pos = 0;
+    for (const h of kept) {
+        out += escaped.slice(pos, h.start);
+        out += `<span class="${h.cls}">${escaped.slice(h.start, h.end)}</span>`;
+        pos = h.end;
+    }
+    return out + escaped.slice(pos);
 }
 
-function highlightCss(code) {
-    let escaped = escapeHtml(code);
-    escaped = escaped.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>');
-    escaped = escaped.replace(/([.#]?[a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{/g, '<span class="token selector">$1</span> {');
-    escaped = escaped.replace(/([a-zA-Z-]+)\s*:/g, '<span class="token property">$1</span>:');
-    escaped = escaped.replace(/(#[0-9a-fA-F]{3,8})/g, '<span class="token number">$1</span>');
-    escaped = escaped.replace(/(\d+(?:\.\d+)?)(px|em|rem|%|vh|vw|s|ms)/g, '<span class="token number">$1$2</span>');
-    escaped = escaped.replace(/(rgba?\([^)]+\))/g, '<span class="token function">$1</span>');
-    return escaped;
+function collectHits(escaped, rules) {
+    const hits = [];
+    for (const rule of rules) {
+        rule.re.lastIndex = 0;
+        let m;
+        while ((m = rule.re.exec(escaped)) !== null) {
+            if (rule.parts) {
+                // multi-group: each capture group → own class
+                let cursor = m.index;
+                for (let i = 0; i < rule.parts.length; i++) {
+                    const val = m[i + 1];
+                    if (val != null && val.length > 0) {
+                        hits.push({ start: cursor, end: cursor + val.length, cls: rule.parts[i] });
+                        cursor += val.length;
+                    }
+                }
+            } else if (rule.g != null) {
+                // single capture group
+                const val = m[rule.g];
+                if (val) {
+                    const start = m.index + m[0].indexOf(val);
+                    hits.push({ start, end: start + val.length, cls: rule.cls });
+                }
+            } else {
+                hits.push({ start: m.index, end: m.index + m[0].length, cls: rule.cls });
+            }
+        }
+    }
+    return hits;
 }
 
-function highlightJs(code) {
-    let escaped = escapeHtml(code);
-    escaped = escaped.replace(/(\/\/.*$)/gm, '<span class="token comment">$1</span>');
-    escaped = escaped.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>');
-    escaped = escaped.replace(/\b(const|let|var|function|return|if|else|for|while|switch|case|break|continue|try|catch|throw|new|class|extends|import|export|from|default|async|await|typeof|instanceof)\b/g, 
-        '<span class="token keyword">$1</span>');
-    escaped = escaped.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="token keyword">$1</span>');
-    escaped = escaped.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, '<span class="token function">$1</span>(');
-    escaped = escaped.replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, '<span class="token string">$1</span>');
-    escaped = escaped.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="token number">$1</span>');
-    escaped = escaped.replace(/(===|!==|==|!=|&lt;=|&gt;=|&lt;|&gt;|\+|\-|\*|\/|%|=|\&\&|\|\|)/g, '<span class="token operator">$1</span>');
-    return escaped;
+// ==================== HTML HIGHLIGHTER ====================
+function hlHtml(raw) {
+    const s = esc(raw);
+    const hits = collectHits(s, [
+        { re: /(&lt;!--[\s\S]*?--&gt;)/g,  cls: 'hl-comment' },
+        { re: /(&lt;!DOCTYPE\b[^&>]*&gt;)/gi, cls: 'hl-doctype' },
+        { re: /([^\u0000-\u007F]+)/g,       cls: 'hl-entity' },
+        { re: /(&amp;[a-zA-Z#][a-zA-Z0-9]*;)/g, cls: 'hl-entity' },
+        // Closing tag: 3 parts </tag>
+        { re: /(&lt;\/)([\w:-]+)(\s*&gt;)/g, parts: ['hl-punct','hl-tag','hl-punct'] },
+        // Opening tag: <tag
+        { re: /(&lt;)([\w:-]+)/g,            parts: ['hl-punct','hl-tag'] },
+        // End bracket > or />
+        { re: /(\s*\/&gt;|(?<![=])\s*&gt;)/g, cls: 'hl-punct' },
+        // SVG attrs (before general attr so teal wins)
+        { re: /\b(cx|cy|r|rx|ry|x1|y1|x2|y2|d|viewBox|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-dasharray|stroke-dashoffset|opacity|points|offset|gradientUnits|stop-color|patternUnits|preserveAspectRatio|stdDeviation|dx|dy|fx|fy|spreadMethod|filterUnits|result|markerWidth|markerHeight|refX|refY)\b(?=\s*=)/g, cls: 'hl-svg-attr' },
+        // Boolean attrs (no =)
+        { re: /\b(required|disabled|checked|selected|readonly|multiple|autofocus|autoplay|controls|loop|muted|hidden|defer|async|novalidate|reversed|scoped|open|download|draggable|spellcheck)\b(?!\s*=)/g, cls: 'hl-builtin' },
+        // attr="value" — 3 parts
+        { re: /([\w:-]+)(=)(&quot;[\s\S]*?&quot;)/g, parts: ['hl-attr-name','hl-punct','hl-string'] },
+        // attr= (no quotes)
+        { re: /\b(class|id|src|href|type|name|value|placeholder|action|method|rel|target|alt|title|lang|charset|content|property|role|style|media|crossorigin|tabindex|width|height|for|rows|cols|colspan|rowspan|enctype|pattern|min|max|step|size|data-[\w-]+|aria-[\w-]+|onclick|onload|onerror|onchange|oninput|onsubmit|onkeydown|onkeyup)\b(?=\s*=)/g, cls: 'hl-attr-name' },
+        // transform attr
+        { re: /\b(transform)\b(?=\s*=)/g, cls: 'hl-svg-attr' },
+    ]);
+    return buildOutput(s, hits);
 }
 
+// ==================== CSS HIGHLIGHTER ====================
+function hlCss(raw) {
+    const s = esc(raw);
+    const hits = collectHits(s, [
+        { re: /(\/\*[\s\S]*?\*\/)/g,         cls: 'hl-comment' },
+        { re: /(@media\b[^{]*)/g,             cls: 'hl-media' },
+        { re: /(@keyframes)\s+([\w-]+)/g,     parts: ['hl-keyword','hl-anim-name'] },
+        { re: /(@[\w-]+)/g,                   cls: 'hl-keyword' },
+        { re: /(--[\w-]+)/g,                  cls: 'hl-cssvar' },
+        { re: /(::?[\w-]+(?:\([^)]*\))?)/g,   cls: 'hl-pseudo' },
+        { re: /([.#][a-zA-Z_-][\w-]*)/g,      cls: 'hl-class-name' },
+        // Element selectors — only at selector positions (before {)
+        { re: /(?:^|[ \t,>+~])(html|body|div|span|a|p|h[1-6]|ul|ol|li|table|tr|td|th|form|input|button|select|textarea|section|article|nav|header|footer|main|aside|figure|img|video|audio|canvas|svg|path|circle|rect|polygon|line|g|defs|linearGradient|stop)\b/gm, cls: 'hl-tag', g: 1 },
+        // Keyframe % stops
+        { re: /\b(\d+%)\s*(?=\{)/g,           cls: 'hl-number' },
+        // Property names — word before single colon
+        { re: /(?:^|[{;])[ \t]*([\w-]+)[ \t]*(?=:(?!:))/gm, cls: 'hl-property', g: 1 },
+        { re: /(!important)/g,                cls: 'hl-important' },
+        { re: /(#[0-9a-fA-F]{3,8})\b/g,       cls: 'hl-hex-color' },
+        { re: /\b(red|green|blue|white|black|gray|grey|yellow|orange|purple|pink|cyan|magenta|lime|teal|navy|maroon|olive|silver|gold|coral|salmon|indigo|violet|crimson|turquoise|aqua|fuchsia|transparent)\b/g, cls: 'hl-color-kw' },
+        { re: /\b(ease(?:-in)?(?:-out)?(?:-in-out)?|linear|step-start|step-end|cubic-bezier|steps)\b/g, cls: 'hl-timing' },
+        { re: /\b(none|auto|inherit|initial|unset|normal|bold|italic|flex|grid|block|inline-block|inline-flex|absolute|relative|fixed|sticky|static|visible|hidden|scroll|clip|center|left|right|top|bottom|middle|nowrap|wrap|reverse|collapse|separate|both|forwards|backwards|alternate|alternate-reverse|infinite|running|paused|currentColor|solid|dashed|dotted|double|round|space-between|space-around|space-evenly|stretch|contain|cover|fill|no-repeat|repeat|pointer|default|crosshair|move|grab|not-allowed|row|column|flex-start|flex-end|baseline)\b/g, cls: 'hl-value' },
+        // Number + unit (2 parts)
+        { re: /([\d.]+)(px|em|rem|%|vh|vw|vmin|vmax|s|ms|deg|turn|rad|fr|ch|ex|pt|pc|cm|mm|in)\b/g, parts: ['hl-number','hl-unit'] },
+        { re: /(?<![a-zA-Z#-])\b(\d+\.?\d*)\b/g, cls: 'hl-number', g: 1 },
+        // CSS functions rgba() url() etc
+        { re: /([\w-]+)\(/g,                  cls: 'hl-function', g: 1 },
+        { re: /('(?:[^'\\]|\\.)*'|&quot;(?:[^&]|&(?!quot;))*&quot;)/g, cls: 'hl-string' },
+    ]);
+    return buildOutput(s, hits);
+}
+
+// ==================== JS HIGHLIGHTER ====================
+function hlJs(raw) {
+    const s = esc(raw);
+    const hits = collectHits(s, [
+        { re: /(`(?:[^`\\]|\\.)*`)/g,         cls: 'hl-string' },
+        { re: /(\/\*[\s\S]*?\*\/)/g,           cls: 'hl-comment' },
+        { re: /(\/\/[^\n]*)/g,                 cls: 'hl-comment' },
+        { re: /(@[A-Z][\w.]*)/g,               cls: 'hl-decorator' },
+        { re: /\b(const|let|var|function|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|new|delete|void|typeof|instanceof|in|of|import|export|from|class|extends|super|this|static|async|await|yield|get|set|debugger)\b/g, cls: 'hl-keyword' },
+        { re: /\b(true|false|null|undefined|NaN|Infinity|arguments)\b/g, cls: 'hl-boolean' },
+        { re: /\b(console|window|document|navigator|location|history|screen|globalThis|process|module|require|exports|Array|Object|String|Number|Boolean|Symbol|BigInt|Math|JSON|Date|RegExp|Error|TypeError|RangeError|SyntaxError|Map|Set|WeakMap|WeakSet|Promise|Proxy|Reflect|Intl|URL|URLSearchParams|fetch|XMLHttpRequest|WebSocket|Worker|localStorage|sessionStorage|indexedDB|setTimeout|setInterval|clearTimeout|clearInterval|requestAnimationFrame|cancelAnimationFrame|alert|confirm|prompt|performance|crypto|Blob|File|FileReader|FormData|Headers|Request|Response|EventSource|MutationObserver|IntersectionObserver|ResizeObserver|CustomEvent|Event|AbortController|HTMLElement|Element|Node|NodeList|DOMParser|SVGElement|getComputedStyle|structuredClone|queueMicrotask)\b/g, cls: 'hl-builtin' },
+        { re: /\b([A-Z][a-zA-Z0-9_$]{1,})\b/g, cls: 'hl-class-name' },
+        { re: /('(?:[^'\\]|\\.)*'|&quot;(?:[^&\\]|\\.)*&quot;)/g, cls: 'hl-string' },
+        { re: /(=&gt;)/g,                       cls: 'hl-arrow' },
+        { re: /\b(0x[0-9a-fA-F]+n?|0b[01]+n?|0o[0-7]+n?|[0-9]+\.?[0-9]*(?:[eE][+-]?[0-9]+)?n?)\b/g, cls: 'hl-number' },
+        { re: /(===|!==|==|!=|&lt;=|&gt;=|&lt;&lt;|&gt;&gt;&gt;|&gt;&gt;|\?\?=?|\?\.|&amp;&amp;=?|\|\|=?|\+\+|--|[+\-*/%^~]=?|[=!&|?](?![=&|]))/g, cls: 'hl-operator' },
+        // Function calls
+        { re: /\b([a-zA-Z_$][\w$]*)\s*(?=\()/g, cls: 'hl-function', g: 1 },
+        // Property access .something
+        { re: /(?<!\.)\.([a-zA-Z_$][\w$]*)/g,  cls: 'hl-property', g: 1 },
+    ]);
+    return buildOutput(s, hits);
+}
+
+// ==================== UPDATE HIGHLIGHT ====================
 function updateHighlight(editorId) {
     const editor = document.getElementById(editorId);
-    const highlightId = editorId.replace('Editor', 'Highlight');
-    const highlightEl = document.getElementById(highlightId);
-    
-    if (!editor || !highlightEl) return;
-    
-    const code = editor.value;
-    const codeEl = highlightEl.querySelector('code');
-    
-    if (!codeEl) return;
-    
-    let highlighted = '';
-    if (editorId === 'htmlEditor') {
-        highlighted = highlightHtml(code);
-    } else if (editorId === 'cssEditor') {
-        highlighted = highlightCss(code);
-    } else if (editorId === 'jsEditor') {
-        highlighted = highlightJs(code);
-    }
-    
-    codeEl.innerHTML = highlighted + '\n';
+    const pre    = document.getElementById(editorId.replace('Editor','Highlight'));
+    if (!editor || !pre) return;
+    let code = pre.querySelector('code');
+    if (!code) { code = document.createElement('code'); pre.innerHTML=''; pre.appendChild(code); }
+    let html = '';
+    if      (editorId === 'htmlEditor') html = hlHtml(editor.value);
+    else if (editorId === 'cssEditor')  html = hlCss(editor.value);
+    else if (editorId === 'jsEditor')   html = hlJs(editor.value);
+    code.innerHTML = html;
+    pre.scrollTop = editor.scrollTop; pre.scrollLeft = editor.scrollLeft;
 }
 
-function syncScroll(editorId) {
-    const editor = document.getElementById(editorId);
-    const highlightId = editorId.replace('Editor', 'Highlight');
-    const highlightEl = document.getElementById(highlightId);
-    
-    if (!editor || !highlightEl) return;
-    
-    highlightEl.scrollTop = editor.scrollTop;
-    highlightEl.scrollLeft = editor.scrollLeft;
-}
-
-function initSyntaxHighlighting() {
-    const editorConfigs = [
-        { editorId: 'htmlEditor', highlightId: 'htmlHighlight' },
-        { editorId: 'jsEditor', highlightId: 'jsHighlight' },
-        { editorId: 'cssEditor', highlightId: 'cssHighlight' }
-    ];
-    
-    editorConfigs.forEach(config => {
-        const editor = document.getElementById(config.editorId);
-        if (editor) {
-            editor.addEventListener('input', () => updateHighlight(config.editorId));
-            editor.addEventListener('scroll', () => syncScroll(config.editorId));
-            updateHighlight(config.editorId);
-        }
-    });
-}
-
-// Call init functions on page load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        initSaveAndSettings();
-        setupEditorChangeTracking();
-        initSyntaxHighlighting();
-    }, 200);
-});
-
-// Initialize app
-init();
-
-// Load generated code from sessionStorage (from Gemini AI chat)
-function loadGeneratedCode() {
-    try {
-        // Try localStorage first (from main index.html Gemini integration)
-        let generatedCode = localStorage.getItem('devcenter_generated_code');
-        let isFromLocalStorage = true;
-        
-        // Fallback to sessionStorage (legacy support)
-        if (!generatedCode) {
-            generatedCode = sessionStorage.getItem('generatedCode');
-            isFromLocalStorage = false;
-        }
-        
-        if (!generatedCode) return;
-
-        const codeData = JSON.parse(generatedCode);
-        console.log('✨ Código generado por Gemini AI detectado:', codeData.prompt || 'Sin descripción');
-
-        // Load into editors (use 'javascript' property from detectCodeBlocks)
-        if (elements.htmlEditor && codeData.html) elements.htmlEditor.value = codeData.html;
-        if (elements.cssEditor && codeData.css) elements.cssEditor.value = codeData.css;
-        if (elements.jsEditor && (codeData.javascript || codeData.js)) {
-            elements.jsEditor.value = codeData.javascript || codeData.js;
-        }
-
-        // Update preview
-        updatePreview();
-
-        // Show success message in chat
-        const prompt = codeData.prompt || 'tu aplicación';
-        const message = `✨ Código generado con éxito para: "${prompt}"
-
-He generado tu aplicación web con:
-✓ **HTML**: Estructura completa y semántica
-✓ **CSS**: Estilos modernos y responsive
-✓ **JavaScript**: Funcionalidades interactivas
-
-Puedes revisar el código en las pestañas de arriba o hacer cambios directamente. ¿Qué te gustaría modificar?`;
-
-        addChatMessage(message, 'ai');
-        startChat();
-
-        // Clear storage
-        if (isFromLocalStorage) {
-            localStorage.removeItem('devcenter_generated_code');
-        } else {
-            sessionStorage.removeItem('generatedCode');
-        }
-
-        console.log('✓ Código cargado en editores');
-    } catch (error) {
-        console.error('Error cargando código generado:', error);
-    }
-}
-
-// ============================================================
-// VS CODE POWER FEATURES - DevCenterX Enhanced Editor
-// ============================================================
-
-// ---- LINE NUMBERS (GUTTER) ----
+// ==================== GUTTER ====================
 function updateGutter(editorId) {
     const editor = document.getElementById(editorId);
-    const gutterId = editorId.replace('Editor', 'Gutter');
-    const gutter = document.getElementById(gutterId);
+    const gutter = document.getElementById(editorId.replace('Editor','Gutter'));
     if (!editor || !gutter) return;
-
-    const lines = editor.value.split('\n');
-    const totalLines = lines.length;
-    const cursorLine = getCursorLine(editor);
-
-    // Only rebuild if line count changed
-    const existing = gutter.querySelectorAll('.gutter-line').length;
-    if (existing !== totalLines) {
-        gutter.innerHTML = '';
+    const lines = editor.value.split('\n'), total = lines.length;
+    const curLine = editor.value.substring(0, editor.selectionStart).split('\n').length;
+    if (parseInt(gutter.dataset.lc||'0') !== total) {
         const frag = document.createDocumentFragment();
-        for (let i = 1; i <= totalLines; i++) {
-            const span = document.createElement('span');
-            span.className = 'gutter-line' + (i === cursorLine ? ' active-line' : '');
-            span.textContent = i;
-            span.dataset.line = i;
-            frag.appendChild(span);
-        }
-        gutter.appendChild(frag);
+        for (let i=1;i<=total;i++){const sp=document.createElement('span');sp.className='gutter-line'+(i===curLine?' active-line':'');sp.textContent=i;frag.appendChild(sp);}
+        gutter.innerHTML=''; gutter.appendChild(frag); gutter.dataset.lc=total;
     } else {
-        // Just update active line class
-        gutter.querySelectorAll('.gutter-line').forEach((el, idx) => {
-            el.classList.toggle('active-line', idx + 1 === cursorLine);
-        });
+        gutter.querySelectorAll('.gutter-line').forEach((el,i)=>el.classList.toggle('active-line',i+1===curLine));
     }
-
-    // Sync scroll
     gutter.scrollTop = editor.scrollTop;
-
-    // Update status bar
-    updateStatusBar(editor, editorId);
 }
+function updateMinimap(){}
+function setupMinimapClick(){}
 
-function getCursorLine(editor) {
-    const text = editor.value.substring(0, editor.selectionStart);
-    return text.split('\n').length;
-}
-
-function updateStatusBar(editor, editorId) {
+// ==================== CURSOR ====================
+function updateCursorPos(editor) {
+    if (!editor) return;
     const text = editor.value.substring(0, editor.selectionStart);
     const lines = text.split('\n');
-    const line = lines.length;
-    const col = lines[lines.length - 1].length + 1;
-
     const pos = document.getElementById('cursorPosition');
-    if (pos) pos.textContent = `Ln ${line}, Col ${col}`;
-
-    // Line count
-    const totalLines = editor.value.split('\n').length;
-    const lc = document.getElementById('lineCountDisplay');
-    if (lc) lc.textContent = `${totalLines} líneas`;
-
-    // Selection info
-    const selInfo = document.getElementById('selectionInfo');
-    const selCount = document.getElementById('selCount');
+    if (pos) pos.textContent = `Ln ${lines.length}, Col ${lines[lines.length-1].length+1}`;
     const selLen = Math.abs(editor.selectionEnd - editor.selectionStart);
-    if (selInfo && selCount) {
-        if (selLen > 0) {
-            selInfo.style.display = 'flex';
-            selCount.textContent = selLen;
-        } else {
-            selInfo.style.display = 'none';
-        }
-    }
-
-    // Update status bar language
-    const statusLang = document.getElementById('statusLang');
-    if (statusLang) {
-        const langMap = { htmlEditor: 'HTML', jsEditor: 'JS', cssEditor: 'CSS' };
-        const lang = langMap[editorId] || 'Code';
-        const icons = {
-            htmlEditor: '<i class="fab fa-html5" style="color:#f97316"></i>',
-            jsEditor: '<i class="fab fa-js-square" style="color:#fbbf24"></i>',
-            cssEditor: '<i class="fab fa-css3-alt" style="color:#06b6d4"></i>'
-        };
-        statusLang.innerHTML = (icons[editorId] || '') + ' ' + lang;
-    }
+    const si = document.getElementById('selectionInfo'), sc = document.getElementById('selCount');
+    if (si) si.style.display = selLen>0?'inline':'none';
+    if (sc) sc.textContent = selLen;
+    const lc = document.getElementById('lineCountDisplay'), total = editor.value.split('\n').length;
+    if (lc) lc.textContent = `· ${total} línea${total!==1?'s':''}`;
 }
 
-// ---- MINIMAP ----
-function updateMinimap(editorId) {
-    const editor = document.getElementById(editorId);
-    const mapId = editorId.replace('Editor', '') + 'MinimapCanvas';
-    const viewId = editorId.replace('Editor', '') + 'MinimapViewport';
-    const canvas = document.getElementById(mapId);
-    const viewport = document.getElementById(viewId);
-    if (!canvas || !editor) return;
-
-    const container = canvas.parentElement;
-    const W = container.clientWidth;
-    const H = container.clientHeight;
-    canvas.width = W;
-    canvas.height = H;
-
-    const ctx = canvas.getContext('2d');
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    ctx.fillStyle = isDark ? '#0f172a' : '#f8fafc';
-    ctx.fillRect(0, 0, W, H);
-
-    const lines = editor.value.split('\n');
-    const totalLines = lines.length;
-    const lineH = Math.max(1, H / totalLines);
-
-    // Color palette for minimap based on content
-    lines.forEach((line, idx) => {
-        const y = idx * lineH;
-        const trimmed = line.trim();
-        let color = isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.3)';
-
-        if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*') || trimmed.startsWith('<!--')) {
-            color = 'rgba(107,114,128,0.4)';
-        } else if (/\b(function|class|const|let|var|if|for|while|return|import|export)\b/.test(trimmed)) {
-            color = 'rgba(244,114,182,0.5)';
-        } else if (/<[a-zA-Z]/.test(trimmed)) {
-            color = 'rgba(125,211,252,0.5)';
-        } else if (/{/.test(trimmed)) {
-            color = 'rgba(196,181,253,0.4)';
-        }
-
-        if (trimmed.length > 0) {
-            const len = Math.min(trimmed.length * (W / 80), W - 2);
-            const indentPx = (line.length - trimmed.length) * (W / 120);
-            ctx.fillStyle = color;
-            ctx.fillRect(indentPx, y, len, Math.max(1, lineH - 0.5));
-        }
-    });
-
-    // Viewport indicator
-    if (viewport && totalLines > 0) {
-        const visibleLines = editor.clientHeight / (editor.scrollHeight / totalLines);
-        const scrollFraction = editor.scrollTop / (editor.scrollHeight || 1);
-        const vpH = Math.max(20, (visibleLines / totalLines) * H);
-        const vpTop = scrollFraction * H;
-        viewport.style.top = vpTop + 'px';
-        viewport.style.height = vpH + 'px';
-    }
+// ==================== PREVIEW ====================
+function updatePreview() {
+    const html = document.getElementById('htmlEditor')?.value||'';
+    const css  = document.getElementById('cssEditor')?.value||'';
+    const js   = document.getElementById('jsEditor')?.value||'';
+    const frame = document.getElementById('previewFrame'); if(!frame) return;
+    const es = document.getElementById('previewEmptyState');
+    if(es) es.style.display = (html+css+js).trim()?'none':'flex';
+    const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>
+(function(){const o={log:console.log,error:console.error,warn:console.warn,info:console.info};
+['log','error','warn','info'].forEach(t=>{console[t]=function(...a){o[t](...a);window.parent.postMessage({type:'console',level:t,msg:a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' ')},\'*\');}});
+window.onerror=(m,s,l,c,e)=>window.parent.postMessage({type:'console',level:'error',msg:m},\'*\');
+}());\n<\/script><script>${js}<\/script></body></html>`;
+    const blob = new Blob([doc],{type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    frame.src = url;
+    setTimeout(()=>URL.revokeObjectURL(url),8000);
 }
 
-// Minimap click to scroll
-function setupMinimapClick(editorId) {
-    const mapId = editorId.replace('Editor', '') + 'MinimapCanvas';
-    const canvas = document.getElementById(mapId);
-    const editor = document.getElementById(editorId);
-    if (!canvas || !editor) return;
-
-    canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const fraction = (e.clientY - rect.top) / rect.height;
-        editor.scrollTop = fraction * editor.scrollHeight;
-        updateMinimap(editorId);
-    });
+// ==================== TAB SWITCH ====================
+function updateStatusLang(ft) {
+    const el = document.getElementById('statusLang'); if(!el) return;
+    const c={html:'#f97316',js:'#fbbf24',css:'#06b6d4'}, n={html:'HTML',js:'JavaScript',css:'CSS'};
+    el.innerHTML=`<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="0.5" width="10" height="10" rx="2" stroke="${c[ft]||'#818cf8'}" stroke-width="1"/></svg> ${n[ft]||ft.toUpperCase()}`;
 }
-
-// ---- FIND & REPLACE ----
-let findState = {
-    query: '',
-    matches: [],
-    currentMatch: -1,
-    caseSensitive: false,
-    useRegex: false,
-    mode: 'find' // 'find' or 'replace'
-};
-
-function openFindPanel(mode = 'find') {
-    const panel = document.getElementById('findReplacePanel');
-    const replaceRow = document.getElementById('replaceRow');
-    if (!panel) return;
-
-    panel.style.display = 'block';
-    findState.mode = mode;
-
-    if (replaceRow) {
-        replaceRow.style.display = mode === 'replace' ? 'flex' : 'none';
-    }
-
-    const findInput = document.getElementById('findInput');
-    if (findInput) {
-        findInput.focus();
-        findInput.select();
-        // If text selected in editor, use it
-        const activeEditor = getActiveEditor();
-        if (activeEditor) {
-            const sel = activeEditor.value.substring(activeEditor.selectionStart, activeEditor.selectionEnd);
-            if (sel && sel.length < 100) findInput.value = sel;
-        }
-        runFind();
-    }
-}
-
-function closeFindPanel() {
-    const panel = document.getElementById('findReplacePanel');
-    if (panel) panel.style.display = 'none';
-    clearFindHighlights();
-    findState.matches = [];
-    findState.currentMatch = -1;
-    updateFindCount();
-}
-
-function getActiveEditor() {
-    const map = { html: 'htmlEditor', js: 'jsEditor', css: 'cssEditor' };
-    return document.getElementById(map[currentTab] || 'htmlEditor');
-}
-
-function runFind() {
-    clearFindHighlights();
-    const query = document.getElementById('findInput')?.value || '';
-    findState.query = query;
-    findState.matches = [];
-    findState.currentMatch = -1;
-
-    if (!query) { updateFindCount(); return; }
-
-    const editor = getActiveEditor();
-    if (!editor) return;
-
-    const text = editor.value;
-    let regex;
-    try {
-        const flags = findState.caseSensitive ? 'g' : 'gi';
-        regex = findState.useRegex ? new RegExp(query, flags) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-    } catch (e) { updateFindCount(); return; }
-
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-        findState.matches.push({ start: match.index, end: match.index + match[0].length });
-        if (findState.matches.length > 500) break;
-    }
-
-    if (findState.matches.length > 0) {
-        findState.currentMatch = 0;
-        scrollToMatch(editor, findState.matches[0]);
-    }
-
-    updateFindCount();
-}
-
-function scrollToMatch(editor, match) {
-    if (!match) return;
-    editor.setSelectionRange(match.start, match.end);
-    const linesBefore = editor.value.substring(0, match.start).split('\n').length - 1;
-    const lineHeight = 14 * 1.8;
-    const targetScroll = linesBefore * lineHeight - editor.clientHeight / 2;
-    editor.scrollTop = Math.max(0, targetScroll);
-    editor.focus();
-}
-
-function findNext() {
-    if (!findState.matches.length) return;
-    findState.currentMatch = (findState.currentMatch + 1) % findState.matches.length;
-    scrollToMatch(getActiveEditor(), findState.matches[findState.currentMatch]);
-    updateFindCount();
-}
-
-function findPrev() {
-    if (!findState.matches.length) return;
-    findState.currentMatch = (findState.currentMatch - 1 + findState.matches.length) % findState.matches.length;
-    scrollToMatch(getActiveEditor(), findState.matches[findState.currentMatch]);
-    updateFindCount();
-}
-
-function replaceOne() {
-    const editor = getActiveEditor();
-    if (!editor || !findState.matches.length) return;
-    const replaceVal = document.getElementById('replaceInput')?.value || '';
-    const match = findState.matches[findState.currentMatch];
-    if (!match) return;
-    const before = editor.value.substring(0, match.start);
-    const after = editor.value.substring(match.end);
-    editor.value = before + replaceVal + after;
-    editor.dispatchEvent(new Event('input'));
-    runFind();
-}
-
-function replaceAll() {
-    const editor = getActiveEditor();
-    if (!editor || !findState.query) return;
-    const replaceVal = document.getElementById('replaceInput')?.value || '';
-    let text = editor.value;
-    let regex;
-    try {
-        const flags = findState.caseSensitive ? 'g' : 'gi';
-        regex = findState.useRegex ? new RegExp(findState.query, flags) : new RegExp(findState.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-    } catch (e) { return; }
-    editor.value = text.replace(regex, replaceVal);
-    editor.dispatchEvent(new Event('input'));
-    runFind();
-}
-
-function clearFindHighlights() {
-    // Nothing visual to clear (we use selection)
-}
-
-function updateFindCount() {
-    const el = document.getElementById('findCount');
-    if (!el) return;
-    if (!findState.matches.length) {
-        el.textContent = findState.query ? '0/0' : '';
+function switchTab(fileType) {
+    if (fileType!=='agent') currentTab=fileType;
+    document.querySelectorAll('.file-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelector(`.file-tab[data-file="${fileType}"]`)?.classList.add('active');
+    const aw=document.getElementById('agentPanelWrapper');
+    if(aw&&fileType!=='agent') aw.style.display='none';
+    ['html','js','css'].forEach(l=>document.getElementById(l+'EditorWrapper')?.classList.remove('active'));
+    const pv=document.getElementById('previewContainer');
+    if(pv){pv.style.display='none';pv.classList.remove('visible');}
+    if (fileType==='preview') {
+        if(pv){pv.style.display='flex';pv.classList.add('visible');}
+        updatePreview();
+    } else if (fileType==='agent') {
+        if(aw) aw.style.display='flex';
     } else {
-        el.textContent = `${findState.currentMatch + 1}/${findState.matches.length}`;
-        el.style.color = findState.matches.length > 0 ? 'var(--accent-primary)' : 'var(--accent-red)';
+        document.getElementById(fileType+'EditorWrapper')?.classList.add('active');
+        const ed=document.getElementById(fileType+'Editor');
+        if(ed){ed.focus();updateCursorPos(ed);updateHighlight(fileType+'Editor');updateStatusLang(fileType);requestAnimationFrame(()=>updateGutter(fileType+'Editor'));}
     }
 }
 
-// ---- POWER KEYBOARD SHORTCUTS ----
-function setupPowerKeyboard() {
-    const editors = [
-        { id: 'htmlEditor', lang: 'html' },
-        { id: 'jsEditor', lang: 'js' },
-        { id: 'cssEditor', lang: 'css' }
-    ];
+// ==================== EDITOR EVENTS ====================
+function setupEditorEvents() {
+    ['htmlEditor','jsEditor','cssEditor'].forEach(id => {
+        const ed = document.getElementById(id); if(!ed) return;
+        ed.addEventListener('input', ()=>{updateHighlight(id);updateGutter(id);updateCursorPos(ed);markUnsaved();});
+        ed.addEventListener('scroll', ()=>{
+            const hl=document.getElementById(id.replace('Editor','Highlight'));
+            if(hl){hl.scrollTop=ed.scrollTop;hl.scrollLeft=ed.scrollLeft;}
+            const gu=document.getElementById(id.replace('Editor','Gutter'));
+            if(gu) gu.scrollTop=ed.scrollTop;
+        });
+        ed.addEventListener('click', ()=>{updateCursorPos(ed);updateGutter(id);});
+        ed.addEventListener('keyup',  ()=>{updateCursorPos(ed);updateGutter(id);});
+        ed.addEventListener('keydown',()=>requestAnimationFrame(()=>{
+            const hl=document.getElementById(id.replace('Editor','Highlight'));
+            if(hl){hl.scrollTop=ed.scrollTop;hl.scrollLeft=ed.scrollLeft;}
+            const gu=document.getElementById(id.replace('Editor','Gutter'));
+            if(gu) gu.scrollTop=ed.scrollTop;
+        }));
+    });
+}
 
-    editors.forEach(({ id, lang }) => {
-        const editor = document.getElementById(id);
-        if (!editor) return;
+// ==================== SAVE ====================
+function markUnsaved() {
+    hasUnsavedChanges=true;
+    const btn=document.getElementById('saveBtn'), txt=document.getElementById('saveBtnText');
+    if(btn){btn.classList.remove('saved','saving');}
+    if(txt) txt.textContent='Guardar';
+}
+function saveToLocal() {
+    const data={html:document.getElementById('htmlEditor')?.value||'',css:document.getElementById('cssEditor')?.value||'',js:document.getElementById('jsEditor')?.value||'',savedAt:Date.now()};
+    try{localStorage.setItem('dcx_code',JSON.stringify(data));hasUnsavedChanges=false;}catch(e){}
+    const btn=document.getElementById('saveBtn'),txt=document.getElementById('saveBtnText');
+    if(btn){btn.classList.remove('saving');btn.classList.add('saved');}
+    if(txt){txt.textContent='Guardado';setTimeout(()=>{if(txt)txt.textContent='Guardar';},1800);}
+}
+function loadFromLocal() {
+    try{const raw=localStorage.getItem('dcx_code');if(!raw)return;const d=JSON.parse(raw);
+    const he=document.getElementById('htmlEditor'),ce=document.getElementById('cssEditor'),je=document.getElementById('jsEditor');
+    if(he&&d.html!==undefined)he.value=d.html;if(ce&&d.css!==undefined)ce.value=d.css;if(je&&d.js!==undefined)je.value=d.js;}catch(e){}
+}
 
-        editor.addEventListener('keydown', (e) => {
-            const ctrl = e.ctrlKey || e.metaKey;
+// ==================== FIND & REPLACE ====================
+function getActiveEditor(){return document.getElementById(currentTab+'Editor')||document.getElementById('htmlEditor');}
+function openFindPanel(mode='find'){
+    const p=document.getElementById('findReplacePanel');const rr=document.getElementById('replaceRow');
+    if(!p)return;p.style.display='block';if(rr)rr.style.display=mode==='replace'?'flex':'none';
+    const fi=document.getElementById('findInput');if(fi){const ed=getActiveEditor();if(ed){const sel=ed.value.substring(ed.selectionStart,ed.selectionEnd);if(sel&&sel.length<80)fi.value=sel;}fi.focus();fi.select();doFind();}
+}
+function closeFindPanel(){const p=document.getElementById('findReplacePanel');if(p)p.style.display='none';}
+function doFind(){
+    const query=document.getElementById('findInput')?.value||'';findState.query=query;findState.matches=[];findState.currentMatch=-1;
+    const cnt=document.getElementById('findCount');if(!query){if(cnt)cnt.textContent='';return;}
+    const ed=getActiveEditor();if(!ed)return;let rx;
+    try{rx=findState.useRegex?new RegExp(query,findState.caseSensitive?'g':'gi'):new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),findState.caseSensitive?'g':'gi');}catch(e){if(cnt)cnt.textContent='bad regex';return;}
+    let m;while((m=rx.exec(ed.value))!==null&&findState.matches.length<500)findState.matches.push({start:m.index,end:m.index+m[0].length});
+    if(findState.matches.length){findState.currentMatch=0;scrollToMatch(ed,findState.matches[0]);}
+    if(cnt)cnt.textContent=findState.matches.length?`${findState.currentMatch+1}/${findState.matches.length}`:'0/0';
+}
+function scrollToMatch(ed,match){if(!match)return;ed.focus();ed.setSelectionRange(match.start,match.end);const lh=parseFloat(getComputedStyle(ed).lineHeight)||22;ed.scrollTop=Math.max(0,ed.value.substring(0,match.start).split('\n').length*lh-ed.clientHeight/2);}
+function findNext(){if(!findState.matches.length)return;findState.currentMatch=(findState.currentMatch+1)%findState.matches.length;scrollToMatch(getActiveEditor(),findState.matches[findState.currentMatch]);const cnt=document.getElementById('findCount');if(cnt)cnt.textContent=`${findState.currentMatch+1}/${findState.matches.length}`;}
+function findPrev(){if(!findState.matches.length)return;findState.currentMatch=(findState.currentMatch-1+findState.matches.length)%findState.matches.length;scrollToMatch(getActiveEditor(),findState.matches[findState.currentMatch]);const cnt=document.getElementById('findCount');if(cnt)cnt.textContent=`${findState.currentMatch+1}/${findState.matches.length}`;}
 
-            // Tab → 2 spaces
-            if (e.key === 'Tab' && !ctrl) {
-                e.preventDefault();
-                const start = editor.selectionStart;
-                const end = editor.selectionEnd;
-                if (start !== end) {
-                    // Indent selection
-                    const lines = editor.value.split('\n');
-                    const startLine = editor.value.substring(0, start).split('\n').length - 1;
-                    const endLine = editor.value.substring(0, end).split('\n').length - 1;
-                    if (e.shiftKey) {
-                        // Unindent
-                        for (let i = startLine; i <= endLine; i++) {
-                            if (lines[i].startsWith('  ')) lines[i] = lines[i].substring(2);
-                        }
-                    } else {
-                        for (let i = startLine; i <= endLine; i++) {
-                            lines[i] = '  ' + lines[i];
-                        }
-                    }
-                    editor.value = lines.join('\n');
-                } else {
-                    if (e.shiftKey) {
-                        // Remove 2 spaces before cursor
-                        const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
-                        const lineContent = editor.value.substring(lineStart, start);
-                        if (lineContent.endsWith('  ')) {
-                            editor.value = editor.value.substring(0, start - 2) + editor.value.substring(start);
-                            editor.selectionStart = editor.selectionEnd = start - 2;
-                        }
-                    } else {
-                        editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
-                        editor.selectionStart = editor.selectionEnd = start + 2;
-                    }
-                }
-                editor.dispatchEvent(new Event('input'));
-                return;
-            }
-
-            // Ctrl+/ → comment line
-            if (ctrl && e.key === '/') {
-                e.preventDefault();
-                toggleLineComment(editor, lang);
-                return;
-            }
-
-            // Ctrl+D → duplicate line
-            if (ctrl && e.key === 'd') {
-                e.preventDefault();
-                duplicateLine(editor);
-                return;
-            }
-
-            // Alt+ArrowUp / Alt+ArrowDown → move line
-            if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-                e.preventDefault();
-                moveLine(editor, e.key === 'ArrowUp' ? -1 : 1);
-                return;
-            }
-
-            // Ctrl+Enter → update preview
-            if (ctrl && e.key === 'Enter') {
-                e.preventDefault();
-                if (typeof updatePreview === 'function') updatePreview();
-                switchTab('preview');
-                return;
-            }
-
-            // Escape → close panels
-            if (e.key === 'Escape') {
-                closeFindPanel();
-                const sm = document.getElementById('shortcutsModal');
-                if (sm) sm.style.display = 'none';
-                return;
-            }
-
-            // Auto-close brackets/quotes
-            const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
-            if (pairs[e.key] && !ctrl) {
-                const start = editor.selectionStart;
-                const end = editor.selectionEnd;
-                const sel = editor.value.substring(start, end);
-                if (sel) {
-                    // Wrap selection
-                    e.preventDefault();
-                    editor.value = editor.value.substring(0, start) + e.key + sel + pairs[e.key] + editor.value.substring(end);
-                    editor.selectionStart = start + 1;
-                    editor.selectionEnd = end + 1;
-                    editor.dispatchEvent(new Event('input'));
-                    return;
-                }
-                // Auto-close at cursor
-                const nextChar = editor.value[editor.selectionStart];
-                if (['"', "'", '`'].includes(e.key) && nextChar === e.key) {
-                    // Just move past
-                    e.preventDefault();
-                    editor.selectionStart = editor.selectionEnd = start + 1;
-                    return;
-                }
-                e.preventDefault();
-                editor.value = editor.value.substring(0, start) + e.key + pairs[e.key] + editor.value.substring(end);
-                editor.selectionStart = editor.selectionEnd = start + 1;
-                editor.dispatchEvent(new Event('input'));
-                return;
-            }
-
-            // Auto-delete brackets
-            if (e.key === 'Backspace') {
-                const start = editor.selectionStart;
-                const before = editor.value[start - 1];
-                const after = editor.value[start];
-                const pairs2 = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
-                if (before && pairs2[before] === after && editor.selectionStart === editor.selectionEnd) {
-                    e.preventDefault();
-                    editor.value = editor.value.substring(0, start - 1) + editor.value.substring(start + 1);
-                    editor.selectionStart = editor.selectionEnd = start - 1;
-                    editor.dispatchEvent(new Event('input'));
-                    return;
-                }
-            }
-
-            // Enter → auto-indent
-            if (e.key === 'Enter' && !ctrl) {
-                const start = editor.selectionStart;
-                const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
-                const line = editor.value.substring(lineStart, start);
-                const indent = line.match(/^(\s*)/)[1];
-                const charBefore = editor.value[start - 1];
-                const charAfter = editor.value[start];
-                if ((charBefore === '{' && charAfter === '}') ||
-                    (charBefore === '(' && charAfter === ')') ||
-                    (charBefore === '[' && charAfter === ']')) {
-                    e.preventDefault();
-                    const newText = '\n' + indent + '  \n' + indent;
-                    editor.value = editor.value.substring(0, start) + newText + editor.value.substring(start);
-                    editor.selectionStart = editor.selectionEnd = start + indent.length + 3;
-                    editor.dispatchEvent(new Event('input'));
-                    return;
-                }
-                // Normal indent continuation
-                if (indent) {
-                    e.preventDefault();
-                    const extra = charBefore === '{' || charBefore === '(' || charBefore === '[' ? '  ' : '';
-                    const newText = '\n' + indent + extra;
-                    editor.value = editor.value.substring(0, start) + newText + editor.value.substring(start);
-                    editor.selectionStart = editor.selectionEnd = start + newText.length;
-                    editor.dispatchEvent(new Event('input'));
-                    return;
-                }
-            }
+// ==================== KEYBOARD SHORTCUTS ====================
+function toggleComment(ed,lang){const s=ed.selectionStart,lines=ed.value.split('\n');const li=ed.value.substring(0,s).split('\n').length-1;const line=lines[li],trimmed=line.trim(),indent=line.match(/^(\s*)/)[1];const cm={html:['<!-- ',' -->'],js:['// '],css:['/* ',' */']};const[open,close]=cm[lang]||['// '];if(close){if(trimmed.startsWith(open.trim())&&trimmed.endsWith(close.trim()))lines[li]=indent+trimmed.slice(open.length,-close.length).trim();else lines[li]=indent+open+trimmed+close;}else{if(trimmed.startsWith(open.trim()))lines[li]=indent+trimmed.slice(open.trim().length).trimStart();else lines[li]=indent+open+trimmed;}ed.value=lines.join('\n');ed.dispatchEvent(new Event('input'));}
+function duplicateLine(ed){const s=ed.selectionStart,lines=ed.value.split('\n');const i=ed.value.substring(0,s).split('\n').length-1;lines.splice(i+1,0,lines[i]);ed.value=lines.join('\n');ed.dispatchEvent(new Event('input'));}
+function moveLine(ed,dir){const s=ed.selectionStart,lines=ed.value.split('\n');const i=ed.value.substring(0,s).split('\n').length-1,t=i+dir;if(t<0||t>=lines.length)return;[lines[i],lines[t]]=[lines[t],lines[i]];ed.value=lines.join('\n');ed.dispatchEvent(new Event('input'));}
+function setupPowerKeyboard(){
+    ['htmlEditor','jsEditor','cssEditor'].forEach(id=>{
+        const ed=document.getElementById(id);if(!ed)return;
+        const lang=id.replace('Editor','');
+        ed.addEventListener('keydown',e=>{
+            const ctrl=e.ctrlKey||e.metaKey;
+            if(e.key==='Tab'&&!ctrl){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;if(s!==en&&e.shiftKey){const lines=ed.value.split('\n');const sl=ed.value.substring(0,s).split('\n').length-1,el=ed.value.substring(0,en).split('\n').length-1;for(let i=sl;i<=el;i++)if(lines[i].startsWith('  '))lines[i]=lines[i].slice(2);ed.value=lines.join('\n');ed.dispatchEvent(new Event('input'));return;}ed.value=ed.value.substring(0,s)+'  '+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+2;ed.dispatchEvent(new Event('input'));return;}
+            if(ctrl&&e.key==='/')  {e.preventDefault();toggleComment(ed,lang);return;}
+            if(ctrl&&e.key==='d')  {e.preventDefault();duplicateLine(ed);return;}
+            if(e.altKey&&e.key==='ArrowUp')  {e.preventDefault();moveLine(ed,-1);return;}
+            if(e.altKey&&e.key==='ArrowDown'){e.preventDefault();moveLine(ed,1);return;}
+            if(ctrl&&e.key==='Enter'){e.preventDefault();switchTab('preview');return;}
+            if(e.key==='Escape'){closeFindPanel();document.getElementById('shortcutsModal')&&(document.getElementById('shortcutsModal').style.display='none');return;}
+            const pairs={'(':')','[':']','{':'}','"':'"',"'":"'","`":"`"};
+            if(pairs[e.key]&&!ctrl){const s=ed.selectionStart,en=ed.selectionEnd,sel=ed.value.substring(s,en);if(sel){e.preventDefault();ed.value=ed.value.substring(0,s)+e.key+sel+pairs[e.key]+ed.value.substring(en);ed.selectionStart=s+1;ed.selectionEnd=en+1;ed.dispatchEvent(new Event('input'));return;}const next=ed.value[s];if(['"',"'","`"].includes(e.key)&&next===e.key){e.preventDefault();ed.selectionStart=ed.selectionEnd=s+1;return;}if(!['"',"'","`"].includes(e.key)){e.preventDefault();ed.value=ed.value.substring(0,s)+e.key+pairs[e.key]+ed.value.substring(s);ed.selectionStart=ed.selectionEnd=s+1;ed.dispatchEvent(new Event('input'));return;}}
+            if(e.key==='Backspace'&&ed.selectionStart===ed.selectionEnd){const s=ed.selectionStart,before=ed.value[s-1],after=ed.value[s],cp={'(':')','[':']','{':'}','"':'"',"'":"'","`":"`"};if(before&&cp[before]===after){e.preventDefault();ed.value=ed.value.substring(0,s-1)+ed.value.substring(s+1);ed.selectionStart=ed.selectionEnd=s-1;ed.dispatchEvent(new Event('input'));return;}}
+            if(e.key==='Enter'&&!ctrl){const s=ed.selectionStart;const lineStart=ed.value.lastIndexOf('\n',s-1)+1;const indent=ed.value.substring(lineStart,s).match(/^(\s*)/)[1];const before=ed.value[s-1],after=ed.value[s];const op={'(':')','[':']','{':'}'};if(op[before]===after){e.preventDefault();const ins='\n'+indent+'  \n'+indent;ed.value=ed.value.substring(0,s)+ins+ed.value.substring(s);ed.selectionStart=ed.selectionEnd=s+indent.length+3;ed.dispatchEvent(new Event('input'));return;}if(indent){e.preventDefault();const extra=op[before]?'  ':'';const nl='\n'+indent+extra;ed.value=ed.value.substring(0,s)+nl+ed.value.substring(s);ed.selectionStart=ed.selectionEnd=s+nl.length;ed.dispatchEvent(new Event('input'));return;}}
         });
     });
-
-    // Global shortcuts
-    document.addEventListener('keydown', (e) => {
-        const ctrl = e.ctrlKey || e.metaKey;
-        if (ctrl && e.key === 'f') {
-            e.preventDefault();
-            openFindPanel('find');
-        }
-        if (ctrl && e.key === 'h') {
-            e.preventDefault();
-            openFindPanel('replace');
-        }
-        if (ctrl && e.key === 's') {
-            e.preventDefault();
-            const saveBtn = document.getElementById('saveBtn');
-            if (saveBtn) saveBtn.click();
-        }
-    });
+    document.addEventListener('keydown',e=>{const ctrl=e.ctrlKey||e.metaKey;if(ctrl&&e.key==='f'){e.preventDefault();openFindPanel('find');}if(ctrl&&e.key==='h'){e.preventDefault();openFindPanel('replace');}if(ctrl&&e.key==='s'){e.preventDefault();saveToLocal();}});
 }
 
-function toggleLineComment(editor, lang) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const lines = editor.value.split('\n');
-    const startLine = editor.value.substring(0, start).split('\n').length - 1;
-    const endLine = editor.value.substring(0, end).split('\n').length - 1;
+// ==================== CHAT & AI ====================
+function saveChatHistory(){try{localStorage.setItem('dcx_chats',JSON.stringify(chatHistory.slice(0,20)));}catch(e){}}
+function createNewChat(){const id='chat_'+Date.now();chatHistory.unshift({id,title:'Nuevo Chat',messages:[],created:Date.now()});currentChatId=id;saveChatHistory();return id;}
+function loadChat(chatId){
+    const chat=chatHistory.find(c=>c.id===chatId);if(!chat)return;
+    currentChatId=chatId;
+    const tl=document.getElementById('currentChatTitle');if(tl)tl.textContent=chat.title;
+    const msgs=document.getElementById('chatMessages');if(!msgs)return;
+    if(!chat.messages?.length){chatStarted=false;const hb=document.getElementById('chatHeaderBar');if(hb)hb.style.display='none';const wm=document.getElementById('welcomeMessage');if(wm)wm.style.display='flex';Array.from(msgs.children).forEach(c=>{if(c.id!=='welcomeMessage')c.remove();});}
+    else{chatStarted=true;const hb=document.getElementById('chatHeaderBar');if(hb)hb.style.display='flex';const wm=document.getElementById('welcomeMessage');if(wm)wm.style.display='none';Array.from(msgs.children).forEach(c=>{if(c.id!=='welcomeMessage')c.remove();});chat.messages.slice(-40).forEach(m=>appendMessage(m.content,m.type,false));msgs.scrollTop=msgs.scrollHeight;}
+}
+function initChatSystem(){const saved=localStorage.getItem('dcx_chats');if(saved)try{chatHistory=JSON.parse(saved);}catch(e){}if(!chatHistory.length)createNewChat();else loadChat(chatHistory[0].id);}
+function startChat(){if(!chatStarted){chatStarted=true;const wm=document.getElementById('welcomeMessage');if(wm)wm.style.display='none';const hb=document.getElementById('chatHeaderBar');if(hb)hb.style.display='flex';}}
+function appendMessage(content,type,save=true){
+    const msgs=document.getElementById('chatMessages');if(!msgs)return null;
+    const wm=document.getElementById('welcomeMessage');if(wm)wm.style.display='none';
+    const div=document.createElement('div');div.className='chat-message '+type;
+    const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent=type==='user'?'Tú':type==='error'?'Error':'Agent';
+    const mc=document.createElement('div');mc.className='message-content';mc.textContent=content;
+    div.appendChild(lbl);div.appendChild(mc);msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+    if(save&&currentChatId){const chat=chatHistory.find(c=>c.id===currentChatId);if(chat){if(!chat.messages)chat.messages=[];chat.messages.push({content,type,ts:Date.now()});if(type==='user'&&chat.title==='Nuevo Chat'){chat.title=content.substring(0,28)+(content.length>28?'…':'');const tl=document.getElementById('currentChatTitle');if(tl)tl.textContent=chat.title;}saveChatHistory();}}
+    return div;
+}
+function sendMessage(){const input=document.getElementById('chatInput');const message=input?.value?.trim();if(!message||isGenerating)return;input.value='';input.style.height='auto';startChat();appendMessage(message,'user');generateCode(message);}
 
-    const commentMap = { html: ['<!--', '-->'], js: ['//'], css: ['/*', '*/'] };
-    const [open, close] = commentMap[lang] || ['//'];
-
-    const allCommented = lines.slice(startLine, endLine + 1).every(l => {
-        const t = l.trim();
-        return close ? (t.startsWith(open) && t.endsWith(close)) : t.startsWith(open);
-    });
-
-    for (let i = startLine; i <= endLine; i++) {
-        const t = lines[i].trim();
-        const indent = lines[i].match(/^(\s*)/)[1];
-        if (allCommented) {
-            if (close) {
-                lines[i] = indent + t.slice(open.length, -close.length).trim();
-            } else {
-                lines[i] = indent + t.slice(open.length).trimStart();
-            }
-        } else {
-            if (close) {
-                lines[i] = indent + open + ' ' + t + ' ' + close;
-            } else {
-                lines[i] = indent + open + ' ' + t.replace(/^\/\/\s?/, '');
-            }
-        }
-    }
-
-    editor.value = lines.join('\n');
-    editor.dispatchEvent(new Event('input'));
+async function generateCode(prompt){
+    isGenerating=true;const btn=document.getElementById('sendBtn');if(btn)btn.disabled=true;
+    const msgs=document.getElementById('chatMessages');const previewTab=document.getElementById('previewTab');
+    const phases=['Analizando...','Generando HTML...','Aplicando CSS...','Codificando JS...','Optimizando...','Compilando...'];
+    const loadingDiv=document.createElement('div');loadingDiv.className='chat-message ai';
+    loadingDiv.innerHTML=`<div class="msg-label">Agent</div><div class="ai-generating"><div class="ai-gen-header"><div class="ai-gen-pulse"></div><span>Generando</span></div><div class="ai-gen-phase"><div class="phase-dot" style="background:var(--accent)"></div><span id="genPhaseText">${phases[0]}</span></div><div class="ai-gen-bar-wrapper"><div class="ai-gen-bar-label"><span id="genBarLabel">${phases[0]}</span><span id="genBarPct" style="font-family:var(--font-mono)">0%</span></div><div class="ai-gen-bar-track"><div class="ai-gen-bar-fill" id="genBarFill" style="width:0%"></div></div></div></div>`;
+    msgs?.appendChild(loadingDiv);if(msgs)msgs.scrollTop=msgs.scrollHeight;
+    let pct=0;const bf=loadingDiv.querySelector('#genBarFill'),bp=loadingDiv.querySelector('#genBarPct'),pt=loadingDiv.querySelector('#genPhaseText'),bl=loadingDiv.querySelector('#genBarLabel');
+    const iv=setInterval(()=>{pct=Math.min(pct+Math.random()*5+1.5,90);if(bf)bf.style.width=pct+'%';if(bp)bp.textContent=Math.round(pct)+'%';const pi=Math.min(Math.floor((pct/90)*(phases.length-1)),phases.length-1);if(pt)pt.textContent=phases[pi];if(bl)bl.textContent=phases[pi];},350);
+    try{
+        const htmlCode=document.getElementById('htmlEditor')?.value||'',cssCode=document.getElementById('cssEditor')?.value||'',jsCode=document.getElementById('jsEditor')?.value||'';
+        const context=htmlCode||cssCode||jsCode?`Código actual:\nHTML:\n${htmlCode}\nCSS:\n${cssCode}\nJS:\n${jsCode}\n\n`:'';
+        const fullPrompt=`${context}Solicitud: ${prompt}\n\nGenera una app web completa. Responde SOLO con JSON puro sin markdown:\n{"html":"...","css":"...","js":"...","message":"..."}`;
+        const apiKey=window.GEMINI_API_KEY;if(!apiKey)throw new Error('API key no configurada. Agrega GEMINI_API_KEY en keys.js');
+        const apiUrl=window.GEMINI_API_URL||'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        const res=await fetch(`${apiUrl}?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:fullPrompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:8192}})});
+        if(!res.ok){const ed=await res.json().catch(()=>({}));throw new Error(`API ${res.status}: ${ed?.error?.message||res.statusText}`);}
+        const data=await res.json();const rawText=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+        let parsed;try{parsed=JSON.parse(rawText);}catch(e){const m=rawText.match(/\{[\s\S]*\}/);if(m)parsed=JSON.parse(m[0]);else throw new Error('La IA no devolvió JSON válido.');}
+        clearInterval(iv);if(bf)bf.style.width='100%';if(bp)bp.textContent='100%';
+        await new Promise(r=>setTimeout(r,350));loadingDiv.remove();
+        const he=document.getElementById('htmlEditor'),ce=document.getElementById('cssEditor'),je=document.getElementById('jsEditor');
+        if(he&&parsed.html!==undefined){he.value=parsed.html;updateHighlight('htmlEditor');updateGutter('htmlEditor');}
+        if(ce&&parsed.css!==undefined){ce.value=parsed.css;updateHighlight('cssEditor');updateGutter('cssEditor');}
+        if(je&&parsed.js!==undefined){je.value=parsed.js;updateHighlight('jsEditor');updateGutter('jsEditor');}
+        updatePreview();appendMessage(parsed.message||`Listo: "${prompt}"`,'ai');
+        if(previewTab)previewTab.classList.add('has-new-content');
+        saveToLocal();switchTab('preview');
+    }catch(err){clearInterval(iv);loadingDiv.remove();appendMessage('Error: '+String(err.message||err),'error');console.error('[DCX]',err);}
+    finally{isGenerating=false;if(btn)btn.disabled=false;}
 }
 
-function duplicateLine(editor) {
-    const start = editor.selectionStart;
-    const lines = editor.value.split('\n');
-    const lineIdx = editor.value.substring(0, start).split('\n').length - 1;
-    const line = lines[lineIdx];
-    lines.splice(lineIdx + 1, 0, line);
-    editor.value = lines.join('\n');
-    editor.dispatchEvent(new Event('input'));
+// ==================== ALL LISTENERS ====================
+function setupAllListeners(){
+    document.getElementById('fileTabs')?.addEventListener('click',e=>{const tab=e.target.closest('.file-tab');if(tab?.dataset.file)switchTab(tab.dataset.file);});
+    document.getElementById('sendBtn')?.addEventListener('click',sendMessage);
+    document.getElementById('chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+    document.getElementById('chatInput')?.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+    document.getElementById('saveBtn')?.addEventListener('click',saveToLocal);
+    document.getElementById('homeBtn')?.addEventListener('click',()=>{saveToLocal();window.location.href='/';});
+    document.getElementById('refreshPreview')?.addEventListener('click',updatePreview);
+    document.getElementById('fullscreenBtn')?.addEventListener('click',()=>{const pc=document.getElementById('previewContainer');if(!document.fullscreenElement)pc?.requestFullscreen?.();else document.exitFullscreen?.();});
+    document.querySelectorAll('.pv-size').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.pv-size').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const f=document.getElementById('previewDeviceFrame');if(f){f.className='preview-device-frame';if(btn.dataset.size!=='desktop')f.classList.add(btn.dataset.size);}}));
+    let pzoom=1;const zl=document.getElementById('zoomLevel');const az=()=>{const f=document.getElementById('previewFrame');if(f){f.style.transform=`scale(${pzoom})`;f.style.transformOrigin='top left';}if(zl)zl.textContent=Math.round(pzoom*100)+'%';};
+    document.getElementById('zoomIn')?.addEventListener('click',()=>{pzoom=Math.min(2,pzoom+0.1);az();});
+    document.getElementById('zoomOut')?.addEventListener('click',()=>{pzoom=Math.max(0.3,pzoom-0.1);az();});
+    document.getElementById('zoomReset')?.addEventListener('click',()=>{pzoom=1;az();});
+    // Console
+    const tl=document.getElementById('toggleLogs'),cl=document.getElementById('consoleLogs'),cc=document.getElementById('closeConsoleBtn');
+    let lc=0,ec=0;
+    function openCon(){if(cl)cl.style.display='flex';if(tl)tl.classList.add('logs-open');const b=document.getElementById('logBadge');if(b){b.style.display='none';b.textContent='0';}lc=0;}
+    function closeCon(){if(cl)cl.style.display='none';if(tl)tl.classList.remove('logs-open');}
+    tl?.addEventListener('click',()=>cl&&(cl.style.display==='none'||!cl.style.display)?openCon():closeCon());
+    cc?.addEventListener('click',closeCon);
+    document.getElementById('clearLogs')?.addEventListener('click',()=>{const c=document.getElementById('consoleContent');if(c)c.innerHTML='';lc=0;ec=0;const b=document.getElementById('logBadge');if(b){b.textContent='0';b.style.display='none';}const eb=document.getElementById('errBadge');if(eb)eb.textContent='0';});
+    window.addEventListener('message',ev=>{if(!ev.data||ev.data.type!=='console')return;const content=document.getElementById('consoleContent');if(!content)return;const ts=new Date().toTimeString().split(' ')[0],lvl=ev.data.level||'log';const d=document.createElement('div');d.className='clog clog-'+(lvl==='log'?'log':lvl==='warn'?'warn':lvl==='info'?'info':'error');d.innerHTML=`<span class="clog-ts">${ts}</span>${String(ev.data.msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}`;content.appendChild(d);content.scrollTop=content.scrollHeight;lc++;if(cl&&(cl.style.display==='none'||!cl.style.display)){const b=document.getElementById('logBadge');if(b){b.textContent=lc;b.style.display='inline-flex';}}if(lvl==='error'){ec++;const eb=document.getElementById('errBadge');if(eb)eb.textContent=ec;}});
+    document.getElementById('previewTab')?.addEventListener('click',()=>document.getElementById('previewTab')?.classList.remove('has-new-content'));
+    // Find
+    document.getElementById('findInput')?.addEventListener('input',doFind);
+    document.getElementById('findInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.shiftKey?findPrev():findNext();}if(e.key==='Escape')closeFindPanel();});
+    document.getElementById('findNextBtn')?.addEventListener('click',findNext);
+    document.getElementById('findPrevBtn')?.addEventListener('click',findPrev);
+    document.getElementById('closeFindBtn')?.addEventListener('click',closeFindPanel);
+    document.getElementById('caseBtn')?.addEventListener('click',function(){findState.caseSensitive=!findState.caseSensitive;this.classList.toggle('active',findState.caseSensitive);doFind();});
+    document.getElementById('regexBtn')?.addEventListener('click',function(){findState.useRegex=!findState.useRegex;this.classList.toggle('active',findState.useRegex);doFind();});
+    document.getElementById('replaceOneBtn')?.addEventListener('click',()=>{const ed=getActiveEditor();if(!ed||!findState.matches.length)return;const rv=document.getElementById('replaceInput')?.value||'';const m=findState.matches[Math.max(0,findState.currentMatch)];if(!m)return;ed.value=ed.value.substring(0,m.start)+rv+ed.value.substring(m.end);ed.dispatchEvent(new Event('input'));doFind();});
+    document.getElementById('replaceAllBtn')?.addEventListener('click',()=>{const ed=getActiveEditor();if(!ed||!findState.query)return;const rv=document.getElementById('replaceInput')?.value||'';let rx;try{const fl=findState.caseSensitive?'g':'gi';rx=findState.useRegex?new RegExp(findState.query,fl):new RegExp(findState.query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),fl);}catch(e){return;}ed.value=ed.value.replace(rx,rv);ed.dispatchEvent(new Event('input'));doFind();});
+    document.getElementById('shortcutsHintBtn')?.addEventListener('click',()=>{const m=document.getElementById('shortcutsModal');if(m)m.style.display='flex';});
+    document.getElementById('closeShortcutsBtn')?.addEventListener('click',()=>{const m=document.getElementById('shortcutsModal');if(m)m.style.display='none';});
+    document.getElementById('shortcutsModal')?.addEventListener('click',e=>{if(e.target.id==='shortcutsModal')e.target.style.display='none';});
+    document.querySelectorAll('.welcome-chip').forEach(chip=>chip.addEventListener('click',()=>{const inp=document.getElementById('chatInput');if(inp){inp.value=chip.dataset.prompt||'';inp.focus();inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,120)+'px';}}));
+    document.getElementById('publishBtn')?.addEventListener('click',()=>alert('Publicación próximamente.'));
 }
 
-function moveLine(editor, dir) {
-    const start = editor.selectionStart;
-    const lines = editor.value.split('\n');
-    const lineIdx = editor.value.substring(0, start).split('\n').length - 1;
-    const targetIdx = lineIdx + dir;
-    if (targetIdx < 0 || targetIdx >= lines.length) return;
-    const temp = lines[lineIdx];
-    lines[lineIdx] = lines[targetIdx];
-    lines[targetIdx] = temp;
-    editor.value = lines.join('\n');
-    // Move cursor to new position
-    const newPos = lines.slice(0, targetIdx).join('\n').length + (targetIdx > 0 ? 1 : 0);
-    editor.selectionStart = editor.selectionEnd = newPos + (start - editor.value.split('\n').slice(0, lineIdx).join('\n').length);
-    editor.dispatchEvent(new Event('input'));
+// ==================== SETTINGS ====================
+function setupSettings(){
+    const btn=document.getElementById('settingsBtn'),panel=document.getElementById('settingsPanel');
+    if(!btn||!panel)return;
+    btn.addEventListener('click',e=>{e.stopPropagation();panel.style.display=panel.style.display==='none'||!panel.style.display?'block':'none';});
+    document.addEventListener('click',e=>{if(!panel.contains(e.target)&&e.target!==btn)panel.style.display='none';});
+    const sdTheme=document.getElementById('sdThemeBtn');
+    if(sdTheme){sdTheme.addEventListener('click',()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';localStorage.setItem('dcx_theme',n);applyTheme(n);});}
+    let fs=parseInt(localStorage.getItem('dcx_fontsize')||'13');
+    const fsd=document.getElementById('fontSizeDisplay');
+    function setFs(n){fs=Math.max(10,Math.min(20,n));document.documentElement.style.setProperty('--editor-font-size',fs+'px');if(fsd)fsd.textContent=fs;localStorage.setItem('dcx_fontsize',fs);}
+    setFs(fs);
+    document.getElementById('fontDecBtn')?.addEventListener('click',e=>{e.stopPropagation();setFs(fs-1);});
+    document.getElementById('fontIncBtn')?.addEventListener('click',e=>{e.stopPropagation();setFs(fs+1);});
+    const ast=document.getElementById('autoSaveLocalEnabled');
+    if(ast){const sv=localStorage.getItem('dcx_autosave');if(sv!==null)ast.checked=sv==='true';ast.addEventListener('change',()=>localStorage.setItem('dcx_autosave',ast.checked));}
+    setInterval(()=>{if(hasUnsavedChanges)saveToLocal();},120000);
 }
 
-// ---- FIND PANEL EVENT BINDINGS ----
-function initFindPanel() {
-    const findInput = document.getElementById('findInput');
-    const findNextBtn = document.getElementById('findNextBtn');
-    const findPrevBtn = document.getElementById('findPrevBtn');
-    const closeFindBtn = document.getElementById('closeFindBtn');
-    const caseBtn = document.getElementById('caseBtn');
-    const regexBtn = document.getElementById('regexBtn');
-    const replaceOneBtn = document.getElementById('replaceOneBtn');
-    const replaceAllBtn = document.getElementById('replaceAllBtn');
+// ==================== SIDEBAR ====================
+function setupSidebar(){
+    const sidebar=document.getElementById('leftSidebar'),openBtn=document.getElementById('openSidebarBtn');
+    const agentTab=document.getElementById('agentTab'),closeBtn=document.getElementById('closeSidebarBtn');
+    const agentWrapper=document.getElementById('agentPanelWrapper');
+    if(!sidebar)return;
+    window.collapseSidebar=function(){sidebar.classList.add('collapsed');sidebar.style.width='0';sidebar.style.minWidth='0';if(openBtn)openBtn.style.display='flex';if(agentTab)agentTab.style.display='flex';};
+    window.expandSidebar=function(){sidebar.classList.remove('collapsed');const w=Math.max(220,parseInt(localStorage.getItem('dcx_sidebar_w')||'300'));sidebar.style.width=w+'px';sidebar.style.minWidth=w+'px';if(openBtn)openBtn.style.display='none';if(agentTab)agentTab.style.display='none';if(agentWrapper&&agentWrapper.style.display!=='none'){agentWrapper.style.display='none';switchTab('html');}};
+    if(closeBtn)closeBtn.addEventListener('click',window.collapseSidebar);
+    if(openBtn) openBtn.addEventListener('click',window.expandSidebar);
+    if(agentTab)agentTab.addEventListener('click',()=>switchTab('agent'));
+    document.getElementById('agentPanelCloseBtn')?.addEventListener('click',window.expandSidebar);
+    const handle=document.getElementById('sidebarResizeHandle');
+    if(handle&&sidebar){let drag=false,sx=0,sw=0;handle.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=sidebar.getBoundingClientRect().width;handle.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';e.preventDefault();});document.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.max(220,Math.min(520,sw+e.clientX-sx));sidebar.style.width=w+'px';sidebar.style.minWidth=w+'px';});document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;handle.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';try{localStorage.setItem('dcx_sidebar_w',parseInt(sidebar.style.width));}catch(_){}});}
+    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();sidebar.classList.contains('collapsed')?window.expandSidebar():window.collapseSidebar();}});
+    try{const sw=parseInt(localStorage.getItem('dcx_sidebar_w')||'300');if(sw>=220){sidebar.style.width=sw+'px';sidebar.style.minWidth=sw+'px';}}catch(_){}
+    // Reflow editor on sidebar resize
+    if(window.ResizeObserver)new ResizeObserver(()=>{const ec=document.getElementById('editorContainer');if(ec)ec.style.minWidth='0';}).observe(sidebar);
+    sidebar.addEventListener('transitionend',()=>{['htmlEditor','jsEditor','cssEditor'].forEach(id=>{const w=document.getElementById(id+'EditorWrapper');if(w&&w.classList.contains('active')){updateHighlight(id);updateGutter(id);}});});
+}
 
-    if (findInput) {
-        findInput.addEventListener('input', runFind);
-        findInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.shiftKey ? findPrev() : findNext(); }
-            if (e.key === 'Escape') closeFindPanel();
+// ==================== CHAT HISTORY PANEL ====================
+function setupChatHistory(){
+    const histBtn=document.getElementById('chatHistoryBtn'),histPanel=document.getElementById('chatHistoryPanel');
+    const histClose=document.getElementById('chatHistoryClose'),chpNew=document.getElementById('chpNewChatBtn');
+    const newChatBtn=document.getElementById('newChatBtn');
+    function openHP(){if(!histPanel)return;renderCHPList();histPanel.style.display='flex';}
+    function closeHP(){if(histPanel)histPanel.style.display='none';}
+    histBtn?.addEventListener('click',e=>{e.stopPropagation();histPanel?.style.display==='none'||!histPanel?.style.display?openHP():closeHP();});
+    histClose?.addEventListener('click',closeHP);
+    chpNew?.addEventListener('click',()=>{createNewChat();loadChat(currentChatId);closeHP();});
+    newChatBtn?.addEventListener('click',()=>{createNewChat();loadChat(currentChatId);});
+    document.addEventListener('click',e=>{if(histPanel&&histPanel.style.display!=='none'&&!histPanel.contains(e.target)&&e.target!==histBtn)closeHP();});
+    function timeAgo(ts){const d=Date.now()-(ts||Date.now()),m=Math.floor(d/60000);if(m<1)return'ahora';if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'h';return Math.floor(h/24)+'d';}
+    function getInit(t){const w=(t||'NC').replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/);return w.length>=2?(w[0][0]+w[1][0]).toUpperCase():(t||'NC').substring(0,2).toUpperCase();}
+    window.renderCHPList=function(){
+        const list=document.getElementById('chatList');if(!list)return;
+        if(!chatHistory.length){list.innerHTML='<div style="padding:20px;text-align:center;font-size:11.5px;color:var(--text3)">Sin conversaciones</div>';return;}
+        list.innerHTML='';
+        chatHistory.forEach(chat=>{
+            const item=document.createElement('div');item.className='chp-item'+(chat.id===currentChatId?' active':'');
+            item.innerHTML=`<div class="chp-item-icon">${getInit(chat.title)}</div><div class="chp-item-info"><div class="chp-item-title">${chat.title||'Nuevo Chat'}</div><div class="chp-item-meta">${(chat.messages||[]).length} msg · ${timeAgo(chat.created)}</div></div><button class="chp-item-rename" style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:var(--text3);border-radius:4px;cursor:pointer;opacity:0;transition:opacity 0.15s"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 1.5L9.5 4L3.5 10H1V7.5L7 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button><button class="chp-item-del" style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:var(--text3);border-radius:4px;cursor:pointer;opacity:0;transition:opacity 0.15s"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>`;
+            item.addEventListener('mouseenter',()=>item.querySelectorAll('.chp-item-rename,.chp-item-del').forEach(b=>b.style.opacity='1'));
+            item.addEventListener('mouseleave',()=>item.querySelectorAll('.chp-item-rename,.chp-item-del').forEach(b=>b.style.opacity='0'));
+            item.addEventListener('click',e=>{if(e.target.closest('.chp-item-del')||e.target.closest('.chp-item-rename'))return;loadChat(chat.id);closeHP();});
+            item.querySelector('.chp-item-rename').addEventListener('click',e=>{e.stopPropagation();const te=item.querySelector('.chp-item-title'),old=chat.title||'Nuevo Chat';const inp=document.createElement('input');inp.type='text';inp.value=old;inp.style.cssText='width:100%;background:var(--bg0);border:1px solid var(--accent);border-radius:4px;color:var(--text0);font-size:12px;font-family:var(--font-ui);padding:2px 6px;outline:none;';te.replaceWith(inp);inp.focus();inp.select();function commit(){const nt=inp.value.trim()||old;chat.title=nt;saveChatHistory();const sp=document.createElement('div');sp.className='chp-item-title';sp.textContent=nt;inp.replaceWith(sp);if(chat.id===currentChatId){const tl=document.getElementById('currentChatTitle');if(tl)tl.textContent=nt;}}inp.addEventListener('keydown',e2=>{if(e2.key==='Enter'){e2.preventDefault();commit();}if(e2.key==='Escape'){const sp=document.createElement('div');sp.className='chp-item-title';sp.textContent=old;inp.replaceWith(sp);}});inp.addEventListener('blur',commit);});
+            item.querySelector('.chp-item-del').addEventListener('click',e=>{e.stopPropagation();const idx=chatHistory.findIndex(c=>c.id===chat.id);if(idx!==-1)chatHistory.splice(idx,1);saveChatHistory();if(chat.id===currentChatId){if(chatHistory.length)loadChat(chatHistory[0].id);else createNewChat();}else window.renderCHPList();});
+            list.appendChild(item);
         });
-    }
-    if (findNextBtn) findNextBtn.addEventListener('click', findNext);
-    if (findPrevBtn) findPrevBtn.addEventListener('click', findPrev);
-    if (closeFindBtn) closeFindBtn.addEventListener('click', closeFindPanel);
-
-    if (caseBtn) caseBtn.addEventListener('click', () => {
-        findState.caseSensitive = !findState.caseSensitive;
-        caseBtn.classList.toggle('active', findState.caseSensitive);
-        runFind();
-    });
-
-    if (regexBtn) regexBtn.addEventListener('click', () => {
-        findState.useRegex = !findState.useRegex;
-        regexBtn.classList.toggle('active', findState.useRegex);
-        runFind();
-    });
-
-    if (replaceOneBtn) replaceOneBtn.addEventListener('click', replaceOne);
-    if (replaceAllBtn) replaceAllBtn.addEventListener('click', replaceAll);
-}
-
-// ---- SHORTCUTS MODAL ----
-function initShortcutsModal() {
-    const btn = document.getElementById('shortcutsHintBtn');
-    const modal = document.getElementById('shortcutsModal');
-    const close = document.getElementById('closeShortcutsBtn');
-
-    if (btn) btn.addEventListener('click', () => {
-        if (modal) modal.style.display = 'flex';
-    });
-    if (close) close.addEventListener('click', () => {
-        if (modal) modal.style.display = 'none';
-    });
-    if (modal) modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
-}
-
-// ---- INIT ALL VS CODE FEATURES ----
-function initVSCodeFeatures() {
-    const editorIds = ['htmlEditor', 'jsEditor', 'cssEditor'];
-
-    editorIds.forEach(id => {
-        const editor = document.getElementById(id);
-        if (!editor) return;
-
-        // Line numbers
-        editor.addEventListener('input', () => updateGutter(id));
-        editor.addEventListener('keyup', () => updateGutter(id));
-        editor.addEventListener('click', () => updateGutter(id));
-        editor.addEventListener('scroll', () => {
-            const gutter = document.getElementById(id.replace('Editor', 'Gutter'));
-            if (gutter) gutter.scrollTop = editor.scrollTop;
-            updateMinimap(id);
-        });
-
-        // Minimap
-        setupMinimapClick(id);
-        editor.addEventListener('scroll', () => updateMinimap(id));
-
-        // Initial state
-        setTimeout(() => {
-            updateGutter(id);
-            updateMinimap(id);
-        }, 300);
-    });
-
-    // Update minimap on resize
-    window.addEventListener('resize', () => {
-        editorIds.forEach(id => updateMinimap(id));
-    });
-
-    setupPowerKeyboard();
-    initFindPanel();
-    initShortcutsModal();
-
-    // Update gutter/minimap when tab changes (hook into switchTab)
-    const origSwitchTab = window.switchTab || switchTab;
-    window.switchTab = function(fileType) {
-        origSwitchTab(fileType);
-        setTimeout(() => {
-            const map = { html: 'htmlEditor', js: 'jsEditor', css: 'cssEditor' };
-            const id = map[fileType];
-            if (id) {
-                updateGutter(id);
-                updateMinimap(id);
-            }
-        }, 50);
     };
-
-    console.log('✅ VS Code features initialized: line numbers, minimap, find/replace, power keyboard');
+    window.renderChatDropdown=window.renderCHPList;
 }
 
-// Boot VS Code features
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initVSCodeFeatures, 500);
-});
+// ==================== PREVIEW EMPTY STATE ====================
+function setupPreviewEmptyState(){
+    const fw=document.getElementById('previewFrameWrapper')||document.querySelector('.preview-frame-wrapper');if(!fw)return;
+    const es=document.createElement('div');es.className='preview-empty-state';es.id='previewEmptyState';
+    es.innerHTML='<div class="preview-empty-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="4" stroke="currentColor" stroke-width="1.5"/><path d="M2 8H26M8 2V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/><circle cx="8.5" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="5" r="1" fill="currentColor"/><path d="M9 16L13 19L9 22M15 22H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Sin página disponible</h4><p>Escribe código o pídele al Agent que genere algo.</p>';
+    fw.appendChild(es);
+    function checkCode(){const h=document.getElementById('htmlEditor')?.value||'',c=document.getElementById('cssEditor')?.value||'',j=document.getElementById('jsEditor')?.value||'';es.style.display=(h+c+j).trim()?'none':'flex';}
+    ['htmlEditor','cssEditor','jsEditor'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{if(document.querySelector('.preview-container.visible'))checkCode();}));
+    checkCode();
+}
 
+// ==================== AGENT PANEL ====================
+function setupAgentPanel(){
+    const agpIn=document.getElementById('agentPanelInput'),agpSnd=document.getElementById('agentPanelSendBtn');
+    const agpMsgs=document.getElementById('agentPanelMessages'),agpList=document.getElementById('agpChatList');
+    const agpNewBtn=document.getElementById('agpNewChatBtn'),agpTitle=document.getElementById('agpCurrentTitle');
+    const previewTab=document.getElementById('previewTab');
+    if(!agpIn||!agpSnd)return;
+    let agpChats=[],agpCurId=null;
+    try{const s=localStorage.getItem('dcx_agp_chats');if(s)agpChats=JSON.parse(s);}catch(e){}
+    function saveAGP(){try{localStorage.setItem('dcx_agp_chats',JSON.stringify(agpChats.slice(0,30)));}catch(e){}}
+    function timeAgo(ts){const d=Date.now()-(ts||Date.now()),m=Math.floor(d/60000);if(m<1)return'ahora';if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'h';return Math.floor(h/24)+'d';}
+    function createAGPC(){const id='agp_'+Date.now();agpChats.unshift({id,title:'Nuevo Chat',messages:[],created:Date.now()});saveAGP();return id;}
+    function clearAGPMsgs(){if(!agpMsgs)return;Array.from(agpMsgs.children).forEach(c=>{if(!c.classList.contains('agp-welcome'))c.remove();});}
+    function loadAGPC(id){agpCurId=id;const chat=agpChats.find(c=>c.id===id);if(!chat)return;if(agpTitle)agpTitle.textContent=chat.title||'Nuevo Chat';clearAGPMsgs();const ww=agpMsgs?.querySelector('.agp-welcome');if(chat.messages?.length){if(ww)ww.style.display='none';chat.messages.slice(-40).forEach(m=>agpApp(m.content,m.type,true));}else{if(ww)ww.style.display='flex';}renderAGPL();}
+    function renderAGPL(){
+        if(!agpList)return;agpList.innerHTML='';
+        agpChats.forEach(chat=>{
+            const item=document.createElement('div');item.className='agp-chat-item'+(chat.id===agpCurId?' active':'');
+            item.innerHTML=`<div class="agp-chat-item-info"><div class="agp-chat-item-title">${chat.title||'Nuevo Chat'}</div><div class="agp-chat-item-meta">${(chat.messages||[]).length} msg · ${timeAgo(chat.created)}</div></div><div class="agp-chat-item-actions"><button class="agp-chat-item-btn rename" title="Renombrar"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 1.5L9.5 4L3.5 10H1V7.5L7 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button><button class="agp-chat-item-btn del" title="Eliminar"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button></div>`;
+            item.addEventListener('click',e=>{if(e.target.closest('.agp-chat-item-btn'))return;loadAGPC(chat.id);});
+            item.querySelector('.rename').addEventListener('click',e=>{e.stopPropagation();const te=item.querySelector('.agp-chat-item-title'),old=chat.title;const inp=document.createElement('input');inp.type='text';inp.value=old;inp.style.cssText='width:100%;background:var(--bg0);border:1px solid #3b82f6;border-radius:4px;color:var(--text0);font-size:12px;font-family:var(--font-ui);padding:2px 6px;outline:none;';te.replaceWith(inp);inp.focus();inp.select();function commit(){const nt=inp.value.trim()||old;chat.title=nt;saveAGP();const sp=document.createElement('div');sp.className='agp-chat-item-title';sp.textContent=nt;inp.replaceWith(sp);if(chat.id===agpCurId&&agpTitle)agpTitle.textContent=nt;}inp.addEventListener('keydown',e2=>{if(e2.key==='Enter'){e2.preventDefault();commit();}if(e2.key==='Escape'){const sp=document.createElement('div');sp.className='agp-chat-item-title';sp.textContent=old;inp.replaceWith(sp);}});inp.addEventListener('blur',commit);});
+            item.querySelector('.del').addEventListener('click',e=>{e.stopPropagation();const idx=agpChats.findIndex(c=>c.id===chat.id);if(idx!==-1)agpChats.splice(idx,1);saveAGP();if(chat.id===agpCurId){if(agpChats.length)loadAGPC(agpChats[0].id);else{agpCurId=null;clearAGPMsgs();const ww=agpMsgs?.querySelector('.agp-welcome');if(ww)ww.style.display='flex';}}else renderAGPL();});
+            agpList.appendChild(item);
+        });
+    }
+    function agpApp(content,type,nosave){const ww=agpMsgs?.querySelector('.agp-welcome');if(ww)ww.style.display='none';const div=document.createElement('div');div.className='agp-msg '+type;const lbl=document.createElement('div');lbl.className='agp-msg-label';lbl.textContent=type==='user'?'Tú':type==='error'?'Error':'Agent';const bub=document.createElement('div');bub.className='agp-msg-bubble';bub.textContent=content;div.appendChild(lbl);div.appendChild(bub);if(agpMsgs){agpMsgs.appendChild(div);agpMsgs.scrollTop=agpMsgs.scrollHeight;}if(!nosave&&agpCurId){const chat=agpChats.find(c=>c.id===agpCurId);if(chat){if(!chat.messages)chat.messages=[];chat.messages.push({content,type,ts:Date.now()});if(type==='user'&&chat.title==='Nuevo Chat'){chat.title=content.substring(0,28)+(content.length>28?'…':'');if(agpTitle)agpTitle.textContent=chat.title;}saveAGP();renderAGPL();}}}
+    async function agpSend(){const msg=agpIn.value.trim();if(!msg||isGenerating)return;if(!agpCurId){agpCurId=createAGPC();renderAGPL();}agpIn.value='';agpIn.style.height='auto';agpApp(msg,'user');appendMessage(msg,'user',true);startChat();
+        const phases=['Analizando...','Generando HTML...','Aplicando CSS...','Codificando JS...','Optimizando...','Compilando...'];
+        const gd=document.createElement('div');gd.className='agp-msg ai';gd.innerHTML=`<div class="agp-msg-label">Agent</div><div class="agp-generating"><div class="agp-gen-header"><div class="agp-gen-pulse"></div><span>Generando</span></div><div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text2)"><div style="width:6px;height:6px;border-radius:50%;background:#3b82f6;flex-shrink:0"></div><span id="agpPT">${phases[0]}</span></div><div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);font-family:var(--font-mono)"><span id="agpBL">${phases[0]}</span><span id="agpBP">0%</span></div><div style="height:3px;background:var(--bg2);border-radius:2px;overflow:hidden"><div id="agpBF" style="height:100%;border-radius:2px;background:linear-gradient(90deg,#3b82f6,#22d3ee);width:0%;transition:width 0.5s ease"></div></div></div></div>`;
+        if(agpMsgs){agpMsgs.appendChild(gd);agpMsgs.scrollTop=agpMsgs.scrollHeight;}
+        let pct=0;const bf=gd.querySelector('#agpBF'),bp=gd.querySelector('#agpBP'),pt=gd.querySelector('#agpPT'),bl=gd.querySelector('#agpBL');
+        const iv=setInterval(()=>{pct=Math.min(pct+Math.random()*5+1.5,90);if(bf)bf.style.width=pct+'%';if(bp)bp.textContent=Math.round(pct)+'%';const pi=Math.min(Math.floor((pct/90)*(phases.length-1)),phases.length-1);if(pt)pt.textContent=phases[pi];if(bl)bl.textContent=phases[pi];},350);
+        try{if(typeof generateCode!=='function')throw new Error('generateCode no disponible.');await generateCode(msg);clearInterval(iv);if(bf)bf.style.width='100%';if(bp)bp.textContent='100%';await new Promise(r=>setTimeout(r,350));gd.remove();agpApp('Listo. Haz clic en Preview.','ai');if(previewTab)previewTab.classList.add('has-new-content');}
+        catch(err){clearInterval(iv);gd.remove();agpApp('Error: '+String(err.message||err),'error');}
+    }
+    if(!agpChats.length)agpCurId=createAGPC();else agpCurId=agpChats[0].id;
+    loadAGPC(agpCurId);
+    agpNewBtn?.addEventListener('click',()=>{agpCurId=createAGPC();loadAGPC(agpCurId);});
+    agpIn.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';});
+    agpSnd.addEventListener('click',agpSend);
+    agpIn.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();agpSend();}});
+    document.querySelectorAll('.agp-chip').forEach(c=>c.addEventListener('click',()=>{agpIn.value=c.dataset.prompt||'';agpIn.focus();agpIn.style.height='auto';agpIn.style.height=Math.min(agpIn.scrollHeight,140)+'px';}));
+    const agpWrapper=document.getElementById('agentPanelWrapper');
+    if(agpWrapper)new MutationObserver(()=>{if(agpWrapper.style.display!=='none')renderAGPL();}).observe(agpWrapper,{attributes:true,attributeFilter:['style']});
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', function init(){
+    initTheme();
+    loadFromLocal();
+    initChatSystem();
+    setupEditorEvents();
+    setupAllListeners();
+    setupPowerKeyboard();
+    setupSettings();
+    setupSidebar();
+    setupChatHistory();
+    setupPreviewEmptyState();
+    setupAgentPanel();
+    ['htmlEditor','cssEditor','jsEditor'].forEach(id=>{updateHighlight(id);updateGutter(id);});
+    switchTab('html');
+    setInterval(()=>{if(hasUnsavedChanges)saveToLocal();},120000);
+});

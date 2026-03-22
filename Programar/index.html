@@ -1,404 +1,439 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>DevCenterX</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=2.0">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../keys.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <script>
-        (function() {
-            try {
-                var id = localStorage.getItem('devcenter_user_id');
-                var isLogged = localStorage.getItem('devcenter_isLoggedIn');
-                if (!(isLogged === 'true' && id)) {
-                    window.location.replace('/agent.html');
-                    return;
-                }
-
-                const user = localStorage.getItem('devcenter_user');
-                window.isLoggedIn = !!user;
-                window.currentPath = window.location.pathname;
-                if (window.isLoggedIn) {
-                    console.log('Usuario detectado desde localStorage:', user);
-                }
-            } catch (e) {
-                console.error('Storage check failed', e);
-                window.location.replace('/agent.html');
-            }
-        })();
-    </script>
 
     <!-- Top Navigation Bar -->
     <div class="top-nav">
         <div class="nav-left">
             <button class="nav-btn dropdown-btn" id="projectDropdown">
-                <i class="fas fa-circle" style="font-size: 10px; color: #22c55e;"></i>
-                <span id="projectName">HTML, CSS, JS (Static) (1)</span>
-                <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                <span class="dot-green"></span>
+                <span id="projectName">DevProject</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="nav-btn icon-btn" id="editProjectBtn" title="Editar nombre del proyecto">
-                <i class="fas fa-pencil-alt"></i>
+            <button class="nav-btn icon-btn" id="editProjectBtn" title="Editar proyecto">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 2L11 4.5L4.5 11H2V8.5L8.5 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
             </button>
-            <div class="project-info-modal" id="projectInfoModal" style="display: none;">
-                <div class="project-info-content">
-                    <h3 id="modalProjectName">Proyecto</h3>
-                    <div class="project-detail"><strong>Iniciales:</strong> <span id="modalInitials">-</span></div>
-                    <div class="project-detail"><strong>Tags:</strong> <span id="modalTags">-</span></div>
-                    <div class="project-detail"><strong>Descripción:</strong> <p id="modalDescription">-</p></div>
-                    <div class="project-detail"><strong>Estado:</strong> <span id="modalStatus" class="status-badge">-</span></div>
-                    <div class="project-detail"><strong>Creado:</strong> <span id="modalCreated">-</span></div>
-                    <button class="close-modal-btn" onclick="closeProjectInfo()">Cerrar</button>
-                </div>
-            </div>
             <div class="nav-divider"></div>
-            <button class="nav-btn status-btn">
-                <i class="fas fa-square" style="color: #3b82f6; font-size: 12px;"></i>
-            </button>
-            <button class="nav-btn status-btn">
-                <i class="fas fa-plus" style="font-size: 12px;"></i>
-            </button>
             <button class="upgrade-btn">
-                <i class="fas fa-bolt"></i>
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M5 1L9 5.5H6.5V11H3.5V5.5H1L5 1Z" fill="currentColor"/></svg>
                 Upgrade
             </button>
         </div>
+        <div class="nav-center">
+            <span class="app-title">DevCenterX</span>
+        </div>
         <div class="nav-right">
-            <button class="nav-btn icon-btn">
-                <i class="fas fa-search"></i>
+            <!-- Open chat "Open" button — blue, shown when sidebar is collapsed -->
+            <button class="open-btn-blue" id="openSidebarBtn" style="display:none;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="white" stroke-width="1.2"/><path d="M4 4L8 6L4 8" fill="white"/></svg>
+                Open
             </button>
-            <button class="nav-btn icon-btn">
-                <i class="fas fa-star"></i>
+            <button class="nav-btn icon-btn theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema">
+                <svg class="icon-sun" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M7 1V2.5M7 11.5V13M1 7H2.5M11.5 7H13M2.9 2.9L4 4M10 10L11.1 11.1M11.1 2.9L10 4M4 10L2.9 11.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none" style="display:none"><path d="M11 9.5A5.5 5.5 0 014.5 3C2 3.8 1 6.2 1 7a6 6 0 106-6c-.3 0-.7 0-1 .1A5.5 5.5 0 0111 9.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
             </button>
-            <button class="nav-btn icon-btn">
-                <i class="fas fa-pen"></i>
+            <button class="nav-btn icon-btn" title="Historial">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4V7L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </button>
-            <button class="nav-btn icon-btn">
-                <i class="fas fa-history"></i>
-            </button>
-            <button class="nav-btn icon-btn">
-                <i class="fas fa-bell"></i>
-            </button>
-            <button class="devcenter-btn" id="devCenterBtn" title="Share to DevCenterX" style="display: none;">
-                <i class="fas fa-cloud-upload-alt" id="devCenterIcon"></i>
-                <span id="devCenterBtnText">DevCenterX</span>
+            <button class="nav-btn icon-btn" title="Notificaciones">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5C9.5 2 10.5 4 10.5 7V10H3.5V7C3.5 4 4.5 2 7 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 10C5.5 10.83 6.17 11.5 7 11.5C7.83 11.5 8.5 10.83 8.5 10" stroke="currentColor" stroke-width="1.3"/></svg>
             </button>
         </div>
     </div>
 
-    <!-- Secondary Nav Bar -->
+    <!-- Secondary Nav: Tabs -->
     <div class="secondary-nav">
-        <div class="file-tabs">
+        <div class="file-tabs" id="fileTabs">
+            <!-- Agent tab — opens chat panel inline, only shown when sidebar closed -->
+            <button class="file-tab agent-tab" id="agentTab" data-file="agent" style="display:none;">
+                <span class="agent-tab-dot"></span>
+                Agent
+            </button>
             <button class="file-tab" data-file="preview" id="previewTab">
-                <i class="fas fa-eye"></i>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><circle cx="6" cy="6" r="1.8" stroke="currentColor" stroke-width="1.1"/></svg>
                 Preview
-                <button class="close-tab">×</button>
             </button>
             <button class="file-tab active" data-file="html">
-                <i class="fas fa-file-code"></i>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 1.5L2.8 10L6 11L9.2 10L10.5 1.5H1.5Z" stroke="#f97316" stroke-width="1.1" stroke-linejoin="round"/></svg>
                 index.html
-                <span class="new-indicator" style="display: none;"></span>
-                <button class="close-tab">×</button>
+                <span class="tab-dot" style="display:none"></span>
             </button>
             <button class="file-tab" data-file="js">
-                <i class="fab fa-js-square"></i>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#fbbf24" stroke-width="1.1"/><text x="2.5" y="9" font-family="monospace" font-size="5.5" font-weight="700" fill="#fbbf24">JS</text></svg>
                 script.js
-                <span class="new-indicator" style="display: none;"></span>
-                <button class="close-tab">×</button>
+                <span class="tab-dot" style="display:none"></span>
             </button>
             <button class="file-tab" data-file="css">
-                <i class="fab fa-css3-alt"></i>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 1.5L2.8 10L6 11L9.2 10L10.5 1.5H1.5Z" stroke="#06b6d4" stroke-width="1.1" stroke-linejoin="round"/></svg>
                 style.css
-                <span class="new-indicator" style="display: none;"></span>
-                <button class="close-tab">×</button>
+                <span class="tab-dot" style="display:none"></span>
             </button>
-            <button class="add-tab-btn">+</button>
         </div>
         <div class="secondary-nav-right">
-            <button class="nav-btn icon-btn" id="homeBtn" title="Back to home">
-                <i class="fas fa-home"></i>
+            <button class="nav-btn icon-btn" id="homeBtn" title="Inicio">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5L6.5 2L11.5 6.5V11.5H8.5V8.5H4.5V11.5H1.5V6.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
             </button>
-            <button class="settings-btn" id="settingsBtn" title="Configuración de guardado">
-                <i class="fas fa-cog"></i>
+            <button class="settings-btn" id="settingsBtn" title="Configuración">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M1 3.5H13M1 7H13M1 10.5H13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    <circle cx="4" cy="3.5" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="9" cy="7" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="5" cy="10.5" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
             </button>
-            <button class="save-btn" id="saveBtn" title="Guardar proyecto">
-                <i class="fas fa-save"></i>
+            <button class="save-btn" id="saveBtn">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 1V4.5H8.5V1M3 7H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                 <span id="saveBtnText">Guardar</span>
             </button>
-            <button class="format-btn" id="formatBtn" style="display: none;">
-                <i class="fas fa-sync-alt"></i>
-                Republicar
-            </button>
             <button class="publish-btn" id="publishBtn">
-                <i class="fas fa-globe"></i>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="white" stroke-width="1.2"/><path d="M6 1.5V10.5M1.5 6H10.5" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>
                 <span id="publishBtnText">Publish</span>
             </button>
         </div>
-    
-        <!-- Settings Panel -->
-        <div class="settings-panel" id="settingsPanel" style="display: none;">
-            <div class="settings-panel-content">
-                <div class="settings-header">
-                    <h3><i class="fas fa-cog"></i> Configuración de Guardado</h3>
-                    <button class="close-settings-btn" id="closeSettingsBtn">×</button>
+
+        <!-- Settings Dropdown (popover) -->
+        <div class="settings-dropdown" id="settingsPanel" style="display:none;">
+            <div class="settings-dropdown-header">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 2.5H12M1 6.5H12M1 10.5H12" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/><circle cx="9" cy="6.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/><circle cx="5" cy="10.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/></svg>
+                Configuración
+            </div>
+            <div class="settings-dropdown-body">
+                <div class="sd-row">
+                    <span class="sd-label">Guardado automático</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoSaveLocalEnabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
-                <div class="settings-body">
-                    <div class="settings-section">
-                        <h4><i class="fas fa-laptop"></i> Guardado Local (localStorage)</h4>
-                        <div class="settings-option">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoSaveLocalEnabled" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span>Guardado automático en localStorage</span>
-                        </div>
-                        <div class="settings-option">
-                            <label>Intervalo (minutos):</label>
-                            <input type="number" id="autoSaveLocalInterval" value="1" min="1" max="60">
-                        </div>
-                    </div>
-                    <div class="settings-section" id="supabaseSettingsSection" style="display: none;">
-                        <h4><i class="fas fa-cloud"></i> Guardado en Base de Datos (Supabase)</h4>
-                        <div class="settings-option">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoSaveDbEnabled">
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span>Guardado automático en base de datos</span>
-                        </div>
-                        <div class="settings-option">
-                            <label>Intervalo (minutos):</label>
-                            <input type="number" id="autoSaveDbInterval" value="3" min="1" max="60">
-                        </div>
-                    </div>
+                <div class="sd-row">
+                    <span class="sd-label">Intervalo</span>
+                    <span class="sd-value-group">
+                        <input type="number" id="autoSaveLocalInterval" value="2" min="1" max="60" class="sd-number"> min
+                    </span>
                 </div>
-                <div class="settings-footer">
-                    <button class="save-settings-btn" id="saveSettingsBtn">
-                        <i class="fas fa-check"></i> Guardar Configuración
-                    </button>
+                <div class="sd-row">
+                    <span class="sd-label">Tema</span>
+                    <button class="sd-theme-btn" id="sdThemeBtn">Oscuro</button>
+                </div>
+                <div class="sd-row">
+                    <span class="sd-label">Tamaño fuente</span>
+                    <span class="sd-value-group">
+                        <button class="sd-sz-btn" id="fontDecBtn">−</button>
+                        <span id="fontSizeDisplay">13</span>px
+                        <button class="sd-sz-btn" id="fontIncBtn">+</button>
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Layout -->
     <div class="main-container">
-        <!-- Left Sidebar -->
+
+        <!-- Left Sidebar: Chat -->
         <div class="left-sidebar" id="leftSidebar">
-            <!-- Chat Title Bar -->
+            <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
+
+            <!-- Chat Header -->
             <div class="chat-title-bar">
-                <button class="chat-dropdown-btn" id="chatDropdownBtn">
-                    <span id="currentChatTitle">Nuevo Chat</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <button class="new-chat-btn" id="newChatBtn" title="Nuevo Chat">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-
-            <!-- Chat Dropdown Menu -->
-            <div class="chat-dropdown-menu" id="chatDropdownMenu" style="display: none;">
-                <div class="chat-dropdown-header">
-                    <h4>Chats Recientes</h4>
+                <div class="chat-title-left">
+                    <div class="agent-dot-sm"></div>
+                    <span class="chat-agent-name">DevCenterX</span>
                 </div>
-                <div class="chat-list" id="chatList">
-                    <!-- Chat items will be populated here -->
-                </div>
-            </div>
-
-            <!-- Chat Header with Status (shown after first message) -->
-            <div class="chat-header-bar" id="chatHeaderBar" style="display: none;">
-                <div class="chat-status">
-                    <i class="fas fa-robot"></i>
-                    <span>Agent activo</span>
-                </div>
-            </div>
-
-
-            <!-- Chat Messages Area -->
-            <div class="chat-messages" id="chatMessages">
-                <div class="welcome-message" id="welcomeMessage">
-                    <h2>¡Hola! Soy tu asistente de desarrollo</h2>
-                    <p>Puedo crear aplicaciones web completas, explicar código, depurar bugs, refactorizar, y mucho más. ¿En qué puedo ayudarte hoy?</p>
-                </div>
-            </div>
-
-            <!-- Chat Input Area with Send Button -->
-            <div class="chat-input-area">
-                <div class="chat-input-wrapper">
-                    <input type="text" id="chatInput" placeholder="Mensaje a DevCenterX...">
-                    <button class="send-btn" id="sendBtn" title="Enviar mensaje">
-                        <i class="fas fa-paper-plane"></i>
+                <div class="chat-title-actions">
+                    <button class="chat-icon-btn" id="chatHistoryBtn" title="Historial de chats">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 2.5H12.5M1.5 7H12.5M1.5 11.5H8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    </button>
+                    <button class="chat-icon-btn chat-new-btn" id="newChatBtn" title="Nuevo chat">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5L3.5 7L10 2.5L11.5 4L6 10.5H2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.5 4L10 5.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                    <button class="chat-icon-btn chat-close-btn" id="closeSidebarBtn" title="Cerrar chat (←)">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L5 7L9 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 </div>
-                <div class="chat-input-hint">
-                    <span>Presiona Enter para enviar</span>
+            </div>
+
+            <!-- Chat History Panel (slides in) -->
+            <div class="chat-history-panel" id="chatHistoryPanel" style="display:none;">
+                <div class="chp-header">
+                    <span>Conversaciones</span>
+                    <button class="chp-close" id="chatHistoryClose">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+                <div class="chp-list" id="chatList"></div>
+                <div class="chp-footer">
+                    <button class="chp-new-btn" id="chpNewChatBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        Nueva conversación
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current chat label -->
+            <div class="chat-label-bar" id="chatHeaderBar" style="display:none;">
+                <span class="agent-dot-sm pulse"></span>
+                <span id="currentChatTitle" class="chat-current-title">Nuevo Chat</span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message" id="welcomeMessage">
+                    <div class="welcome-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 3L29 10V22L16 29L3 22V10L16 3Z" stroke="url(#wg)" stroke-width="1.5" stroke-linejoin="round"/>
+                            <circle cx="16" cy="16" r="5.5" stroke="url(#wg)" stroke-width="1.5"/>
+                            <circle cx="16" cy="16" r="2" fill="url(#wg)"/>
+                            <defs><linearGradient id="wg" x1="3" y1="3" x2="29" y2="29" gradientUnits="userSpaceOnUse"><stop stop-color="#818cf8"/><stop offset="0.5" stop-color="#22d3ee"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <h2>DevCenterX Agent</h2>
+                    <p>Describe lo que quieres construir.</p>
+                    <div class="welcome-chips">
+                        <button class="welcome-chip" data-prompt="Crea una landing page moderna con animaciones">Landing page</button>
+                        <button class="welcome-chip" data-prompt="Crea una calculadora con diseño dark">Calculadora</button>
+                        <button class="welcome-chip" data-prompt="Crea un dashboard con gráficas de estadísticas">Dashboard</button>
+                        <button class="welcome-chip" data-prompt="Crea un formulario de contacto con validación">Formulario</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" placeholder="Describe lo que quieres construir..." rows="1"></textarea>
+                    <button class="send-btn" id="sendBtn" title="Enviar (Enter)">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L12 2L9 7L12 12L2 7Z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+                <div class="chat-input-footer">
+                    <span>Enter para enviar · Shift+Enter nueva línea</span>
                 </div>
             </div>
         </div>
 
-        <!-- Code Editor & Preview Area -->
-        <div class="editor-container">
-            <!-- Preview Frame -->
-            <div id="previewContainer" class="preview-container" style="display: none;">
-                <div class="preview-controls">
-                    <button class="preview-control-btn active" data-size="desktop" title="Vista Desktop">
-                        <i class="fas fa-desktop"></i>
-                    </button>
-                    <button class="preview-control-btn" data-size="tablet" title="Vista Tablet">
-                        <i class="fas fa-tablet-alt"></i>
-                    </button>
-                    <button class="preview-control-btn" data-size="mobile" title="Vista Mobile">
-                        <i class="fas fa-mobile-alt"></i>
-                    </button>
-                    <div class="preview-divider"></div>
-                    <button class="preview-control-btn" id="zoomOut" title="Zoom Out">
-                        <i class="fas fa-search-minus"></i>
-                    </button>
-                    <span class="zoom-indicator" id="zoomLevel">100%</span>
-                    <button class="preview-control-btn" id="zoomIn" title="Zoom In">
-                        <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button class="preview-control-btn" id="zoomReset" title="Reset Zoom">
-                        <i class="fas fa-compress"></i>
-                    </button>
-                    <div class="preview-divider"></div>
-                    <button class="preview-control-btn" id="refreshPreview" title="Refrescar">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button class="preview-control-btn" id="toggleLogs" title="Consola">
-                        <i class="fas fa-terminal"></i>
-                        Logs
-                    </button>
-                    <button class="preview-control-btn" id="fullscreenBtn" title="Pantalla Completa">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                </div>
-                <div class="preview-frame-wrapper">
-                    <iframe id="previewFrame" class="preview-frame"></iframe>
-                </div>
-                <div class="console-logs" id="consoleLogs" style="display: none;">
-                    <div class="console-header">
-                        <span>Console Logs</span>
-                        <button class="console-clear" id="clearLogs">
-                            <i class="fas fa-trash"></i>
+        <!-- Editor + Preview -->
+        <div class="editor-container" id="editorContainer">
+
+            <!-- Preview -->
+            <div id="previewContainer" class="preview-container" style="display:none;">
+                <!-- Top toolbar -->
+                <div class="preview-toolbar">
+                    <!-- Left: device sizes -->
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn pv-size active" data-size="desktop" title="Desktop">
+                            <svg width="14" height="13" viewBox="0 0 14 13" fill="none"><rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 10H9.5M7 10V11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                            <span>Desktop</span>
+                        </button>
+                        <button class="pv-btn pv-size" data-size="tablet" title="Tablet">
+                            <svg width="10" height="14" viewBox="0 0 10 14" fill="none"><rect x="1" y="1" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="11" r="0.7" fill="currentColor"/></svg>
+                            <span>Tablet</span>
+                        </button>
+                        <button class="pv-btn pv-size" data-size="mobile" title="Mobile">
+                            <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><rect x="1" y="1" width="6" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="11" r="0.7" fill="currentColor"/></svg>
+                            <span>Mobile</span>
                         </button>
                     </div>
-                    <div class="console-content" id="consoleContent"></div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <!-- Center: URL bar -->
+                    <div class="pv-url-bar">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M5.5 1C5.5 1 7.5 3 7.5 5.5C7.5 8 5.5 10 5.5 10M5.5 1C5.5 1 3.5 3 3.5 5.5C3.5 8 5.5 10 5.5 10M1 5.5H10" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/></svg>
+                        <span class="pv-url-text">preview · local</span>
+                    </div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <!-- Right: zoom + actions -->
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn" id="zoomOut" title="Zoom Out">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5H7.5M9.5 9.5L11.5 11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        </button>
+                        <span class="pv-zoom" id="zoomLevel">100%</span>
+                        <button class="pv-btn" id="zoomIn" title="Zoom In">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 3.5V7.5M3.5 5.5H7.5M9.5 9.5L11.5 11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        </button>
+                        <button class="pv-btn" id="zoomReset" title="Reset">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 4V1.5H4M9 1.5H11.5V4M11.5 9V11.5H9M4 11.5H1.5V9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn" id="refreshPreview" title="Refrescar">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5C2 4 4 2 6.5 2C8.2 2 9.7 3 10.5 4.5M11 6.5C11 9 9 11 6.5 11C4.8 11 3.3 10 2.5 8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M10.5 2V5H7.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>Reload</span>
+                        </button>
+                        <button class="pv-btn pv-toggle-logs" id="toggleLogs" title="Abrir/Cerrar Consola">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5L5.5 7L3.5 8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8.5H9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                            <span>Console</span>
+                            <span class="pv-log-badge" id="logBadge" style="display:none">0</span>
+                        </button>
+                        <button class="pv-btn" id="fullscreenBtn" title="Fullscreen">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 4.5V1.5H4.5M8.5 1.5H11.5V4.5M11.5 8.5V11.5H8.5M4.5 11.5H1.5V8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body: iframe + console panel side by side -->
+                <div class="preview-body">
+                    <div class="preview-frame-wrapper" id="previewFrameWrapper">
+                        <div class="preview-device-frame" id="previewDeviceFrame">
+                            <iframe id="previewFrame" class="preview-frame"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Console panel — right side -->
+                    <div class="console-panel" id="consoleLogs" style="display:none;">
+                        <div class="console-panel-header">
+                            <div class="console-tabs">
+                                <button class="console-tab active" id="consoleTabLogs">Console</button>
+                                <button class="console-tab" id="consoleTabErrors">Errors <span class="err-badge" id="errBadge">0</span></button>
+                            </div>
+                            <div class="console-panel-actions">
+                                <button class="cpanel-btn" id="clearLogs" title="Limpiar">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 3H9M3.5 3V2H7.5V3M4 5V8.5M7 5V8.5M2.5 3L3 9.5H8L8.5 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="cpanel-btn" id="closeConsoleBtn" title="Cerrar">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 2L9 9M9 2L2 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="console-panel-body" id="consoleContent"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Find & Replace Panel -->
+            <!-- Find & Replace -->
             <div class="find-replace-panel" id="findReplacePanel" style="display:none;">
                 <div class="find-replace-inner">
                     <div class="find-row">
-                        <i class="fas fa-search find-icon"></i>
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" class="find-icon"><circle cx="4.5" cy="4.5" r="3.5" stroke="currentColor" stroke-width="1.1"/><path d="M7.5 7.5L10 10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
                         <input type="text" id="findInput" placeholder="Buscar..." class="find-input">
-                        <span class="find-count" id="findCount">0/0</span>
-                        <button class="fr-btn" id="findPrevBtn" title="Anterior (Shift+Enter)"><i class="fas fa-chevron-up"></i></button>
-                        <button class="fr-btn" id="findNextBtn" title="Siguiente (Enter)"><i class="fas fa-chevron-down"></i></button>
-                        <button class="fr-btn fr-toggle" id="caseBtn" title="Aa - Mayúsculas/Minúsculas">Aa</button>
-                        <button class="fr-btn fr-toggle" id="regexBtn" title=".*  - Expresión Regular">.*</button>
-                        <button class="fr-btn fr-close" id="closeFindBtn" title="Cerrar (Esc)"><i class="fas fa-times"></i></button>
+                        <span class="find-count" id="findCount"></span>
+                        <button class="fr-btn" id="findPrevBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 5.5L4.5 2.5L7.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button class="fr-btn" id="findNextBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 3.5L4.5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button class="fr-btn fr-toggle" id="caseBtn">Aa</button>
+                        <button class="fr-btn fr-toggle" id="regexBtn">.*</button>
+                        <button class="fr-btn fr-close" id="closeFindBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                        </button>
                     </div>
                     <div class="replace-row" id="replaceRow" style="display:none;">
-                        <i class="fas fa-exchange-alt find-icon"></i>
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" class="find-icon"><path d="M2 3.5H8M2 7.5H9M8 1.5L10 3.5L8 5.5M9 5.5L7 7.5L9 9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <input type="text" id="replaceInput" placeholder="Reemplazar..." class="find-input">
-                        <button class="fr-btn fr-action" id="replaceOneBtn">Reemplazar</button>
+                        <button class="fr-btn fr-action" id="replaceOneBtn">Uno</button>
                         <button class="fr-btn fr-action" id="replaceAllBtn">Todo</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Code Editors with Syntax Highlighting -->
+            <!-- HTML Editor -->
             <div id="htmlEditorWrapper" class="editor-wrapper active">
                 <div class="editor-gutter" id="htmlGutter"></div>
                 <div class="editor-main-area">
-                    <pre id="htmlHighlight" class="highlight-layer" aria-hidden="true"><code class="language-html"></code></pre>
-                    <textarea id="htmlEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código HTML aquí..."></textarea>
+                    <pre id="htmlHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="htmlEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="<!-- HTML aquí -->"></textarea>
                 </div>
-                <div class="minimap-container" id="htmlMinimap"><canvas id="htmlMinimapCanvas"></canvas><div class="minimap-viewport" id="htmlMinimapViewport"></div></div>
             </div>
+
+            <!-- JS Editor -->
             <div id="jsEditorWrapper" class="editor-wrapper">
                 <div class="editor-gutter" id="jsGutter"></div>
                 <div class="editor-main-area">
-                    <pre id="jsHighlight" class="highlight-layer" aria-hidden="true"><code class="language-javascript"></code></pre>
-                    <textarea id="jsEditor" class="code-editor" spellcheck="false" placeholder="Escribe tu código JavaScript aquí..."></textarea>
+                    <pre id="jsHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="jsEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="// JavaScript aquí"></textarea>
                 </div>
-                <div class="minimap-container" id="jsMinimap"><canvas id="jsMinimapCanvas"></canvas><div class="minimap-viewport" id="jsMinimapViewport"></div></div>
             </div>
+
+            <!-- CSS Editor -->
             <div id="cssEditorWrapper" class="editor-wrapper">
                 <div class="editor-gutter" id="cssGutter"></div>
                 <div class="editor-main-area">
-                    <pre id="cssHighlight" class="highlight-layer" aria-hidden="true"><code class="language-css"></code></pre>
-                    <textarea id="cssEditor" class="code-editor" spellcheck="false" placeholder="Escribe tus estilos CSS aquí..."></textarea>
+                    <pre id="cssHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="cssEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="/* CSS aquí */"></textarea>
                 </div>
-                <div class="minimap-container" id="cssMinimap"><canvas id="cssMinimapCanvas"></canvas><div class="minimap-viewport" id="cssMinimapViewport"></div></div>
             </div>
-        </div>
-    </div>
 
-    <!-- Footer Status Bar -->
-    <div class="status-bar">
-        <div class="status-left">
-            <span class="status-item status-lang" id="statusLang">
-                <i class="fab fa-html5"></i>
-                HTML
-            </span>
-            <span class="status-item" id="statusErrors" title="Errores">
-                <i class="fas fa-times-circle"></i>
-                <span id="errorCount">0</span>
-            </span>
-            <span class="status-item" id="statusWarnings" title="Advertencias">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span id="warnCount">0</span>
-            </span>
-            <span class="status-item" id="statusLineCount">
-                <span id="lineCountDisplay">1 líneas</span>
-            </span>
-        </div>
-        <div class="status-right">
-            <span class="status-item" id="cursorPosition">Ln 1, Col 1</span>
-            <span class="status-item" id="selectionInfo" style="display:none;">Sel <span id="selCount">0</span></span>
-            <span class="status-item">UTF-8</span>
-            <span class="status-item">Espacios: 2</span>
-            <span class="status-item" id="shortcutsHintBtn" style="cursor:pointer;" title="Atajos de teclado">
-                <i class="fas fa-keyboard"></i> Atajos
-            </span>
-        </div>
-    </div>
 
-    <!-- Keyboard Shortcuts Modal -->
-    <div class="shortcuts-modal" id="shortcutsModal" style="display:none;">
-        <div class="shortcuts-content">
-            <div class="shortcuts-header">
-                <h3><i class="fas fa-keyboard"></i> Atajos de Teclado</h3>
-                <button id="closeShortcutsBtn">×</button>
+            <!-- Inline Agent Panel — two-column layout -->
+            <div id="agentPanelWrapper" class="agent-panel-full" style="display:none;">
+                <div class="agent-panel-inner">
+
+                    <!-- Left: Chat history list -->
+                    <div class="agp-sidebar">
+                        <div class="agp-sidebar-header">
+                            <span class="agp-sidebar-title">Chats</span>
+                            <button class="agp-sidebar-new" id="agpNewChatBtn" title="Nuevo chat">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                            </button>
+                        </div>
+                        <div class="agp-chat-list" id="agpChatList"></div>
+                    </div>
+
+                    <!-- Right: Main chat -->
+                    <div class="agp-main">
+                        <div class="agp-header">
+                            <div class="agp-header-left">
+                                <div class="agp-status-dot"></div>
+                                <span class="agp-title">Agent</span>
+                                <span class="agp-current-chat" id="agpCurrentTitle">Nuevo Chat</span>
+                            </div>
+                            <button class="agp-close-btn" id="agentPanelCloseBtn" title="Volver al editor">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="agp-messages" id="agentPanelMessages">
+                            <div class="agp-welcome" id="agpWelcome">
+                                <div class="agp-welcome-icon">
+                                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                        <path d="M18 3L33 11V25L18 33L3 25V11L18 3Z" stroke="url(#ag)" stroke-width="1.5" stroke-linejoin="round"/>
+                                        <circle cx="18" cy="18" r="6" stroke="url(#ag)" stroke-width="1.5"/>
+                                        <circle cx="18" cy="18" r="2.5" fill="url(#ag)"/>
+                                        <defs><linearGradient id="ag" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse"><stop stop-color="#3b82f6"/><stop offset="0.5" stop-color="#22d3ee"/><stop offset="1" stop-color="#818cf8"/></linearGradient></defs>
+                                    </svg>
+                                </div>
+                                <h3>DevCenterX Agent</h3>
+                                <p>Describe lo que quieres construir.</p>
+                                <div class="agp-chips">
+                                    <button class="agp-chip" data-prompt="Crea una landing page moderna con animaciones CSS">Landing page</button>
+                                    <button class="agp-chip" data-prompt="Crea una calculadora con diseño dark y animaciones">Calculadora</button>
+                                    <button class="agp-chip" data-prompt="Crea un dashboard con gráficas de estadísticas">Dashboard</button>
+                                    <button class="agp-chip" data-prompt="Crea un juego Snake completo en canvas">Snake</button>
+                                    <button class="agp-chip" data-prompt="Crea un portafolio personal moderno">Portafolio</button>
+                                    <button class="agp-chip" data-prompt="Crea un reloj digital animado">Reloj</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agp-input-area">
+                            <div class="agp-input-wrapper">
+                                <textarea id="agentPanelInput" placeholder="Describe lo que quieres construir..." rows="1"></textarea>
+                                <button class="agp-send-btn" id="agentPanelSendBtn">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L12 2L9 7L12 12L2 7Z" fill="currentColor"/></svg>
+                                </button>
+                            </div>
+                            <div class="agp-footer-hint">Enter para enviar · Shift+Enter nueva línea</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="shortcuts-grid">
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>S</kbd><span>Guardar</span></div>
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>F</kbd><span>Buscar</span></div>
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>H</kbd><span>Buscar y Reemplazar</span></div>
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>/</kbd><span>Comentar línea</span></div>
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>D</kbd><span>Duplicar línea</span></div>
-                <div class="shortcut-item"><kbd>Alt</kbd>+<kbd>↑↓</kbd><span>Mover línea</span></div>
-                <div class="shortcut-item"><kbd>Tab</kbd><span>Indentar (2 esp.)</span></div>
-                <div class="shortcut-item"><kbd>Shift</kbd>+<kbd>Tab</kbd><span>Quitar indent.</span></div>
-                <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>Enter</kbd><span>Actualizar Preview</span></div>
-                <div class="shortcut-item"><kbd>Esc</kbd><span>Cerrar paneles</span></div>
-            </div>
+
+
         </div>
     </div>
 
