@@ -1756,26 +1756,26 @@ body.light-theme #home-section .mode-selector.active:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 56px 32px;
+  padding: 40px 24px;
   text-align: center;
-  background: linear-gradient(160deg, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
-  border: 1px dashed rgba(37, 99, 235, 0.22);
-  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(37, 99, 235, 0.05) 0%, transparent 60%);
+  border: 1px dashed rgba(37, 99, 235, 0.2);
+  border-radius: 18px;
   margin-top: 12px;
-  gap: 20px;
+  gap: 14px;
 }
 
 .empty-state-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.04) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.15);
-  border-radius: 20px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
   color: #60a5fa;
+  flex-shrink: 0;
 }
 
 .empty-state-content {
@@ -1783,23 +1783,54 @@ body.light-theme #home-section .mode-selector.active:hover {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  gap: 5px;
 }
 
 .empty-state-premium h3 {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #f0f6fc;
-  margin: 0 0 6px 0;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .empty-state-premium p {
-  font-size: 0.95rem;
-  color: #8b949e;
+  font-size: 0.85rem;
+  color: #64748b;
   margin: 0;
-  max-width: 280px;
+  max-width: 240px;
   line-height: 1.5;
+}
+
+/* Botón compacto del empty state */
+.empty-state-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.35);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+.empty-state-btn:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+}
+.empty-state-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.empty-state-btn svg {
+  flex-shrink: 0;
 }
 
 /* Ocultar botón del header cuando hay estado vacío */
@@ -4486,9 +4517,7 @@ html.theme-light .panel-edit-btn:hover {
     border-radius: 12px;
   }
   
-  .create-app-btn-large {
-    padding: 16px 24px;
-  }
+  /* .create-app-btn-large removed — replaced by .empty-state-btn */
   
   .projects-grid-premium {
     grid-template-columns: 1fr;
@@ -4497,8 +4526,18 @@ html.theme-light .panel-edit-btn:hover {
   
   /* Empty state premium mobile */
   .empty-state-premium {
-    padding: 32px 20px;
+    padding: 28px 16px;
     border-radius: 14px;
+    gap: 12px;
+  }
+  .empty-state-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 13px;
+  }
+  .empty-state-btn {
+    padding: 8px 18px;
+    font-size: 12.5px;
   }
   
   .empty-state-icon {
