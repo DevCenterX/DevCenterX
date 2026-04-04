@@ -1489,6 +1489,48 @@ body.light-theme .sidebar .sidebar-footer .stat-value {
   background: rgba(37, 99, 235, 0.08);
 }
 
+/* ── Modo Programar — color esmeralda ─────────────────────────────── */
+.mode-selector[data-mode="programar"] {
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.12);
+}
+.mode-selector[data-mode="programar"]::after {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.08));
+}
+.mode-selector[data-mode="programar"]:hover {
+  border-color: rgba(52, 211, 153, 0.85);
+  color: #a7f3d0;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.28);
+}
+.mode-selector[data-mode="programar"].active {
+  border-color: #10b981;
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.18);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+}
+.mode-selector[data-mode="programar"].active::after {
+  opacity: 1;
+}
+
+/* Input cambia de color cuando Programar está activo */
+.home-search .input-wrapper.mode-programar {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1), 0 4px 20px rgba(16, 185, 129, 0.07);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.home-search .input-wrapper.mode-programar:focus-within {
+  border-color: rgba(52, 211, 153, 0.8);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 8px 30px rgba(16, 185, 129, 0.1);
+}
+.home-search .input-wrapper.mode-programar #searchBox::placeholder {
+  color: rgba(110, 231, 183, 0.4);
+}
+.home-search .input-wrapper.mode-programar .home-search__main svg {
+  color: #34d399;
+}
+
 /* Light theme overrides for mode selector */
 body.light-theme #home-section .mode-selector {
   background: #f5f7ff;
@@ -1714,12 +1756,13 @@ body.light-theme #home-section .mode-selector.active:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 56px 32px;
   text-align: center;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
-  border: 1px dashed rgba(37, 99, 235, 0.2);
-  border-radius: 16px;
-  margin-top: 8px;
+  background: linear-gradient(160deg, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+  border: 1px dashed rgba(37, 99, 235, 0.22);
+  border-radius: 20px;
+  margin-top: 12px;
+  gap: 20px;
 }
 
 .empty-state-icon {
@@ -1740,7 +1783,8 @@ body.light-theme #home-section .mode-selector.active:hover {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 20px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .empty-state-premium h3 {

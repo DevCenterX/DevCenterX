@@ -1787,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', async function init(){
     const urlParams = new URLSearchParams(window.location.search);
     dcxProjectId = urlParams.get('pid') || null;
     const isGenerated = urlParams.get('generated') === 'true';
+    const promptFromDashboard = urlParams.get('prompt') || localStorage.getItem('devcenter_programar_prompt') || '';
 
     initTheme();
     if (progressBar) progressBar.style.width = '25%';
@@ -1851,6 +1852,29 @@ document.addEventListener('DOMContentLoaded', async function init(){
     ['htmlEditor','cssEditor','jsEditor'].forEach(id=>{updateHighlight(id);updateGutter(id);});
     switchTab('html');
     setInterval(()=>{ if(hasUnsavedChanges) saveToLocal(); }, 60000);
+
+    // ── Send prompt from dashboard into the AI chat ──────────────────────────
+    if (promptFromDashboard) {
+        localStorage.removeItem('devcenter_programar_prompt');
+        history.replaceState(null, '', '/Programar/');
+        // Wait for chat system to be ready, then auto-send the prompt
+        setTimeout(() => {
+            const chatInput = document.getElementById('chatInput') || document.getElementById('agentInput') || document.querySelector('.chat-input textarea') || document.querySelector('[id$="Input"]');
+            const sendBtn   = document.getElementById('agentSendBtn') || document.getElementById('chatSendBtn') || document.querySelector('.send-btn');
+            if (chatInput && sendBtn) {
+                chatInput.value = promptFromDashboard;
+                chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                sendBtn.click();
+            } else {
+                // Fallback: put the prompt in the first textarea visible
+                const ta = document.querySelector('textarea');
+                if (ta) {
+                    ta.value = promptFromDashboard;
+                    ta.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        }, 600);
+    }
     if (progressBar) progressBar.style.width = '100%';
 
     // ── Hide loading bar — UI is ready, Firebase loads in background ─────────

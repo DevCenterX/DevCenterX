@@ -729,7 +729,23 @@ document.addEventListener('DOMContentLoaded', () => {
       selector.classList.add('active');
       // Update selectedMode variable
       selectedMode = selector.dataset.mode;
-      console.log('Modo seleccionado:', selectedMode);
+
+      // Cambiar clase del input wrapper según el modo
+      const inputWrapper = document.querySelector('.home-search .input-wrapper');
+      if (inputWrapper) {
+        inputWrapper.classList.toggle('mode-programar', selectedMode === 'programar');
+      }
+
+      // Cambiar placeholder del searchBox según el modo
+      if (searchBox) {
+        if (selectedMode === 'programar') {
+          searchBox.placeholder = 'Describe la app que quieres crear con código...';
+        } else if (selectedMode === 'docs') {
+          searchBox.placeholder = 'Escribe sobre qué quieres generar documentación...';
+        } else {
+          searchBox.placeholder = "Describe tu idea de aplicación, '/' para integraciones...";
+        }
+      }
 
       // Update button text based on mode
       if (startChatBtn) {
@@ -739,8 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <polyline points="16 18 22 12 16 6"></polyline>
               <polyline points="8 6 2 12 8 18"></polyline>
             </svg>
-            Iniciar Agent
+            Abrir Editor
           `;
+          startChatBtn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+          startChatBtn.style.boxShadow = '0 4px 18px rgba(16,185,129,0.4)';
         } else if (selectedMode === 'docs') {
           startChatBtn.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -757,6 +775,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </svg>
             Iniciar chat
           `;
+          startChatBtn.style.background = '';
+          startChatBtn.style.boxShadow = '';
         }
       }
     });
@@ -893,97 +913,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Para mensajes de programación, hacer una solicitud al endpoint de chat
-    let originalText = ''; // Declarar fuera del try
-    
-    try {
-      startChatBtn.disabled = true;
-      originalText = startChatBtn.innerHTML;
-      
-      // Mostrar barra de progreso épica solo si no es chat
-      if (selectedMode !== 'chat') {
-        showEpicProgressBar();
-      }
-
-      console.log('🎯 Modo seleccionado:', selectedMode.toUpperCase());
-      console.log('📝 Prompt usado:', selectedMode === 'chat' ? 'Respuesta conversacional' : modePrompts[selectedMode]);
-
-      console.log('📡 Contactando la API de chat con modo:', selectedMode);
-
-      // Construir el mensaje con el prompt del modo
-      let finalMessage = message;
-      if (selectedMode !== 'chat') {
-        finalMessage = modePrompts[selectedMode] + message;
-      }
-
-      const response = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: finalMessage,
-          mode: selectedMode,
-          conversationHistory: [],
-        }),
-      });
-
-      console.log('📥 Response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ HTTP Error:', response.status, errorText);
-        closeProgressBar();
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      console.log('📦 Response data:', data);
-
-      if (data.error) {
-        closeProgressBar();
-        throw new Error(data.error);
-      }
-
-      if (!data.reply) {
-        closeProgressBar();
-      throw new Error('Sin respuesta del generador de chat');
-      }
-
-      console.log('✅ Got response:\n', data.reply);
-      
-      // Si es modo chat, mostrar respuesta y no buscar código
-      if (selectedMode === 'chat') {
-        closeProgressBar();
-        // Mostrar respuesta en el UI (aquí podrías agregar un chat visual)
-        console.log('💬 Respuesta del chat:', data.reply);
-        searchBox.focus();
-      } else {
-        // Para otros modos, detectar y procesar código en la respuesta
-        const codeBlocks = detectCodeBlocks(data.reply);
-        
-        if (codeBlocks.html) {
-          // Hay código - guardar y redirigir
-          console.log('✨ Código HTML detectado, guardando...');
-          saveAndOpenCode(codeBlocks, message);
-          // La redirección ocurre en saveAndOpenCode
-        } else {
-          closeProgressBar();
-          console.error('❌ No se detectó código HTML. Respuesta completa:', data.reply.substring(0, 200));
-          // Sin alert, simplemente intentar de nuevo
-          searchBox.value = message + ' (reintentando...)';
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error:', error.message);
-      console.error('Stack:', error);
-      closeProgressBar();
-      alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
-    } finally {
-      startChatBtn.disabled = false;
-      if (originalText) startChatBtn.innerHTML = originalText;
-      searchBox.focus();
+    // Modo Programar — guardar prompt y abrir el editor de código
+    if (selectedMode === 'programar') {
+      localStorage.setItem('devcenter_programar_prompt', message);
+      setTimeout(() => {
+        window.location.href = '/Programar/?prompt=' + encodeURIComponent(message);
+      }, 80);
+      return;
     }
   };
 
