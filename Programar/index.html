@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Código IA | DevCenterX</title>
+    <meta name="description" content="Editor de código con IA integrada. Crea, edita y despliega aplicaciones web directamente desde el navegador con DevCenterX.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://devcenterx.vercel.app/Programar/">
+    <meta property="og:title" content="Editor de Código — DevCenterX">
+    <meta property="og:description" content="Editor de código con IA integrada para crear y desplegar apps web.">
+    <meta property="og:url" content="https://devcenterx.vercel.app/Programar/">
+    <meta property="og:type" content="website">
+    <link rel="shortcut icon" href="/Images/Agent.webp" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="syntax.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Loading Bar -->
+    <div id="loadingBar" class="loading-bar">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Cargando DevCenterX...</div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <div class="top-nav">
+        <div class="nav-left">
+            <!-- Project name — click to switch projects -->
+            <div class="project-switcher-wrap">
+                <button class="nav-btn dropdown-btn" id="projectDropdown">
+                    <span class="dot-green"></span>
+                    <span id="projectName">DevProject</span>
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <!-- Project switcher dropdown -->
+                <div class="project-switcher-panel" id="projectSwitcherPanel" style="display:none;">
+                    <div class="psp-header">
+                        <span>Mis proyectos</span>
+                        <a href="crear-app/" class="psp-new-btn">
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1V10M1 5.5H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Nuevo
+                        </a>
+                    </div>
+                    <div class="psp-list" id="pspList">
+                        <div class="psp-loading">Cargando proyectos…</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Info button (replaces edit button) -->
+            <button class="nav-btn icon-btn" id="projectInfoBtn" title="Información del proyecto">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M7 6.5V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    <circle cx="7" cy="4.5" r="0.8" fill="currentColor"/>
+                </svg>
+            </button>
+            <!-- Project info modal -->
+            <div class="proj-info-modal" id="projInfoModal" style="display:none;">
+                <div class="pim-backdrop" id="pimBackdrop"></div>
+                <div class="pim-panel">
+                    <div class="pim-header">
+                        <div class="pim-title">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="var(--accent)" stroke-width="1.3"/><path d="M6.5 6V9.5" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="4" r="0.75" fill="var(--accent)"/></svg>
+                            Información del proyecto
+                        </div>
+                        <button class="pim-close" id="pimClose">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="pim-body" id="pimBody"></div>
+                </div>
+            </div>
+            <div class="nav-divider"></div>
+            <button class="upgrade-btn">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M5 1L9 5.5H6.5V11H3.5V5.5H1L5 1Z" fill="currentColor"/></svg>
+                Upgrade
+            </button>
+        </div>
+        <div class="nav-center">
+            <span class="app-title">DevCenterX</span>
+        </div>
+        <div class="nav-right">
+            <!-- Deploy bar: shown after first publish -->
+            <div class="deploy-url-bar" id="deployUrlBar" style="display:none;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 0L10 9H0L5 0Z" fill="currentColor"/></svg>
+                <span class="deploy-url-text" id="deployUrlText"></span>
+                <a class="deploy-url-open" id="deployUrlOpen" href="#" target="_blank" rel="noopener" title="Abrir en nueva pestaña">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 9L9 2M9 2H4M9 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Abrir
+                </a>
+                <button class="deploy-settings-btn" id="deploySettingsBtn" title="Configuración del deploy">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M6 1v1.3M6 9.7V11M1 6h1.3M9.7 6H11M2.6 2.6l.9.9M8.5 8.5l.9.9M9.4 2.6l-.9.9M3.5 8.5l-.9.9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <!-- Open chat button -->
+            <button class="open-btn-blue" id="openSidebarBtn" style="display:none;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="white" stroke-width="1.2"/><path d="M4 4L8 6L4 8" fill="white"/></svg>
+                Open
+            </button>
+            <!-- Username pill -->
+            <div class="user-pill" id="userPill" title="Usuario">
+                <div class="user-pill-avatar" id="userPillAvatar">?</div>
+                <span class="user-pill-name" id="userPillName">Usuario</span>
+            </div>
+            <button class="nav-btn icon-btn theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema">
+                <svg class="icon-sun" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M7 1V2.5M7 11.5V13M1 7H2.5M11.5 7H13M2.9 2.9L4 4M10 10L11.1 11.1M11.1 2.9L10 4M4 10L2.9 11.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 9.5A5.5 5.5 0 014.5 3C2 3.8 1 6.2 1 7a6 6 0 106-6c-.3 0-.7 0-1 .1A5.5 5.5 0 0111 9.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Secondary Nav: Tabs -->
+    <div class="secondary-nav">
+        <div class="file-tabs" id="fileTabs">
+            <!-- Agent tab — opens chat panel inline, only shown when sidebar closed -->
+            <button class="file-tab agent-tab" id="agentTab" data-file="agent" style="display:none;">
+                <span class="agent-tab-dot"></span>
+                Agent
+            </button>
+            <button class="file-tab" data-file="preview" id="previewTab">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><circle cx="6" cy="6" r="1.8" stroke="currentColor" stroke-width="1.1"/></svg>
+                Preview
+            </button>
+            <button class="file-tab active" data-file="html">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 1.5L2.8 10L6 11L9.2 10L10.5 1.5H1.5Z" stroke="#f97316" stroke-width="1.1" stroke-linejoin="round"/></svg>
+                index.html
+                <span class="tab-dot" style="display:none"></span>
+            </button>
+            <button class="file-tab" data-file="js">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#fbbf24" stroke-width="1.1"/><text x="2.5" y="9" font-family="monospace" font-size="5.5" font-weight="700" fill="#fbbf24">JS</text></svg>
+                script.js
+                <span class="tab-dot" style="display:none"></span>
+            </button>
+            <button class="file-tab" data-file="css">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 1.5L2.8 10L6 11L9.2 10L10.5 1.5H1.5Z" stroke="#06b6d4" stroke-width="1.1" stroke-linejoin="round"/></svg>
+                style.css
+                <span class="tab-dot" style="display:none"></span>
+            </button>
+        </div>
+        <div class="secondary-nav-right">
+            <button class="nav-btn icon-btn" id="homeBtn" title="Inicio">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5L6.5 2L11.5 6.5V11.5H8.5V8.5H4.5V11.5H1.5V6.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            </button>
+            <!-- Agent usage limit bar (10 messages) -->
+            <div class="agent-usage-wrap" id="agentUsageWrap" title="Uso del Agent: 0/10 mensajes">
+                <div class="agent-usage-bar">
+                    <div class="agent-usage-fill" id="agentUsageFill" style="width:0%"></div>
+                </div>
+                <span class="agent-usage-text" id="agentUsageText">0/10</span>
+            </div>
+            <button class="settings-btn" id="settingsBtn" title="Configuración">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M1 3.5H13M1 7H13M1 10.5H13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    <circle cx="4" cy="3.5" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="9" cy="7" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="5" cy="10.5" r="1.5" fill="var(--bg1)" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+            </button>
+            <button class="save-btn" id="saveBtn">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 1V4.5H8.5V1M3 7H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span id="saveBtnText">Guardar</span>
+            </button>
+            <!-- Deploy credits counter + publish button -->
+            <div class="publish-group">
+                <span class="deploy-credits" id="deployCredits" title="Créditos de deploy restantes">50</span>
+                <button class="publish-btn" id="publishBtn">
+                    <svg class="publish-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M6 8V2M3 5L6 2L9 5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 10H10" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="update-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:none;">
+                        <path d="M2 6C2 3.8 3.8 2 6 2c1.2 0 2.3.5 3 1.3" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+                        <path d="M10 6c0 2.2-1.8 4-4 4-1.2 0-2.3-.5-3-1.3" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+                        <path d="M9 1.5v2.3H6.7" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 10.5V8.2h2.3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span id="publishBtnText">Publish</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Dropdown (popover) -->
+        <div class="settings-dropdown" id="settingsPanel" style="display:none;">
+            <div class="settings-dropdown-header">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 2.5H12M1 6.5H12M1 10.5H12" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/><circle cx="9" cy="6.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/><circle cx="5" cy="10.5" r="1.4" fill="var(--bg1)" stroke="var(--accent)" stroke-width="1.1"/></svg>
+                Configuración
+            </div>
+            <div class="settings-dropdown-body">
+                <div class="sd-row">
+                    <span class="sd-label">Guardado automático</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoSaveLocalEnabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="sd-row">
+                    <span class="sd-label">Intervalo</span>
+                    <span class="sd-value-group">
+                        <input type="number" id="autoSaveLocalInterval" value="2" min="1" max="60" class="sd-number"> min
+                    </span>
+                </div>
+                <div class="sd-row">
+                    <span class="sd-label">Tema</span>
+                    <button class="sd-theme-btn" id="sdThemeBtn">Oscuro</button>
+                </div>
+                <div class="sd-row">
+                    <span class="sd-label">Tamaño fuente</span>
+                    <span class="sd-value-group">
+                        <button class="sd-sz-btn" id="fontDecBtn">−</button>
+                        <span id="fontSizeDisplay">13</span>px
+                        <button class="sd-sz-btn" id="fontIncBtn">+</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project info bar — populated from Firebase when a project is loaded -->
+    <div class="project-info-bar" id="projectInfoBar" style="display:none;">
+        <div class="pib-left">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1L11 10H1L6 1Z" fill="url(#pibGrad)"/>
+                <defs><linearGradient id="pibGrad" x1="1" y1="1" x2="11" y2="10"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+            </svg>
+            <span class="pib-desc" id="pibDesc"></span>
+        </div>
+        <div class="pib-right">
+            <div class="pib-tags" id="pibTags"></div>
+            <a class="pib-link" id="pibLink" href="#" target="_blank" rel="noopener" style="display:none;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span></span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-container">
+
+        <!-- Left Sidebar: Chat -->
+        <div class="left-sidebar" id="leftSidebar">
+            <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
+
+            <!-- Chat Header -->
+            <div class="chat-title-bar">
+                <div class="chat-title-left">
+                    <div class="agent-dot-sm"></div>
+                    <span class="chat-agent-name">DevCenterX</span>
+                </div>
+                <div class="chat-title-actions">
+                    <button class="chat-icon-btn" id="chatHistoryBtn" title="Historial de chats">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 2.5H12.5M1.5 7H12.5M1.5 11.5H8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    </button>
+                    <button class="chat-icon-btn chat-new-btn" id="newChatBtn" title="Nuevo chat">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5L3.5 7L10 2.5L11.5 4L6 10.5H2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.5 4L10 5.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                    <button class="chat-icon-btn chat-close-btn" id="closeSidebarBtn" title="Cerrar chat (←)">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L5 7L9 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat History Panel (slides in) -->
+            <div class="chat-history-panel" id="chatHistoryPanel" style="display:none;">
+                <div class="chp-header">
+                    <span>Conversaciones</span>
+                    <button class="chp-close" id="chatHistoryClose">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+                <div class="chp-list" id="chatList"></div>
+                <div class="chp-footer">
+                    <button class="chp-new-btn" id="chpNewChatBtn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        Nueva conversación
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current chat label -->
+            <div class="chat-label-bar" id="chatHeaderBar" style="display:none;">
+                <span class="agent-dot-sm pulse"></span>
+                <span id="currentChatTitle" class="chat-current-title">Nuevo Chat</span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message" id="welcomeMessage">
+                    <div class="welcome-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 3L29 10V22L16 29L3 22V10L16 3Z" stroke="url(#wg)" stroke-width="1.5" stroke-linejoin="round"/>
+                            <circle cx="16" cy="16" r="5.5" stroke="url(#wg)" stroke-width="1.5"/>
+                            <circle cx="16" cy="16" r="2" fill="url(#wg)"/>
+                            <defs><linearGradient id="wg" x1="3" y1="3" x2="29" y2="29" gradientUnits="userSpaceOnUse"><stop stop-color="#818cf8"/><stop offset="0.5" stop-color="#22d3ee"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <h2>DevCenterX Agent</h2>
+                    <p>Describe lo que quieres construir.</p>
+                    <div class="welcome-chips">
+                        <button class="welcome-chip" data-prompt="Crea una landing page moderna con animaciones">Landing page</button>
+                        <button class="welcome-chip" data-prompt="Crea una calculadora con diseño dark">Calculadora</button>
+                        <button class="welcome-chip" data-prompt="Crea un dashboard con gráficas de estadísticas">Dashboard</button>
+                        <button class="welcome-chip" data-prompt="Crea un formulario de contacto con validación">Formulario</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" placeholder="Describe lo que quieres construir..." rows="1"></textarea>
+                    <button class="send-btn" id="sendBtn" title="Enviar (Enter)">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L12 2L9 7L12 12L2 7Z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+                <div class="chat-input-footer">
+                    <span>Enter para enviar · Shift+Enter nueva línea</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor + Preview -->
+        <div class="editor-container" id="editorContainer">
+
+            <!-- Preview -->
+            <div id="previewContainer" class="preview-container" style="display:none;">
+                <!-- Top toolbar -->
+                <div class="preview-toolbar">
+                    <!-- Left: device sizes -->
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn pv-size active" data-size="desktop" title="Desktop">
+                            <svg width="14" height="13" viewBox="0 0 14 13" fill="none"><rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 10H9.5M7 10V11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                            <span>Desktop</span>
+                        </button>
+                        <button class="pv-btn pv-size" data-size="tablet" title="Tablet">
+                            <svg width="10" height="14" viewBox="0 0 10 14" fill="none"><rect x="1" y="1" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="11" r="0.7" fill="currentColor"/></svg>
+                            <span>Tablet</span>
+                        </button>
+                        <button class="pv-btn pv-size" data-size="mobile" title="Mobile">
+                            <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><rect x="1" y="1" width="6" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="11" r="0.7" fill="currentColor"/></svg>
+                            <span>Mobile</span>
+                        </button>
+                    </div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <!-- Center: URL bar -->
+                    <div class="pv-url-bar">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M5.5 1C5.5 1 7.5 3 7.5 5.5C7.5 8 5.5 10 5.5 10M5.5 1C5.5 1 3.5 3 3.5 5.5C3.5 8 5.5 10 5.5 10M1 5.5H10" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/></svg>
+                        <span class="pv-url-text">preview · local</span>
+                    </div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <!-- Right: zoom + actions -->
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn" id="zoomOut" title="Zoom Out">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5H7.5M9.5 9.5L11.5 11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        </button>
+                        <span class="pv-zoom" id="zoomLevel">100%</span>
+                        <button class="pv-btn" id="zoomIn" title="Zoom In">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 3.5V7.5M3.5 5.5H7.5M9.5 9.5L11.5 11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        </button>
+                        <button class="pv-btn" id="zoomReset" title="Reset">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 4V1.5H4M9 1.5H11.5V4M11.5 9V11.5H9M4 11.5H1.5V9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="preview-toolbar-sep"></div>
+
+                    <div class="preview-toolbar-group">
+                        <button class="pv-btn" id="refreshPreview" title="Refrescar">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5C2 4 4 2 6.5 2C8.2 2 9.7 3 10.5 4.5M11 6.5C11 9 9 11 6.5 11C4.8 11 3.3 10 2.5 8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M10.5 2V5H7.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>Reload</span>
+                        </button>
+                        <button class="pv-btn pv-toggle-logs" id="toggleLogs" title="Abrir/Cerrar Consola">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5L5.5 7L3.5 8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8.5H9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                            <span>Console</span>
+                            <span class="pv-log-badge" id="logBadge" style="display:none">0</span>
+                        </button>
+                        <button class="pv-btn" id="fullscreenBtn" title="Fullscreen">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 4.5V1.5H4.5M8.5 1.5H11.5V4.5M11.5 8.5V11.5H8.5M4.5 11.5H1.5V8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body: iframe + console panel side by side -->
+                <div class="preview-body">
+                    <div class="preview-frame-wrapper" id="previewFrameWrapper">
+                        <div class="preview-device-frame" id="previewDeviceFrame">
+                            <iframe id="previewFrame" class="preview-frame"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Console panel — right side -->
+                    <div class="console-panel" id="consoleLogs" style="display:none;">
+                        <div class="console-panel-header">
+                            <div class="console-tabs">
+                                <button class="console-tab active" id="consoleTabLogs">Console</button>
+                                <button class="console-tab" id="consoleTabErrors">Errors <span class="err-badge" id="errBadge">0</span></button>
+                            </div>
+                            <div class="console-panel-actions">
+                                <button class="cpanel-btn" id="clearLogs" title="Limpiar">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 3H9M3.5 3V2H7.5V3M4 5V8.5M7 5V8.5M2.5 3L3 9.5H8L8.5 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="cpanel-btn" id="closeConsoleBtn" title="Cerrar">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 2L9 9M9 2L2 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="console-panel-body" id="consoleContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Find & Replace -->
+            <div class="find-replace-panel" id="findReplacePanel" style="display:none;">
+                <div class="find-replace-inner">
+                    <div class="find-row">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" class="find-icon"><circle cx="4.5" cy="4.5" r="3.5" stroke="currentColor" stroke-width="1.1"/><path d="M7.5 7.5L10 10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        <input type="text" id="findInput" placeholder="Buscar..." class="find-input">
+                        <span class="find-count" id="findCount"></span>
+                        <button class="fr-btn" id="findPrevBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 5.5L4.5 2.5L7.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button class="fr-btn" id="findNextBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 3.5L4.5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button class="fr-btn fr-toggle" id="caseBtn">Aa</button>
+                        <button class="fr-btn fr-toggle" id="regexBtn">.*</button>
+                        <button class="fr-btn fr-close" id="closeFindBtn">
+                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="replace-row" id="replaceRow" style="display:none;">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" class="find-icon"><path d="M2 3.5H8M2 7.5H9M8 1.5L10 3.5L8 5.5M9 5.5L7 7.5L9 9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <input type="text" id="replaceInput" placeholder="Reemplazar..." class="find-input">
+                        <button class="fr-btn fr-action" id="replaceOneBtn">Uno</button>
+                        <button class="fr-btn fr-action" id="replaceAllBtn">Todo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTML Editor -->
+            <div id="htmlEditorWrapper" class="editor-wrapper active">
+                <div class="editor-gutter" id="htmlGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="htmlHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="htmlEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="<!-- HTML aquí -->"></textarea>
+                </div>
+            </div>
+
+            <!-- JS Editor -->
+            <div id="jsEditorWrapper" class="editor-wrapper">
+                <div class="editor-gutter" id="jsGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="jsHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="jsEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="// JavaScript aquí"></textarea>
+                </div>
+            </div>
+
+            <!-- CSS Editor -->
+            <div id="cssEditorWrapper" class="editor-wrapper">
+                <div class="editor-gutter" id="cssGutter"></div>
+                <div class="editor-main-area">
+                    <pre id="cssHighlight" class="highlight-layer" aria-hidden="true"><code></code></pre>
+                    <textarea id="cssEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="/* CSS aquí */"></textarea>
+                </div>
+            </div>
+
+
+            <!-- Agent Panel — centered chat, full width -->
+            <div id="agentPanelWrapper" class="agent-panel-full" style="display:none;">
+
+                <!-- Top bar: chat switcher + actions -->
+                <div class="agp-topbar">
+                    <div class="agp-topbar-left">
+                        <div class="agp-status-dot"></div>
+                        <!-- Chat selector dropdown -->
+                        <button class="agp-chat-selector" id="agpChatSelector">
+                            <span id="agpCurrentTitle">Nuevo Chat</span>
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="agp-topbar-right">
+                        <button class="agp-top-btn" id="agpNewChatBtn" title="Nuevo chat">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5L3.5 7L10 2.5L11.5 4L6 10.5H2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.5 4L10 5.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                        </button>
+                        <button class="agp-top-btn agp-close-btn" id="agentPanelCloseBtn" title="Volver al editor">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L5 7L9 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat dropdown list -->
+                <div class="agp-dropdown" id="agpDropdown" style="display:none;">
+                    <div class="agp-dropdown-list" id="agpChatList"></div>
+                    <div class="agp-dropdown-footer">
+                        <button class="agp-dropdown-new" id="agpDropdownNewBtn">
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1V10M1 5.5H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Nueva conversación
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages — centered, max-width -->
+                <div class="agp-messages" id="agentPanelMessages">
+                    <div class="agp-welcome" id="agpWelcome">
+                        <div class="agp-welcome-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <path d="M20 3L37 12V28L20 37L3 28V12L20 3Z" stroke="url(#ag2)" stroke-width="1.5" stroke-linejoin="round"/>
+                                <circle cx="20" cy="20" r="7" stroke="url(#ag2)" stroke-width="1.5"/>
+                                <circle cx="20" cy="20" r="3" fill="url(#ag2)"/>
+                                <defs><linearGradient id="ag2" x1="3" y1="3" x2="37" y2="37" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#3b82f6"/>
+                                    <stop offset="0.5" stop-color="#22d3ee"/>
+                                    <stop offset="1" stop-color="#818cf8"/>
+                                </linearGradient></defs>
+                            </svg>
+                        </div>
+                        <h3>DevCenterX Agent</h3>
+                        <p>Describe lo que quieres construir y lo genero en HTML, CSS y JS.</p>
+                        <div class="agp-chips">
+                            <button class="agp-chip" data-prompt="Crea una landing page moderna con animaciones CSS y diseño dark">🚀 Landing page</button>
+                            <button class="agp-chip" data-prompt="Crea una calculadora con diseño dark y animaciones">🧮 Calculadora</button>
+                            <button class="agp-chip" data-prompt="Crea un dashboard con gráficas de estadísticas en tiempo real">📊 Dashboard</button>
+                            <button class="agp-chip" data-prompt="Crea un juego Snake completo en canvas con puntuación">🐍 Snake</button>
+                            <button class="agp-chip" data-prompt="Crea un portafolio personal moderno con secciones animadas">💼 Portafolio</button>
+                            <button class="agp-chip" data-prompt="Crea un reloj digital animado con modo oscuro">🕐 Reloj</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input bar — centered, max-width -->
+                <div class="agp-input-area">
+                    <div class="agp-input-center">
+                        <div class="agp-input-wrapper">
+                            <textarea id="agentPanelInput" placeholder="Describe lo que quieres construir..." rows="1"></textarea>
+                            <button class="agp-send-btn" id="agentPanelSendBtn">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5L13 2L10 7.5L13 13L2 7.5Z" fill="currentColor"/></svg>
+                            </button>
+                        </div>
+                        <div class="agp-footer-hint">Enter para enviar · Shift+Enter nueva línea</div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Deploy History Panel -->
+    <div class="deploy-history-modal" id="deployHistoryModal" style="display:none;">
+        <div class="dhm-backdrop" id="dhmBackdrop"></div>
+        <div class="dhm-panel">
+            <div class="dhm-header">
+                <div class="dhm-title">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 12H1L7 1Z" fill="#34d399"/></svg>
+                    Historial de Deploys
+                </div>
+                <button class="dhm-close" id="dhmClose">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="dhm-body" id="dhmBody"></div>
+        </div>
+    </div>
+
+    <!-- Project name edit inline (no modal needed, inline in nav) -->
+
+    <script src="script.js"></script>
+</body>
+</html>

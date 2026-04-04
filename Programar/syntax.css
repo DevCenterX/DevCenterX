@@ -1,0 +1,157 @@
+/* ============================================================
+   DevCenterX — syntax.css
+   Colors ONLY for syntax highlighting tokens.
+   No glow, no text-shadow — just clean vivid flat colors.
+   ============================================================ */
+
+/* Base code text */
+.highlight-layer code { color: #cdd6f4; }
+[data-theme="light"] .highlight-layer code { color: #1e293b; }
+
+/* ── HTML / XML ─────────────────────────────────────────── */
+
+/* Tags  <div>  </span>: sky cyan */
+.hl-tag         { color: #89dceb; }
+[data-theme="light"] .hl-tag { color: #0369a1; }
+
+/* Attribute names  class=  id=: soft lavender */
+.hl-attr-name   { color: #b4befe; }
+[data-theme="light"] .hl-attr-name { color: #7c3aed; }
+
+/* Attribute values  "something": lime green */
+.hl-attr-value  { color: #a6e3a1; }
+[data-theme="light"] .hl-attr-value { color: #166534; }
+
+/* SVG attrs  cx=  cy=  d=  viewBox=: teal */
+.hl-svg-attr    { color: #94e2d5; }
+[data-theme="light"] .hl-svg-attr { color: #0f766e; }
+
+/* Boolean attrs  disabled  required: emerald */
+.hl-builtin     { color: #94e2d5; }
+[data-theme="light"] .hl-builtin { color: #065f46; }
+
+/* HTML entities  ✨  &amp;: amber yellow */
+.hl-entity      { color: #f9e2af; }
+[data-theme="light"] .hl-entity { color: #b45309; }
+
+/* DOCTYPE: muted */
+.hl-doctype     { color: #585b70; }
+[data-theme="light"] .hl-doctype { color: #94a3b8; }
+
+/* Punctuation  < >  / { }: muted grey */
+.hl-punct       { color: #7f849c; }
+[data-theme="light"] .hl-punct { color: #94a3b8; }
+
+/* Strings  "value"  'value'  `template`: lime green */
+.hl-string      { color: #a6e3a1; }
+[data-theme="light"] .hl-string { color: #166534; }
+
+/* Comments  <!-- -->  //  /* */: muted italic */
+.hl-comment     { color: #6c7086; font-style: italic; }
+[data-theme="light"] .hl-comment { color: #9ca3af; }
+
+/* ── CSS ────────────────────────────────────────────────── */
+
+/* Property names  color:  margin:  display:: sapphire */
+.hl-property    { color: #74c7ec; }
+[data-theme="light"] .hl-property { color: #0369a1; }
+
+/* CSS values  none  auto  flex  inherit: green */
+.hl-value       { color: #a6e3a1; }
+[data-theme="light"] .hl-value { color: #166534; }
+
+/* Numbers  14  0.5  100: peach */
+.hl-number      { color: #fab387; }
+[data-theme="light"] .hl-number { color: #c2410c; }
+
+/* Units  px  em  s  %  rem: orange */
+.hl-unit        { color: #fe640b; font-weight: 600; }
+[data-theme="light"] .hl-unit { color: #9a3412; }
+
+/* Hex colors  #fff  #09090b  #f43f5e: amber bold */
+.hl-hex-color   { color: #fab387; font-weight: 700; }
+[data-theme="light"] .hl-hex-color { color: #c2410c; }
+
+/* CSS color keywords  red  blue  transparent: peach */
+.hl-color-kw    { color: #fab387; }
+[data-theme="light"] .hl-color-kw { color: #c2410c; }
+
+/* Timing  ease  linear  cubic-bezier: green */
+.hl-timing      { color: #a6e3a1; }
+[data-theme="light"] .hl-timing { color: #15803d; }
+
+/* CSS functions  rgba()  url()  calc(): blue */
+.hl-function    { color: #89b4fa; }
+[data-theme="light"] .hl-function { color: #1d4ed8; }
+
+/* !important: pink bold */
+.hl-important   { color: #f38ba8; font-weight: 800; }
+[data-theme="light"] .hl-important { color: #dc2626; }
+
+/* Pseudo-classes  :hover  ::before: sapphire italic */
+.hl-pseudo      { color: #74c7ec; font-style: italic; }
+[data-theme="light"] .hl-pseudo { color: #0369a1; }
+
+/* CSS variables  --foo: teal */
+.hl-cssvar      { color: #94e2d5; }
+[data-theme="light"] .hl-cssvar { color: #0d9488; }
+
+/* @media: lavender italic */
+.hl-media       { color: #cba6f7; font-style: italic; }
+[data-theme="light"] .hl-media { color: #6d28d9; }
+
+/* @keyframes keyword: lavender */
+.hl-keyword     { color: #cba6f7; font-weight: 700; }
+[data-theme="light"] .hl-keyword { color: #6d28d9; }
+
+/* Animation names  pulse  twinkle  float: pink italic */
+.hl-anim-name   { color: #f38ba8; font-style: italic; font-weight: 600; }
+[data-theme="light"] .hl-anim-name { color: #9f1239; }
+
+/* CSS class / id selectors  .foo  #bar: yellow bold */
+.hl-class-name  { color: #f9e2af; font-weight: 700; }
+[data-theme="light"] .hl-class-name { color: #92400e; }
+
+/* CSS element selectors (html body div): cyan */
+/* (reuses .hl-tag defined above) */
+
+/* ── JavaScript ─────────────────────────────────────────── */
+
+/* JS keywords  const  function  return  if: lavender bold */
+/* (reuses .hl-keyword defined above) */
+
+/* Built-ins  console  document  Array  Math: teal */
+/* (reuses .hl-builtin defined above) */
+
+/* PascalCase class names  MyClass  Promise  HTMLElement: amber bold */
+/* (reuses .hl-class-name defined above) */
+
+/* Boolean / special  true  false  null  undefined: orange bold */
+.hl-boolean     { color: #fab387; font-weight: 700; }
+[data-theme="light"] .hl-boolean { color: #ea580c; }
+
+/* Operators  ===  !=  ++  &&: pink */
+.hl-operator    { color: #f38ba8; }
+[data-theme="light"] .hl-operator { color: #9f1239; }
+
+/* Arrow  =>: cyan bold */
+.hl-arrow       { color: #89dceb; font-weight: 800; }
+[data-theme="light"] .hl-arrow { color: #0891b2; }
+
+/* Property access  .length  .forEach  .classList: sapphire */
+/* (reuses .hl-property defined above) */
+
+/* Decorators  @Component  @Injectable: flamingo */
+.hl-decorator   { color: #f5c2e7; }
+[data-theme="light"] .hl-decorator { color: #9d174d; }
+
+/* Regex literals  /pattern/gi: teal italic */
+.hl-regex       { color: #94e2d5; font-style: italic; }
+[data-theme="light"] .hl-regex { color: #0d9488; }
+
+/* Generic text fallback */
+.hl-text        { color: inherit; }
+.hl-selector    { color: #89dceb; }
+[data-theme="light"] .hl-selector { color: #0369a1; }
+.hl-variable    { color: #f9e2af; }
+[data-theme="light"] .hl-variable { color: #b45309; }

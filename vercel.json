@@ -1,0 +1,66 @@
+{
+  "buildCommand": "echo 'Static HTML project'",
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/Programar/crear-app", "destination": "/Programar/crear-app/index.html" },
+    { "source": "/Programar/crear-app/", "destination": "/Programar/crear-app/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://devcenterx.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    },
+    {
+      "source": "/create/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firestore.googleapis.com https://*.googleapis.com https://accounts.google.com https://github.com https://*.vercel.app; img-src 'self' data: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline' https:;"
+        },
+        { "key": "Access-Control-Allow-Origin", "value": "https://devcenterx.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/Programar/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firestore.googleapis.com https://*.googleapis.com https://accounts.google.com https://github.com https://*.vercel.app; img-src 'self' data: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline' https:;"
+        },
+        { "key": "Access-Control-Allow-Origin", "value": "https://devcenterx.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/login/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firestore.googleapis.com https://*.googleapis.com https://accounts.google.com; img-src 'self' data: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline' https:;"
+        },
+        { "key": "Access-Control-Allow-Origin", "value": "https://devcenterx.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-DNS-Prefetch-Control", "value": "on" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

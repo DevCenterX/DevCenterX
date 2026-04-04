@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+<meta name="google-site-verification" content="s58vqf8ELxo0LaSObVfyLFs17qJAKJ1H7o7uvfCNH9g" />
+
+
+  <title>DevCenterX AI</title>
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://devcenterx.vercel.app/index.html">
+
+
+
+
+<meta name="description" content="DevCenterX. Crea, edita y publica aplicaciones web con IA. Gestiona tus proyectos, estadísticas y almacenamiento en la nube.">
+<meta name="keywords" content="crear apps, panel de control, desarrollo web, IA, generador de aplicaciones, dashboard">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devcenterx.vercel.app/">
+<meta property="og:title" content="DevCenterX: Crea Apps Profesionales con IA">
+<meta property="og:description" content="Potencia tu desarrollo plataforma  para crear, publicar y monitorear aplicaciones web. Diseñada para flujos de trabajo ágiles y modernos.">
+<meta property="og:image" content="https://devcenterx.vercel.app/Images/DevCenter.png">
+<meta property="og:image:alt" content="DevCenterX - Interfaz de creación de aplicaciones">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DevCenterX | El futuro del desarrollo de Apps">
+<meta name="twitter:description" content="Transforma tus ideas en software real. Gestiona tus proyectos y escala tu productividad con nuestro ecosistema inteligente para desarrolladores.">
+<meta name="twitter:image" content="https://devcenterx.vercel.app/Images/DevCenter.png">
+
+
+
+<link rel="apple-touch-icon" href="https://devcenterx.vercel.app/Images/DevCenter.png">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DevCenterX">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="shortcut icon" href="/assets/Agent-CFzjZjPv.webp" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+  <script src="docs/assets/doc-generator.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DevCenterX Dashboard",
+    "url": "https://devcenterx.vercel.app/index.html",
+    "description": "Panel de control para crear y gestionar aplicaciones web con inteligencia artificial",
+    "applicationCategory": "DeveloperApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('devcenter_theme');
+        if (theme === 'light') {
+          document.body.classList.add('light-theme');
+        } else {
+          document.body.classList.add('dark-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-D6oqOoB-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-VL8DjK9c.css">
+</head>
+<body>
+  <script>
+    (function(){
+      try {
+        var id = localStorage.getItem('devcenter_user_id');
+        var isLogged = localStorage.getItem('devcenter_isLoggedIn');
+        // Only require a valid login flag and user id here.
+        // The user's display name can be fetched asynchronously after page load.
+        if (!(isLogged === 'true' && id)) {
+          window.location.replace('agent.html');
+        }
+      } catch (e) {
+        console.error('Storage check failed', e);
+        window.location.replace('agent.html');
+      }
+    })();
+  </script>
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen" class="loading-screen" style="display: none;">
+    <div class="loading-content">
+      <div class="loading-animation-elegant">
+        <div class="loading-orb"></div>
+        <div class="loading-ring"></div>
+        <div class="loading-ring loading-ring-2"></div>
+        <div class="loading-ring loading-ring-3"></div>
+        <div class="loading-particles">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <p class="loading-text">Preparando tu espacio de trabajo...</p>
+    </div>
+  </div>
+
+  <!-- LEGAL MODALS -->
+  <div id="termsPage" class="legal-modal-overlay" style="display: none;">
+    <div class="legal-modal">
+      <div class="legal-modal-header">
+        <div class="legal-modal-title">
+          <div class="legal-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <h1>Terminos de Servicio</h1>
+        </div>
+        <button class="legal-close-btn" onclick="window.closeLegalModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <p>Términos y condiciones de uso de DevCenterX...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="privacyPage" class="legal-modal-overlay" style="display: none;">
+    <div class="legal-modal">
+      <div class="legal-modal-header">
+        <div class="legal-modal-title">
+          <div class="legal-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h1>Politica de Privacidad</h1>
+        </div>
+        <button class="legal-close-btn" onclick="window.closeLegalModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <p>Política de privacidad de DevCenterX...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR COLLAPSED CONTROLS -->
+  <div class="sidebar-collapsed-controls" id="sidebarCollapsedControls">
+    <button class="sidebar-toggle-open" id="sidebarOpenBtn" title="Abrir panel">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <line x1="9" y1="3" x2="9" y2="21"/>
+      </svg>
+    </button>
+    <button class="options-btn" id="optionsBtn" title="Opciones">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- OPTIONS MENU -->
+  <div class="options-menu" id="optionsMenu">
+    <div class="logo-menu-item" id="optionsMenuAccount">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Cuenta</span>
+    </div>
+    <div class="logo-menu-item" id="optionsMenuHelp">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+      Ayuda
+    </div>
+    <div class="logo-menu-divider"></div>
+    <div class="logo-menu-item" id="optionsMenuLogout">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Cerrar sesión
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-header">
+      <button class="logo logo-btn" id="logoBtn">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+        </svg>
+        <svg class="logo-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <button class="search-btn" title="Cerrar panel">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="15" y1="9" x2="9" y2="9"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- LOGO MENU -->
+    <div class="logo-menu" id="logoMenu">
+      <div class="logo-menu-item" id="menuAccount">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span id="accountText">Cuenta</span>
+      </div>
+      <div class="logo-menu-item logo-menu-theme" id="menuTheme">
+        <div class="menu-theme-inner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <span>Tema</span>
+        </div>
+        <div class="theme-icons">
+          <button class="theme-icon" data-theme="dark" title="Modo oscuro">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <button class="theme-icon" data-theme="light" title="Modo claro">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="logo-menu-item" id="menuHelp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        Ayuda
+      </div>
+      <div class="logo-menu-divider"></div>
+      <div class="logo-menu-item" id="menuLogout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Cerrar sesión
+      </div>
+    </div>
+
+    <button class="create-btn" id="mainCreateBtn">
+      <span>+</span> Crear App
+    </button>
+
+    <!-- NAVIGATION MENU -->
+    <nav class="nav-menu">
+      <a href="#" class="nav-item active" data-section="home" data-tooltip="Inicio">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Inicio
+      </a>
+      <a href="Apps/" class="nav-item" data-section="apps" data-tooltip="Apps">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Apps
+      </a>
+      <a href="Published-apps/" class="nav-item" data-section="published" data-tooltip="Publicadas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Publicadas
+      </a>
+      <a href="Usage/" class="nav-item" data-section="usage" data-tooltip="Uso">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Uso
+      </a>
+      <a href="Ajustes/" class="nav-item" data-tooltip="Ajustes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Ajustes
+      </a>
+    </nav>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="sidebar-footer">
+      <div class="user-section">
+        <div class="plan-info">
+          <div class="plan-title" id="userPlanTitle">Plan Inicial</div>
+          <div class="plan-stats">
+            <div class="stat">
+              <span class="stat-label">Apps</span>
+              <span class="stat-value" id="userAppsCount">0/10 creadas</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Uso del Agente</span>
+              <span class="stat-value" id="userAgentUsage">0% usado</span>
+            </div>
+          </div>
+        </div>
+        <button class="upgrade-btn" id="upgradeAgentBtn">
+          <span>+</span> Mejorar Agente
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- HOME SECTION -->
+    <section id="home-section" class="content-section active">
+      <div class="home-hero">
+        <div class="greeting greeting-centered">
+          <h1 id="greetingText">Hola, ¿qué quieres crear hoy?</h1>
+        </div>
+      </div>
+
+      <div class="home-search">
+        <div class="input-wrapper">
+          <div class="home-search__main">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <textarea id="searchBox" rows="3" placeholder="Describe tu idea de aplicación, '/' para integraciones..."></textarea>
+          </div>
+          <div class="home-search__actions">
+            <button class="start-chat-btn" id="startChatBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+              </svg>
+              Iniciar chat
+            </button>
+          </div>
+          
+          <div class="home-search__chips">
+            <button class="mode-selector active" data-mode="chat" title="Modo Chat">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>Chat</span>
+            </button>
+            <button class="mode-selector" data-mode="programar" title="Modo Programación">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              <span>Programar</span>
+            </button>
+            <button class="mode-selector" data-mode="docs" id="docsBtn" title="Documentación">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              <span>Docs</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="userProjectsSection" class="projects-section projects-section-premium">
+        <div class="section-header-premium">
+          <div class="section-header-left">
+            <div class="section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </div>
+            <div>
+              <h2>Apps recientes</h2>
+              <p class="text-xs text-slate-400" id="recentAppsCount">0 apps</p>
+            </div>
+          </div>
+          <button id="createAppHeaderBtn" class="create-app-btn-premium">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Crear App</span>
+          </button>
+        </div>
+        
+        <div id="userProjectsGrid" class="projects-grid projects-grid-premium"></div>
+        
+        <div id="userProjectsEmpty" class="empty-state empty-state-premium">
+          <div class="empty-state-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="9" x2="15" y2="9"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <h3 id="emptyStateTitle">Aún no has creado ninguna aplicación</h3>
+          <p id="emptyStateDescription">Empieza a crear tu primera aplicación ahora.</p>
+          <button id="createFirstAppBtn" class="create-app-btn-premium create-app-btn-large">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            <span id="createFirstAppBtnText">Crear App</span>
+          </button>
+        </div>
+      </div>
+    <div id="recentDocsSection" class="projects-section projects-section-premium mt-8">
+      <div class="section-header-premium">
+        <div class="section-header-left">
+          <div class="section-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Docs recientes</h2>
+            <p class="text-xs text-slate-400" id="recentDocsCount">0 documentos</p>
+          </div>
+        </div>
+        <button id="createDocHeaderBtn" class="create-app-btn-premium">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Crear Docs</span>
+        </button>
+      </div>
+
+      <div id="recentDocsList" class="projects-grid projects-grid-premium"></div>
+
+      <div id="recentDocsEmpty" class="empty-state empty-state-premium">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="empty-state-content">
+          <h3>Aún no has generado documentos</h3>
+          <p>Genera tu primera síntesis con el agente de Docs.</p>
+        </div>
+        <button id="createDocEmptyBtn" type="button" class="create-app-btn-premium create-app-btn-large">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Crear Docs</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+    <!-- APPS SECTION -->
+    <section id="apps-section" class="content-section">
+      <div class="greeting">
+        <h1>Proyectos de la Comunidad</h1>
+      </div>
+      <div id="appsGrid" class="projects-grid"></div>
+    </section>
+
+    <!-- PUBLISHED SECTION -->
+    <section id="published-section" class="content-section">
+      <div class="greeting published-greeting">
+        <h1>Tus Aplicaciones Publicadas</h1>
+      </div>
+      <div id="publishedContent"></div>
+    </section>
+
+    <!-- USAGE SECTION -->
+    <section id="usage-section" class="content-section">
+      <div class="greeting usage-greeting">
+        <h1>Uso del Agente</h1>
+      </div>
+      <div id="usageContent"></div>
+    </section>
+  </main>
+
+
+</body>
+</html>

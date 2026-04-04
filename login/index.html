@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevCenterX - Iniciar Sesion</title>
+  <link rel="shortcut icon" href="../Images/Agent.webp" type="image/x-icon">
+  <style>
+    /* CRITICAL SPLASH SCREEN STYLES - INLINE FOR INSTANT LOAD */
+    @keyframes splashLogoEnter {
+      0% { opacity: 0; transform: scale(0.5) translateY(-20px); }
+      50% { opacity: 1; }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes logoGlow {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 112, 243, 0.4)); }
+      50% { filter: drop-shadow(0 0 40px rgba(0, 112, 243, 0.8)); }
+    }
+    @keyframes splashTitleEnter {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes subtitleSlide {
+      0% { opacity: 0; transform: translateX(-20px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes fadeOutUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .splash-screen {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100vh; height: 100dvh;
+      background: linear-gradient(135deg, #0e1525 0%, #1a1f2e 50%, #0a1220 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column;
+      animation: fadeOutUp 0.6s ease-out 2.4s forwards;
+    }
+    .splash-screen.hidden { display: none !important; }
+    .splash-container {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; height: 100%; gap: 2rem;
+    }
+    .splash-content {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1.5rem;
+    }
+    .splash-logo {
+      color: #0070f3;
+      animation: splashLogoEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                logoGlow 2s ease-in-out 0.8s infinite;
+      width: 120px; height: 120px; stroke-width: 1.5;
+    }
+    .splash-title {
+      font-size: 3.5rem; font-weight: 700; color: #ffffff;
+      text-align: center; letter-spacing: -0.02em;
+      animation: splashTitleEnter 0.6s ease-out 0.4s backwards;
+      margin: 0; font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .splash-subtitle {
+      font-size: 1.5rem; font-weight: 500; color: #0070f3;
+      text-align: center; letter-spacing: 0.05em;
+      animation: subtitleSlide 0.8s ease-out 0.9s backwards;
+      margin: 0; font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .splash-loader {
+      display: flex; gap: 0.8rem; margin-top: 2rem;
+    }
+    .loader-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #0070f3;
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+    .loader-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dot:nth-child(3) { animation-delay: 0.4s; }
+    #loginPage { display: flex !important; }
+    .hidden-content { opacity: 1; }
+    /* Light theme splash */
+    html.light-theme .splash-screen,
+    body.light-theme .splash-screen {
+      background: linear-gradient(135deg, #ffffff 0%, #f6f7fb 50%, #f0f2f7 100%);
+    }
+    html.light-theme .splash-title,
+    body.light-theme .splash-title { color: #0b1220; }
+    html.light-theme .splash-subtitle,
+    body.light-theme .splash-subtitle { color: #0366d6; }
+    html.light-theme .splash-logo,
+    body.light-theme .splash-logo {
+      color: #0366d6;
+      filter: drop-shadow(0 0 20px rgba(3, 102, 214, 0.3)) !important;
+    }
+    html.light-theme .loader-dot,
+    body.light-theme .loader-dot { background: #0366d6; }
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .splash-title { font-size: 2.5rem; }
+      .splash-subtitle { font-size: 1.2rem; }
+      .splash-logo { width: 100px; height: 100px; }
+    }
+    @media (max-width: 480px) {
+      .splash-title { font-size: 2rem; }
+      .splash-subtitle { font-size: 1rem; }
+      .splash-logo { width: 80px; height: 80px; }
+      .splash-loader { gap: 0.6rem; margin-top: 1.5rem; }
+      .loader-dot { width: 10px; height: 10px; }
+    }
+    /* NOTIFICATION SYSTEM */
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(400px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOutRight {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(400px); }
+    }
+    .notification-container { 
+      position: fixed; top: 20px; right: 20px; 
+      z-index: 10000; display: flex; flex-direction: column; gap: 12px;
+      max-width: 400px; pointer-events: none;
+    }
+    .notification {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      animation: slideInRight 0.3s ease-out;
+      pointer-events: auto; cursor: default;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .notification.removing {
+      animation: slideOutRight 0.3s ease-out forwards;
+    }
+    .notification-success {
+      background: #10b981; color: white;
+    }
+    .notification-error {
+      background: #ef4444; color: white;
+    }
+    .notification-info {
+      background: #3b82f6; color: white;
+    }
+    .notification-warning {
+      background: #f59e0b; color: white;
+    }
+    .notification-icon {
+      width: 20px; height: 20px; flex-shrink: 0;
+    }
+    .notification-close {
+      margin-left: auto; background: none; border: none;
+      cursor: pointer; color: inherit; opacity: 0.7;
+      font-size: 18px; padding: 0; width: 24px; height: 24px;
+    }
+    .notification-close:hover { opacity: 1; }
+    @media (max-width: 480px) {
+      .notification-container { 
+        left: 10px; right: 10px; top: 10px; max-width: none;
+      }
+      .notification { 
+        font-size: 13px; padding: 12px 14px;
+      }
+    }
+    /* Loading state */
+    .auth-btn:disabled {
+      opacity: 0.7; cursor: not-allowed;
+    }
+    .auth-btn.loading {
+      position: relative; color: transparent;
+    }
+    .auth-btn.loading::after {
+      content: '';
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+  <script>
+    (function(){
+      try{
+        const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        const applyTheme = (isLight) => {
+          const root = document.documentElement;
+          if (isLight) { root.classList.add('light-theme'); root.classList.remove('dark-theme'); }
+          else { root.classList.remove('light-theme'); root.classList.add('dark-theme'); }
+          document.dispatchEvent(new CustomEvent('devcenter:theme-applied',{detail:{light:isLight}}));
+          console.log('[login] prefers-light=', isLight);
+        };
+        if (mq) { applyTheme(mq.matches); if (mq.addEventListener) mq.addEventListener('change', e => applyTheme(e.matches)); else mq.addListener && mq.addListener(e => applyTheme(e.matches)); }
+        else { console.log('[login] prefers-color-scheme not supported'); }
+      } catch (err) { console.error('[login] theme detect error', err); }
+    })();
+  </script>
+</head>
+<body>
+  <!-- NOTIFICATION SYSTEM -->
+  <div id="notificationContainer" class="notification-container"></div>
+
+  <!-- ==================== SPLASH SCREEN ==================== -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-container">
+      <div class="splash-content">
+        <svg class="splash-logo" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+        </svg>
+        <h1 class="splash-title">DevCenterX</h1>
+        <p class="splash-subtitle">Iniciar sesion</p>
+        <div class="splash-loader">
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LOGIN PAGE - Split Screen Design ==================== -->
+  <div id="loginPage" class="split-auth-page hidden-content">
+    <div class="split-auth-left">
+      <div class="split-auth-content">
+        <a href="/" class="split-auth-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Volver
+        </a>
+
+        <div class="split-auth-logo">
+          <svg class="split-auth-logo-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+
+        <h1 class="split-auth-title">Iniciar sesion</h1>
+
+        <div class="split-auth-social-buttons">
+          <button type="button" class="social-auth-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continuar con Google
+          </button>
+
+          <button type="button" class="social-auth-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            Continuar con GitHub
+          </button>
+        </div>
+
+        <div class="split-auth-divider">
+          <span>O</span>
+        </div>
+
+        <button type="button" class="email-auth-option">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email y contraseña
+        </button>
+
+        <form class="split-auth-form" style="display: none;">
+          <div class="split-form-group">
+            <label for="email">Email o Usuario</label>
+            <input type="text" id="email" placeholder="tu@email.com o usuario" required>
+          </div>
+          <div class="split-form-group">
+            <label for="password">Contraseña</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="password" placeholder="Tu contraseña" required>
+              <button type="button" class="password-toggle-btn">
+                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="split-submit-btn">
+            Iniciar sesion
+          </button>
+        </form>
+
+        <p class="split-auth-terms">
+          Al continuar, aceptas los <a href="/terminos-de-servicio">Terminos de Servicio</a> y la <a href="/politica-de-privacidad">Politica de Privacidad</a>
+        </p>
+
+        <p class="split-auth-switch">
+          No tienes cuenta? <a href="/create/">Crear cuenta</a>
+        </p>
+      </div>
+    </div>
+    <div class="split-auth-right">
+      <div class="split-auth-brand">
+        <div class="brand-icon">
+          <svg class="brand-icon-svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m10-11h-6m-6 0H1m18.36 7.36l-4.24-4.24m-6 0L4.64 19.36m14.72 0l-4.24-4.24m-6 0L4.64 4.64"/>
+          </svg>
+        </div>
+        <h2 class="brand-tagline">Crea sin limites</h2>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('[LOGIN HTML] 🚀 Initializing splash screen logic...');
+    
+    // Splash screen animation and content loading
+    let uiInitialized = false;
+    let splashShownTime = Date.now();
+    
+    window.hideLoadingAndShowContent = function(reason) {
+      if (uiInitialized) {
+        console.warn('[LOGIN HTML] ⚠️ Already initialized, skipping (reason: ' + reason + ')');
+        return;
+      }
+      
+      uiInitialized = true;
+      const elapsedTime = Date.now() - splashShownTime;
+      console.log(`[LOGIN HTML] ✅ Showing login page (after ${elapsedTime}ms, reason: ${reason})`);
+      
+      const splash = document.getElementById('splashScreen');
+      const loginPage = document.getElementById('loginPage');
+      
+      console.log('[LOGIN HTML] 🎯 Elements:');
+      console.log('  splash:', splash ? '✅' : '❌');
+      console.log('  loginPage:', loginPage ? '✅' : '❌');
+      
+      if (splash) {
+        splash.classList.add('hidden');
+        splash.style.pointerEvents = 'none';
+        splash.style.display = 'none';
+        console.log('[LOGIN HTML] ✅ Splash hidden');
+      }
+      
+      if (loginPage) {
+        loginPage.classList.remove('hidden-content');
+        loginPage.style.pointerEvents = 'auto';
+        loginPage.style.opacity = '1';
+        loginPage.style.visibility = 'visible';
+        console.log('[LOGIN HTML] ✅ Login page shown');
+      }
+    };
+    
+    console.log('[LOGIN HTML] 📅 Window loaded, setting timing logic...');
+    
+    // Monitor for pageFullyReady - more aggressive checking
+    let readinessCheck = null;
+    let readinessAttempts = 0;
+    const pageReadyStartTime = Date.now();
+    
+    const startReadinessCheck = () => {
+      // Check very frequently at first (every 10ms for first 1s)
+      const fastCheckInterval = setInterval(() => {
+        readinessAttempts++;
+        const elapsedSinceBoot = Date.now() - pageReadyStartTime;
+        
+        if (readinessAttempts <= 50 || readinessAttempts % 10 === 0) {
+          console.log(`[LOGIN HTML] 📊 Readiness check #${readinessAttempts} (${elapsedSinceBoot}ms): pageFullyReady=${window.pageFullyReady}`);
+        }
+        
+        if (window.pageFullyReady === true) {
+          console.log(`[LOGIN HTML] 🎉 Page fully ready detected! Showing content after ${elapsedSinceBoot}ms...`);
+          clearInterval(fastCheckInterval);
+          window.hideLoadingAndShowContent('script-ready');
+        }
+      }, 10);
+      
+      readinessCheck = fastCheckInterval;
+    };
+    
+    // Start checking immediately
+    startReadinessCheck();
+    
+    // NO TIMEOUT - Wait indefinitely for pageFullyReady to be true
+    // DO NOT force show page on timeout - only show when actually ready
+    console.log('[LOGIN HTML] 🔄 Waiting indefinitely for pageFullyReady=true (NO TIMEOUT)');
+    
+    // Also show on any user interaction
+    const handleInteraction = (e) => {
+      if (uiInitialized) return; // Already shown
+      console.log('[LOGIN HTML] 👆 User interaction detected:', e.type);
+      
+      if (window.pageFullyReady === true) {
+      // Removed - no user interaction shortcuts
+      } else {
+        console.warn(`[LOGIN HTML] ⚠️ User ${e.type} but page not fully ready. pageFullyReady=${window.pageFullyReady}`);
+        if (window.NotificationSystem) {
+          console.log('[LOGIN HTML] 💬 Showing warning notification...');
+          window.NotificationSystem.warning('Espera un momento para que cargue completamente...');
+        } else {
+          console.warn('[LOGIN HTML] ⚠️ NotificationSystem not available yet');
+        }
+      }
+    };
+    
+    // Don't show on user interaction - only show when pageFullyReady is true
+    // document.addEventListener('click', handleInteraction, { passive: true });
+    // document.addEventListener('touchstart', handleInteraction, { passive: true });
+    
+    console.log('[LOGIN HTML] ✅ Splash screen logic loaded!');
+  </script>
+  <script type="module">
+    // Firebase Base Initialization
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+      authDomain: "devcenter-agent-48c86.firebaseapp.com",
+      projectId: "devcenter-agent-48c86",
+      storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+      messagingSenderId: "911929994293",
+      appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+      measurementId: "G-S5GTYBRVK8"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+  <script type="module">
+// ============================================
+// LOGIN PAGE - Firebase Authentication
+// ============================================
+
+console.log('[LOGIN] 🚀 Script loading - PHASE 1: Initial log');
+console.log('[LOGIN] 📍 Window object:', typeof window !== 'undefined' ? '✅' : '❌');
+console.log('[LOGIN] 📍 Document object:', typeof document !== 'undefined' ? '✅' : '❌');
+
+// ===== STATE VARIABLES =====
+let firebaseReady = false;
+let uiElementsReady = false;
+let eventListenersReady = false;
+let pageFullyReady = false;
+
+let auth = null;
+let db = null;
+let uiInitialized_script = false;
+let eventListenersAttached = false;
+
+console.log('[LOGIN] 📋 State variables initialized');
+
+// ===== NOTIFICATION SYSTEM =====
+const NotificationSystem = (() => {
+  const container = document.getElementById('notificationContainer');
+  return {
+    show(msg, type = 'info', dur = 4000) {
+      console.log(`[LOGIN] 💬 ${type}: ${msg}`);
+      if (!container) return;
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+      notification.innerHTML = `<span class="notification-icon">${icons[type] || '•'}</span><span>${msg}</span><button class="notification-close">×</button>`;
+      container.appendChild(notification);
+      const closeBtn = notification.querySelector('.notification-close');
+      const remove = () => { notification.classList.add('removing'); setTimeout(() => notification.remove(), 300); };
+      closeBtn?.addEventListener('click', remove);
+      if (dur > 0) setTimeout(remove, dur);
+      return notification;
+    },
+    success(m, d) { return this.show(m, 'success', d); },
+    error(m, d) { return this.show(m, 'error', d || 5000); },
+    info(m, d) { return this.show(m, 'info', d); },
+    warning(m, d) { return this.show(m, 'warning', d); }
+  };
+})();
+
+console.log('[LOGIN] ✅ NotificationSystem initialized');
+
+// ===== CHECK PAGE READY =====
+function checkPageReady() {
+  const allReady = firebaseReady && uiElementsReady && eventListenersReady;
+  
+  console.log('[LOGIN] 🔍 checkPageReady() called: FB=' + firebaseReady + ' UI=' + uiElementsReady + ' L=' + eventListenersReady + ' => ALL=' + allReady);
+  
+  if (allReady && !pageFullyReady) {
+    pageFullyReady = true;
+    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! Setting window.pageFullyReady=true');
+    window.pageFullyReady = true;
+    console.log('[LOGIN] ✅ window.pageFullyReady is now:', window.pageFullyReady);
+    if (window.hideLoadingAndShowContent) {
+      console.log('[LOGIN] 📞 Calling hideLoadingAndShowContent("all-systems-ready")...');
+      window.hideLoadingAndShowContent('all-systems-ready');
+      console.log('[LOGIN] ✅ hideLoadingAndShowContent completed');
+    } else {
+      console.warn('[LOGIN] ⚠️ window.hideLoadingAndShowContent not available!');
+    }
+  }
+  
+  return allReady;
+}
+
+// ===== FIREBASE INITIALIZATION =====
+console.log('[LOGIN] 🔥 PHASE 2: Starting Firebase initialization...');
+console.log('[LOGIN] ⏰ Timestamp:', new Date().toISOString());
+
+(async () => {
+  try {
+    console.log('[LOGIN] 📥 PHASE 2A: About to import Firebase modules...');
+    
+    let firebaseApp, authModule, dbModule;
+    let retries = 0;
+    const maxRetries = 3;
+    let lastError = null;
+    
+    console.log('[LOGIN] 🔄 Starting import attempts (max: ' + maxRetries + ')');
+    
+    while (retries < maxRetries) {
+      try {
+        retries++;
+        console.log(`[LOGIN] 🔄 PHASE 2B.${retries}: Import attempt #${retries}...`);
+        
+        console.log('[LOGIN] 📦 Loading firebase-app.js');
+        const initRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js");
+        firebaseApp = initRes.initializeApp;
+        console.log('[LOGIN] ✅ firebase-app loaded');
+        
+        console.log('[LOGIN] 📦 Loading firebase-auth.js');
+        const authRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+        authModule = authRes;
+        console.log('[LOGIN] ✅ firebase-auth loaded');
+        
+        console.log('[LOGIN] 📦 Loading firebase-firestore.js');
+        const dbRes = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+        dbModule = dbRes;
+        console.log('[LOGIN] ✅ firebase-firestore loaded');
+        
+        console.log('[LOGIN] 🎉 All modules imported successfully on attempt #' + retries);
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyCsgsrFZ_nTMrtK69f6815I0Hcc1kTASHY",
+          authDomain: "devcenter-agent-48c86.firebaseapp.com",
+          projectId: "devcenter-agent-48c86",
+          storageBucket: "devcenter-agent-48c86.firebasestorage.app",
+          messagingSenderId: "911929994293",
+          appId: "1:911929994293:web:1d08f68b4c507ee162557c",
+          measurementId: "G-S5GTYBRVK8"
+        };
+        
+        console.log('[LOGIN] 🔧 PHASE 2C: Initializing Firebase app...');
+        const app = firebaseApp(firebaseConfig);
+        console.log('[LOGIN] ✅ Firebase app initialized');
+        
+        auth = authModule.getAuth(app);
+        console.log('[LOGIN] ✅ Auth module ready');
+        db = dbModule.getFirestore(app);
+        console.log('[LOGIN] ✅ Firestore database ready');
+        
+        console.log('[LOGIN] 🔐 Setting persistence...');
+        await authModule.setPersistence(auth, authModule.browserLocalPersistence);
+        console.log('[LOGIN] ✅ Persistence set');
+        
+        firebaseReady = true;
+        console.log('[LOGIN] ✅✅✅ FIREBASE FULLY INITIALIZED! firebaseReady=true');
+        checkPageReady();
+        break;
+        
+      } catch (err) {
+        lastError = err;
+        console.error(`[LOGIN] ❌ Attempt #${retries} FAILED:`, err.message);
+        console.error('[LOGIN] Error details:', err);
+        
+        if (retries < maxRetries) {
+          console.log(`[LOGIN] ⏳ Waiting 500ms before retry #${retries + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    }
+    
+    if (!auth || !db) {
+      throw new Error(`Firebase not initialized after ${maxRetries} attempts. Last error: ${lastError?.message}`);
+    }
+    
+    console.log('[LOGIN] 🎉 Firebase initialization COMPLETE');
+    
+  } catch (error) {
+    console.error('[LOGIN] ❌❌❌ FATAL ERROR in Firebase init:', error);
+    console.error('[LOGIN] Stack:', error.stack);
+    NotificationSystem.error('Firebase error: ' + (error.message || 'Unknown'));
+    firebaseReady = false;
+  }
+})();
+
+console.log('[LOGIN] PHASE 2 END: Firebase initialization async function started');
+
+// ===== HELPER FUNCTIONS =====
+async function saveUserData(user, provider) {
+  if (!user || !db) return;
+  try {
+    const { doc, setDoc, getDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js");
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      await setDoc(userRef, { updatedAt: serverTimestamp() }, { merge: true });
+    } else {
+      await setDoc(userRef, {
+        uid: user.uid,
+        email: user.email || '',
+        username: user.displayName || user.email?.split('@')[0] || 'user',
+        avatar: user.photoURL || '',
+        provider: provider,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        plan: 'free',
+        limit: 'default'
+      });
+    }
+    localStorage.setItem('devcenter_user_id', user.uid);
+    localStorage.setItem('devcenter_isLoggedIn', 'true');
+    console.log('[LOGIN] ✅ User data saved');
+  } catch (error) {
+    console.error('[LOGIN] ❌ Save error:', error);
+  }
+}
+
+function handleAuthError(error) {
+  const msgs = {
+    'auth/user-not-found': 'Este email no está registrado',
+    'auth/wrong-password': 'Contraseña incorrecta',
+    'auth/invalid-email': 'Email inválido',
+    'auth/invalid-credential': 'Email o contraseña incorrectos',
+    'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde',
+    'auth/popup-closed-by-user': 'Autenticación cancelada',
+    'auth/network-request-failed': 'Error de conexión',
+  };
+  NotificationSystem.error(msgs[error.code] || error.message);
+}
+
+function setButtonLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) {
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.dataset.originalText = btn.innerText;
+  } else {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
+  }
+}
+
+// ===== ATTACH EVENT LISTENERS =====
+function attachEventListeners() {
+  if (eventListenersAttached) return;
+  eventListenersAttached = true;
+  console.log('[LOGIN] 🔗 Attaching event listeners...');
+  
+  try {
+    const emailBtn = document.querySelector('.email-auth-option');
+    const form = document.querySelector('.split-auth-form');
+    const googleBtn = document.querySelectorAll('.social-auth-btn')[0];
+    const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
+    const backBtn = document.querySelector('.split-auth-back');
+
+    console.log('[LOGIN] 🎯 Elements found:');
+    console.log('  emailBtn:', emailBtn ? '✅' : '❌');
+    console.log('  form:', form ? '✅' : '❌');
+    console.log('  googleBtn:', googleBtn ? '✅' : '❌');
+    console.log('  githubBtn:', githubBtn ? '✅' : '❌');
+    console.log('  backBtn:', backBtn ? '✅' : '❌');
+
+    // Email toggle
+    if (emailBtn && form) {
+      emailBtn.addEventListener('click', function() {
+        const isHidden = form.style.display === 'none' || form.style.display === '';
+        form.style.display = isHidden ? 'block' : 'none';
+        emailBtn.style.display = isHidden ? 'none' : 'flex';
+      });
+      console.log('[LOGIN] ✅ Email toggle listener attached');
+    }
+
+    // Password visibility
+    document.querySelectorAll('.password-toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const input = this.parentElement.querySelector('input');
+        const eyeOpen = this.querySelector('.eye-open');
+        const eyeClosed = this.querySelector('.eye-closed');
+        if (input.type === 'password') {
+          input.type = 'text';
+          eyeOpen.style.display = 'none';
+          eyeClosed.style.display = 'block';
+        } else {
+          input.type = 'password';
+          eyeOpen.style.display = 'block';
+          eyeClosed.style.display = 'none';
+        }
+      });
+    });
+    console.log('[LOGIN] ✅ Password toggle listeners attached');
+
+    // Email login form
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!firebaseReady || !auth) {
+          NotificationSystem.error('Sistema de autenticación no está cargado');
+          return;
+        }
+        
+        const email = form.querySelector('#email')?.value?.trim();
+        const password = form.querySelector('#password')?.value;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if (!email || !password) { NotificationSystem.warning('Completa todos los campos'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { NotificationSystem.error('Email inválido'); return; }
+        
+        try {
+          setButtonLoading(submitBtn, true);
+          const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+          const result = await signInWithEmailAndPassword(auth, email, password);
+          await saveUserData(result.user, 'email');
+          NotificationSystem.success('¡Bienvenido!');
+          setTimeout(() => { window.location.href = '/'; }, 800);
+        } catch (error) {
+          handleAuthError(error);
+          setButtonLoading(submitBtn, false);
+        }
+      });
+      console.log('[LOGIN] ✅ Email login listener attached');
+    }
+
+    // Google auth
+    if (googleBtn) {
+      googleBtn.addEventListener('click', async function() {
+        if (!checkPageReady()) { 
+          NotificationSystem.error('Cargando sistemas...'); 
+          return; 
+        }
+        try {
+          setButtonLoading(googleBtn, true);
+          const { signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+          const provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          const result = await signInWithPopup(auth, provider);
+          await saveUserData(result.user, 'google');
+          NotificationSystem.success('¡Sesión iniciada!');
+          setTimeout(() => { window.location.href = '/'; }, 800);
+        } catch (error) {
+          if (error.code !== 'auth/popup-blocked') handleAuthError(error);
+          setButtonLoading(googleBtn, false);
+        }
+      });
+      console.log('[LOGIN] ✅ Google auth listener attached');
+    }
+
+    // GitHub auth
+    if (githubBtn) {
+      githubBtn.addEventListener('click', async function() {
+        if (!checkPageReady()) { 
+          NotificationSystem.error('Cargando sistemas...'); 
+          return; 
+        }
+        try {
+          setButtonLoading(githubBtn, true);
+          const { signInWithPopup, GithubAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js");
+          const provider = new GithubAuthProvider();
+          provider.setCustomParameters({ prompt: 'login' });
+          const result = await signInWithPopup(auth, provider);
+          await saveUserData(result.user, 'github');
+          NotificationSystem.success('¡Sesión iniciada!');
+          setTimeout(() => { window.location.href = '/'; }, 800);
+        } catch (error) {
+          if (error.code !== 'auth/popup-blocked') handleAuthError(error);
+          setButtonLoading(githubBtn, false);
+        }
+      });
+      console.log('[LOGIN] ✅ GitHub auth listener attached');
+    }
+
+    // Back button
+    if (backBtn) {
+      backBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = '/agent.html';
+      });
+      console.log('[LOGIN] ✅ Back button listener attached');
+    }
+
+    eventListenersReady = true;
+    console.log('[LOGIN] ✅ ALL EVENT LISTENERS ATTACHED SUCCESSFULLY!');
+    checkPageReady();
+    
+  } catch (error) {
+    console.error('[LOGIN] ❌ Error attaching listeners:', error);
+    eventListenersReady = false;
+  }
+}
+
+// ===== INITIALIZE UI =====
+function initializeUI() {
+  if (uiInitialized_script) return;
+  
+  console.log('[LOGIN] 🎨 Attempting to initialize UI...');
+  
+  try {
+    const emailBtn = document.querySelector('.email-auth-option');
+    const form = document.querySelector('.split-auth-form');
+    const googleBtn = document.querySelectorAll('.social-auth-btn')[0];
+    const githubBtn = document.querySelectorAll('.social-auth-btn')[1];
+    
+    if (!emailBtn || !form || !googleBtn || !githubBtn) {
+      console.log('[LOGIN] ⏳ UI elements not found yet, retrying...');
+      console.log('[LOGIN] 📍 Elements found: email=' + (emailBtn ? 'yes' : 'no') + ', form=' + (form ? 'yes' : 'no') + ', google=' + (googleBtn ? 'yes' : 'no') + ', github=' + (githubBtn ? 'yes' : 'no'));
+      return;
+    }
+    
+    uiInitialized_script = true;
+    console.log('[LOGIN] 🎯 UI elements found!');
+    
+    [emailBtn, googleBtn, githubBtn].forEach((btn) => {
+      if (btn) {
+        btn.style.pointerEvents = 'auto';
+        btn.style.cursor = 'pointer';
+        btn.style.opacity = '1';
+      }
+    });
+    
+    uiElementsReady = true;
+    console.log('[LOGIN] 🎨 UI initialized successfully!');
+    
+    attachEventListeners();
+    checkPageReady();
+    
+  } catch (error) {
+    console.error('[LOGIN] ❌ Error initializing UI:', error);
+    uiInitialized_script = false;
+  }
+}
+
+// ===== MAIN INITIALIZATION =====
+console.log('[LOGIN] 🌐 Exposing window functions...');
+window.reinitializeUI = initializeUI;
+
+console.log('[LOGIN] 📅 DOM readyState:', document.readyState);
+
+// Wait for DOM to be fully ready
+if (document.readyState === 'loading') {
+  console.log('[LOGIN] ⏳ Waiting for DOMContentLoaded...');
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[LOGIN] ✅ DOMContentLoaded fired!');
+    setTimeout(() => {
+      console.log('[LOGIN] 🚀 Calling initializeUI after DOMContentLoaded...');
+      initializeUI();
+    }, 50);
+  });
+} else {
+  console.log('[LOGIN] ✅ DOM already fully loaded');
+  setTimeout(() => {
+    console.log('[LOGIN] 🚀 Calling initializeUI immediately...');
+    initializeUI();
+  }, 50);
+}
+
+// Aggressive retry loop
+console.log('[LOGIN] 🔄 Starting aggressive retry loop...');
+for (let i = 1; i <= 50; i++) {
+  setTimeout(() => {
+    if (!pageFullyReady && !uiInitialized_script) {
+      if (i <= 5 || i % 10 === 0) {
+        console.log(`[LOGIN] 🔄 Retry #${i} (${i * 50}ms): Trying initializeUI...`);
+      }
+      initializeUI();
+    }
+  }, i * 50);
+}
+
+// Indefinite monitoring
+console.log('[LOGIN] 📊 Starting indefinite monitoring (NO TIMEOUT)...');
+let monitorCount = 0;
+const monitor = setInterval(() => {
+  monitorCount++;
+  
+  if (monitorCount % 10 === 0) {
+    console.log(`[LOGIN] 📊 Monitor #${monitorCount} (${monitorCount * 100}ms): FB=${firebaseReady ? '✅' : '❌'} UI=${uiElementsReady ? '✅' : '❌'} L=${eventListenersReady ? '✅' : '❌'} READY=${pageFullyReady ? '✅' : '❌'}`);
+  }
+  
+  if (pageFullyReady) {
+    clearInterval(monitor);
+    console.log('[LOGIN] 🎉🎉🎉 PAGE FULLY READY! Monitor stopped after ' + (monitorCount * 100) + 'ms');
+  }
+}, 100);
+
+console.log('[LOGIN] ✅ Script fully loaded! Waiting for all systems to be ready...');
+  </script>
+</body>
+</html>
