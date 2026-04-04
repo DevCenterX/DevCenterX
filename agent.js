@@ -1,5 +1,5 @@
 // ============================================
-// LANDING PAGE JAVASCRIPT
+// PAGE JAVASCRIPT
 // ============================================
 
 // Listen for theme-applied events from inline script (for debugging)
