@@ -42,19 +42,27 @@ export default async function handler(request, response) {
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    // Determinar si el mensaje requiere instrucciones de código basándose en el modo
     const requiresCode = mode === 'programar';
 
     const systemMessage = requiresCode ? `
-IMPORTANTE PARA RESPUESTAS CON CÓDIGO: 
-- Incluye HTML, CSS y JavaScript separados
-- El HTML debe estar dentro de un bloque \`\`\`html ... \`\`\`
-- El CSS debe estar dentro de un bloque \`\`\`css ... \`\`\`
-- El JavaScript debe estar dentro de un bloque \`\`\`javascript ... \`\`\`
-- Usa emojis y colores vibrantes
-- Hazlo completamente funcional
-- No expliques nada, solo genera el código con esos 3 bloques
-    ` : '';
+Eres un experto generador de apps web. Debes responder ÚNICAMENTE con JSON válido (sin markdown, sin backticks, sin explicaciones).
+El JSON debe tener exactamente esta estructura:
+{
+  "html": "código HTML del body (sin <!DOCTYPE>, sin <html>, sin <head>, solo el contenido del body)",
+  "css": "código CSS completo",
+  "js": "código JavaScript completo",
+  "message": "breve descripción de lo que generaste (máx 100 caracteres)",
+  "svgIcon": "un SVG compacto (viewBox='0 0 64 64') que represente visualmente la app, con colores vibrantes",
+  "appName": "nombre corto y creativo para la app (máx 20 caracteres)"
+}
+Reglas:
+- Usa emojis, colores vibrantes y gradientes en el CSS
+- El HTML no debe incluir <html>, <head> ni <body>
+- El CSS debe ser completo e independiente (sin imports externos)
+- El JS debe ser funcional y no depender de librerías externas salvo las que cargues vía CDN en el HTML
+- El SVG del icono debe ser simple, moderno, con colores que representen la app
+- SOLO JSON puro, sin texto adicional
+` : '';
 
     // Build conversation history
     const contents = [];
@@ -77,10 +85,25 @@ IMPORTANTE PARA RESPUESTAS CON CÓDIGO:
 
     const generationConfig = {
       temperature: 0.9,
-      maxOutputTokens: 4096,
+      maxOutputTokens: requiresCode ? 8192 : 4096,
     };
 
-    if (schema) {
+    if (requiresCode) {
+      // Force JSON output for programar mode — eliminates parsing errors
+      generationConfig.responseMimeType = 'application/json';
+      generationConfig.responseSchema = {
+        type: 'object',
+        properties: {
+          html:     { type: 'string' },
+          css:      { type: 'string' },
+          js:       { type: 'string' },
+          message:  { type: 'string' },
+          svgIcon:  { type: 'string' },
+          appName:  { type: 'string' },
+        },
+        required: ['html', 'css', 'js', 'message', 'svgIcon', 'appName'],
+      };
+    } else if (schema) {
       generationConfig.responseMimeType = 'application/json';
       generationConfig.responseSchema = schema;
     }

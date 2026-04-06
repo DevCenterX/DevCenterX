@@ -11,6 +11,7 @@
   --font-ui:   'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
+  /* Dark (default) */
   --bg0:       #080e1a;
   --bg1:       #0d1424;
   --bg2:       #1a2340;
@@ -30,10 +31,43 @@
   --border:  rgba(99,102,241,0.18);
   --border2: rgba(99,102,241,0.30);
 
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.5);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,.6);
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
 }
+
+/* Light theme */
+[data-theme="light"] {
+  --bg0:       #f8fafc;
+  --bg1:       #f1f5f9;
+  --bg2:       #e2e8f0;
+  --bg3:       #ffffff;
+  --bg-editor: #fafbfc;
+
+  --text0: #0f172a;
+  --text1: #334155;
+  --text2: #64748b;
+  --text3: #94a3b8;
+
+  --accent:  #6366f1;
+  --accent2: #0891b2;
+  --accent-green: #16a34a;
+  --accent-red:   #dc2626;
+
+  --border:  #e2e8f0;
+  --border2: #cbd5e1;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+}
+
+/* Smooth theme transition */
+*, *::before, *::after { transition: background-color .2s, border-color .2s, color .15s; }
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
