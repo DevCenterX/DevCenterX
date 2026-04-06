@@ -3,6 +3,36 @@
  * Firebase Firestore: guarda proyecto y redirige al editor
  */
 
+// ── Theme ─────────────────────────────────────────────────────────────────────
+(function initTheme() {
+    const saved = localStorage.getItem('dcx_theme');
+    const osDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (osDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    const applyIcons = t => {
+        document.querySelectorAll('.icon-sun').forEach(el => el.style.display = t === 'light' ? 'block' : 'none');
+        document.querySelectorAll('.icon-moon').forEach(el => el.style.display = t === 'dark' ? 'block' : 'none');
+    };
+    applyIcons(theme);
+    document.addEventListener('DOMContentLoaded', () => {
+        applyIcons(document.documentElement.getAttribute('data-theme') || theme);
+        document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('dcx_theme', next);
+            document.documentElement.setAttribute('data-theme', next);
+            applyIcons(next);
+        });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('dcx_theme')) {
+                const t = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+                applyIcons(t);
+            }
+        });
+    });
+})();
+
 // ── Firebase helpers ──────────────────────────────────────────────────────────
 async function getFirestoreWithAuth() {
     if (window.__DCX_DB && window.__DCX_AUTH_USER) return { db: window.__DCX_DB, user: window.__DCX_AUTH_USER };
@@ -229,9 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showToast('Proyecto creado exitosamente ✓', 'success');
 
-      // Redirect to editor with project ID
+      // Save name + description so Programar can auto-generate
+      localStorage.setItem('dcx_autogen_name', name);
+      localStorage.setItem('dcx_autogen_desc', desc || '');
+
+      // Redirect to Programar in auto-generate mode (chat-only, no editor yet)
       setTimeout(() => {
-        window.location.href = `/Programar/?pid=${projectId}`;
+        window.location.href = `/Programar/?pid=${projectId}&autoGenerate=true`;
       }, 700);
 
     } catch (err) {

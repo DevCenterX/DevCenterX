@@ -479,24 +479,25 @@
             </div>
 
             <!-- SVG Icon Editor -->
-            <div id="svgEditorWrapper" class="editor-wrapper">
-                <div class="editor-main-area" style="flex-direction:row;gap:0;">
-                    <!-- Left: SVG textarea -->
-                    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-                        <div style="padding:8px 14px;font-size:11px;color:var(--text2);letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg1);">
-                            icon.svg — <span style="color:#a78bfa;">Edita el SVG de tu app</span>
-                        </div>
-                        <textarea id="svgEditor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off"
-                            placeholder='<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">&#10;  <!-- Tu icono aquí -->&#10;</svg>'
-                            style="flex:1;font-family:var(--font-mono);font-size:13px;resize:none;border-right:1px solid var(--border);"></textarea>
-                    </div>
-                    <!-- Right: live SVG preview -->
-                    <div id="svgPreviewPane" style="width:220px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg1);border-left:1px solid var(--border);padding:24px 16px;">
-                        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Vista previa</div>
-                        <div id="svgLivePreview" style="width:80px;height:80px;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25);background:var(--bg3);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);"></div>
-                        <div id="svgLivePreview48" style="width:48px;height:48px;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2);background:var(--bg3);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);"></div>
-                        <div id="svgLivePreview24" style="width:24px;height:24px;border-radius:6px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.15);background:var(--bg3);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);"></div>
-                        <div style="font-size:10px;color:var(--text2);text-align:center;line-height:1.4;">80px · 48px · 24px</div>
+            <div id="svgEditorWrapper" class="editor-wrapper svg-editor-wrapper">
+                <!-- Toolbar -->
+                <div class="svg-toolbar">
+                    <span class="svg-toolbar-title">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2.5" stroke="#a78bfa" stroke-width="1.1"/><circle cx="6" cy="6" r="2.5" stroke="#a78bfa" stroke-width="1.1"/></svg>
+                        icon.svg
+                    </span>
+                    <span class="svg-toolbar-hint">Edita el SVG · se guarda automáticamente</span>
+                </div>
+                <!-- Body: editor + preview side by side -->
+                <div class="svg-body">
+                    <textarea id="svgEditor" class="svg-code-area" spellcheck="false" autocorrect="off" autocapitalize="off"
+                        placeholder='<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">&#10;  <!-- Tu icono aquí -->&#10;</svg>'></textarea>
+                    <div class="svg-preview-pane">
+                        <div class="svg-preview-label">Vista previa</div>
+                        <div class="svg-preview-box" id="svgLivePreview" data-size="80"></div>
+                        <div class="svg-preview-box svg-preview-box--md" id="svgLivePreview48" data-size="48"></div>
+                        <div class="svg-preview-box svg-preview-box--sm" id="svgLivePreview24" data-size="24"></div>
+                        <div class="svg-preview-sizes">80 · 48 · 24 px</div>
                     </div>
                 </div>
             </div>

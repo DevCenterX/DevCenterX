@@ -680,7 +680,54 @@ function setupPowerKeyboard(){
     document.addEventListener('keydown',e=>{const ctrl=e.ctrlKey||e.metaKey;if(ctrl&&e.key==='f'){e.preventDefault();openFindPanel('find');}if(ctrl&&e.key==='h'){e.preventDefault();openFindPanel('replace');}if(ctrl&&e.key==='s'){e.preventDefault();saveToLocal();}});
 }
 
-// ==================== CHAT & AI ====================
+// ==================== CODE BEAUTIFIER ====================
+// Simple formatter: adds proper newlines/indentation to minified HTML/CSS/JS
+function beautifyHTML(code) {
+    if (!code) return '';
+    let indent = 0;
+    const tab = '  ';
+    const voidTags = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
+    return code
+        .replace(/>\s*</g, '>\n<')
+        .replace(/>\s*([^<\n])/g, '>\n$1')
+        .split('\n')
+        .map(line => {
+            line = line.trim();
+            if (!line) return '';
+            const isClose = /^<\//.test(line);
+            const isSelfClose = /\/>$/.test(line) || voidTags.test((line.match(/^<(\w+)/)||[])[1]||'');
+            const isOpen = /^<[^/!]/.test(line) && !isSelfClose;
+            if (isClose) indent = Math.max(0, indent - 1);
+            const out = tab.repeat(indent) + line;
+            if (isOpen && !isClose) indent++;
+            return out;
+        })
+        .filter(l => l !== '')
+        .join('\n');
+}
+
+function beautifyCSS(code) {
+    if (!code) return '';
+    return code
+        .replace(/\s*\{\s*/g, ' {\n  ')
+        .replace(/;\s*/g, ';\n  ')
+        .replace(/\s*\}\s*/g, '\n}\n')
+        .replace(/  \n}/g, '\n}')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+function beautifyJS(code) {
+    if (!code) return '';
+    // Basic: insert newlines after { ; }
+    return code
+        .replace(/([{;])\s*/g, '$1\n')
+        .replace(/\s*\}\s*/g, '\n}\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+
 function saveChatHistory(){try{localStorage.setItem('dcx_chats',JSON.stringify(chatHistory.slice(0,20)));}catch(e){}}
 function createNewChat(){const id='chat_'+Date.now();chatHistory.unshift({id,title:'Nuevo Chat',messages:[],created:Date.now()});currentChatId=id;saveChatHistory();return id;}
 function loadChat(chatId){
@@ -734,12 +781,24 @@ async function generateCode(prompt){
         clearInterval(iv);if(bf)bf.style.width='100%';if(bp)bp.textContent='100%';
         await new Promise(r=>setTimeout(r,350));loadingDiv.remove();
         // Store icon + name globally
-        if(parsed.svgIcon){dcxAppSvgIcon=parsed.svgIcon;const se=document.getElementById('svgEditor');if(se)se.value=parsed.svgIcon;}
+        if(parsed.svgIcon){
+            dcxAppSvgIcon=parsed.svgIcon;
+            const se=document.getElementById('svgEditor');if(se)se.value=parsed.svgIcon;
+            // Refresh live preview panes if SVG tab was open
+            ['svgLivePreview','svgLivePreview48','svgLivePreview24'].forEach(id=>{
+                const el=document.getElementById(id);
+                if(el) try{el.innerHTML=parsed.svgIcon;const s=el.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';}}catch(_){}
+            });
+        }
         if(parsed.appName){dcxAppIconName=parsed.appName;}
+        // Beautify code (AI often returns minified single-line output)
+        const htmlClean = beautifyHTML(parsed.html||'');
+        const cssClean  = beautifyCSS(parsed.css||'');
+        const jsClean   = beautifyJS(parsed.js||'');
         const he=document.getElementById('htmlEditor'),ce=document.getElementById('cssEditor'),je=document.getElementById('jsEditor');
-        if(he&&parsed.html!==undefined){he.value=parsed.html;updateHighlight('htmlEditor');updateGutter('htmlEditor');}
-        if(ce&&parsed.css!==undefined){ce.value=parsed.css;updateHighlight('cssEditor');updateGutter('cssEditor');}
-        if(je&&parsed.js!==undefined){je.value=parsed.js;updateHighlight('jsEditor');updateGutter('jsEditor');}
+        if(he){he.value=htmlClean;updateHighlight('htmlEditor');updateGutter('htmlEditor');}
+        if(ce){ce.value=cssClean;updateHighlight('cssEditor');updateGutter('cssEditor');}
+        if(je){je.value=jsClean;updateHighlight('jsEditor');updateGutter('jsEditor');}
         appendMessage(parsed.message||`Listo: "${prompt}"`,'ai');
         if(autoGenerateMode){
             // Show result card — don't go to editor yet
@@ -759,32 +818,46 @@ function showGenerationResultCard(parsed){
     const existing=document.getElementById('dcxResultCard');if(existing)existing.remove();
     const svgSafe = parsed.svgIcon || `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#6366f1"/><text x="32" y="42" font-size="32" text-anchor="middle" fill="white">✦</text></svg>`;
     const appName = parsed.appName || localStorage.getItem('dcx_autogen_name') || 'Mi App';
+    const hasHTML = !!(parsed.html), hasCSS = !!(parsed.css), hasJS = !!(parsed.js), hasSVG = !!(parsed.svgIcon);
+    const badge = t => `<span style="font-size:11px;padding:4px 10px;border-radius:6px;font-family:var(--font-mono);" class="dcx-badge-${t}">${t.toUpperCase()}</span>`;
     const card=document.createElement('div');card.id='dcxResultCard';
-    card.style.cssText=`position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);`;
+    card.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);';
     card.innerHTML=`
-    <div style="background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;text-align:center;max-width:360px;width:90%;box-shadow:var(--shadow-lg);animation:dcxCardIn .35s cubic-bezier(.34,1.56,.64,1);">
-      <style>@keyframes dcxCardIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}</style>
-      <div id="dcxCardIcon" style="width:88px;height:88px;margin:0 auto 20px;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(99,102,241,.3);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
-        ${svgSafe}
+    <style>
+      @keyframes dcxCardIn{from{opacity:0;transform:scale(.82) translateY(24px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      .dcx-badge-html{background:rgba(249,115,22,.12);color:#f97316}
+      .dcx-badge-css{background:rgba(6,182,212,.12);color:#06b6d4}
+      .dcx-badge-js{background:rgba(251,191,36,.12);color:#fbbf24}
+      .dcx-badge-svg{background:rgba(167,139,250,.12);color:#a78bfa}
+    </style>
+    <div style="background:var(--bg1);border:1px solid var(--border2);border-radius:24px;max-width:390px;width:92%;box-shadow:var(--shadow-lg);animation:dcxCardIn .4s cubic-bezier(.34,1.56,.64,1);overflow:hidden;">
+      <div style="height:4px;background:linear-gradient(90deg,#6366f1,#a78bfa,#22d3ee);"></div>
+      <div style="padding:28px 28px 24px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <div id="dcxCardIcon" style="width:70px;height:70px;flex-shrink:0;border-radius:18px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);box-shadow:0 8px 24px rgba(99,102,241,.2);display:flex;align-items:center;justify-content:center;">${svgSafe}</div>
+          <div style="min-width:0;">
+            <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a78bfa;font-weight:700;margin-bottom:4px;">✓ App generada</div>
+            <div style="font-size:19px;font-weight:700;color:var(--text0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${appName}</div>
+          </div>
+        </div>
+        <p style="font-size:12.5px;color:var(--text2);margin:0 0 18px;line-height:1.6;padding:10px 13px;background:var(--bg2);border-radius:10px;border-left:3px solid #6366f1;">${parsed.message||'Tu app está lista.'}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
+          ${hasHTML?badge('html'):''}${hasCSS?badge('css'):''}${hasJS?badge('js'):''}${hasSVG?badge('svg'):''}
+        </div>
+        <button id="dcxCardContinue" style="width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(99,102,241,.35);transition:transform .15s,box-shadow .15s;">
+          Abrir en el editor →
+        </button>
       </div>
-      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;font-weight:600;">App generada ✓</div>
-      <h2 style="font-size:22px;font-weight:700;color:var(--text0);margin:0 0 8px;">${appName}</h2>
-      <p style="font-size:13px;color:var(--text2);margin:0 0 28px;line-height:1.5;">${parsed.message||'Tu app está lista para editar.'}</p>
-      <button id="dcxCardContinue" style="width:100%;padding:13px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(99,102,241,.4);transition:opacity .2s;">
-        Continuar al editor →
-      </button>
     </div>`;
     document.body.appendChild(card);
+    const btn=card.querySelector('#dcxCardContinue');
+    btn.addEventListener('mouseenter',()=>{btn.style.transform='translateY(-1px)';btn.style.boxShadow='0 6px 28px rgba(99,102,241,.5)';});
+    btn.addEventListener('mouseleave',()=>{btn.style.transform='';btn.style.boxShadow='0 4px 20px rgba(99,102,241,.35)';});
     document.getElementById('dcxCardContinue').addEventListener('click',async()=>{
-        card.style.opacity='0';card.style.transition='opacity .25s';
-        setTimeout(()=>card.remove(),250);
-        autoGenerateMode=false;
-        // Un-hide editor and make sidebar normal
-        const ec=document.getElementById('editorContainer');if(ec)ec.style.display='';
-        const ft=document.getElementById('fileTabs');if(ft)ft.style.display='';
-        const ls=document.getElementById('leftSidebar');if(ls){ls.style.width='';ls.style.maxWidth='';}
-        const autoBanner=document.getElementById('dcxAutoBanner');if(autoBanner)autoBanner.remove();
-        // Save icon to Firebase project
+        card.style.opacity='0';card.style.transition='opacity .3s';
+        setTimeout(()=>card.remove(),300);
+        exitAutoGenerateMode();
+        // Save icon + name to Firebase
         if(dcxAppSvgIcon&&dcxProjectId&&dcxUid){
             try{
                 await dcxInit();
@@ -816,26 +889,56 @@ function initAutoGenerateMode(){
     autoGenerateMode=true;
     const appName=localStorage.getItem('dcx_autogen_name')||'Mi App';
     const appDesc=localStorage.getItem('dcx_autogen_desc')||'';
-    // Hide editor + tabs, make sidebar fill the screen
-    const ec=document.getElementById('editorContainer');if(ec)ec.style.display='none';
-    const ft=document.getElementById('fileTabs');if(ft)ft.style.display='none';
-    const ls=document.getElementById('leftSidebar');
-    if(ls){ls.style.width='100%';ls.style.maxWidth='100%';}
-    // Add banner above chat
+
+    // ── 1. Hide editor side, make chat fill 100% ─────────────────────────────
+    document.body.classList.add('autogen-active');
+
+    // ── 2. Lock chat input (user can't interrupt generation) ─────────────────
+    const chatInput=document.getElementById('chatInput');
+    const sendBtn=document.getElementById('sendBtn');
+    if(chatInput){chatInput.disabled=true;chatInput.placeholder='Generando tu app...';}
+    if(sendBtn)sendBtn.disabled=true;
+
+    // ── 3. Banner at top of chat ──────────────────────────────────────────────
+    const chatArea=document.querySelector('.chat-area')||document.getElementById('chatMessages')?.parentNode;
+    const banner=document.createElement('div');banner.id='dcxAutoBanner';
+    banner.style.cssText='padding:14px 20px;background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(167,139,250,.06));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;';
+    banner.innerHTML=`
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(99,102,241,.35);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Creando «${appName}»</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:1px;">La IA está trabajando · al terminar verás el resultado</div>
+      </div>`;
+    // Insert banner before chatMessages
     const msgs=document.getElementById('chatMessages');
-    if(msgs){
-        const banner=document.createElement('div');banner.id='dcxAutoBanner';
-        banner.style.cssText='padding:16px 20px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;';
-        banner.innerHTML=`<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div><div style="font-size:13px;font-weight:600;color:var(--text0);">Generando «${appName}»</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">La IA está construyendo tu app. Cuando termine verás el resultado.</div></div>`;
-        msgs.parentNode.insertBefore(banner,msgs);
-    }
-    // Auto-send generation prompt after UI is ready
+    if(msgs && msgs.parentNode){msgs.parentNode.insertBefore(banner,msgs);}
+
+    // ── 4. Auto-send the generation prompt ────────────────────────────────────
     const prompt=`Crea una app web llamada "${appName}"${appDesc?`. Descripción: ${appDesc}`:''}. Hazla visualmente impresionante con colores vibrantes, animaciones suaves y completamente funcional.`;
     setTimeout(()=>{
         startChat();
-        appendMessage(`Generar app: ${appName}${appDesc?' — '+appDesc:''}`, 'user');
-        generateCode(prompt);
-    }, 600);
+        appendMessage(`Generar: ${appName}${appDesc?' — '+appDesc:''}`, 'user');
+        generateCode(prompt).finally(()=>{
+            // Re-enable input after generation (even on error)
+            if(chatInput){chatInput.disabled=false;chatInput.placeholder='Describe lo que quieres construir...';}
+            if(sendBtn)sendBtn.disabled=false;
+        });
+    }, 500);
+}
+
+// ── Restore editor after auto-generate result card is dismissed ──────────────
+function exitAutoGenerateMode(){
+    autoGenerateMode=false;
+    document.body.classList.remove('autogen-active');
+    // Remove banner
+    document.getElementById('dcxAutoBanner')?.remove();
+    // Re-enable input
+    const chatInput=document.getElementById('chatInput');
+    if(chatInput){chatInput.disabled=false;chatInput.placeholder='Describe lo que quieres construir...';}
+    const sendBtn=document.getElementById('sendBtn');
+    if(sendBtn)sendBtn.disabled=false;
 }
 
 // ==================== AGENT USAGE LIMIT (from Firebase users/{uid}.limit) ====================
