@@ -1,4 +1,26 @@
 'use strict';
+// ==================== SVG PREVIEW HELPER ====================
+// Renders SVG into all preview boxes, namespacing gradient/filter IDs per box
+// so identical defs across different size previews don't conflict.
+function renderSvgToBoxes(svgRaw) {
+    if (!svgRaw || !svgRaw.trim()) return;
+    ['svgLivePreview', 'svgLivePreview48', 'svgLivePreview24'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        try {
+            const ns = 'dcx_' + id + '_';
+            let isolated = svgRaw
+                .replace(/\bid="([^"]+)"/g, (_, gid) => `id="${ns}${gid}"`)
+                .replace(/\burl\(#([^)]+)\)/g, (_, gid) => `url(#${ns}${gid})`)
+                .replace(/\bhref="#([^"]+)"/g, (_, gid) => `href="#${ns}${gid}"`)
+                .replace(/\bxlink:href="#([^"]+)"/g, (_, gid) => `xlink:href="#${ns}${gid}"`);
+            el.innerHTML = isolated;
+            const s = el.querySelector('svg');
+            if (s) { s.style.width = '100%'; s.style.height = '100%'; }
+        } catch(_) {}
+    });
+}
+
 // ==================== GLOBALS ====================
 let currentTab = 'html';
 let isGenerating = false;
@@ -470,11 +492,8 @@ async function loadProjectFromFirebase(pid) {
             dcxAppSvgIcon = project.svgIcon;
             const se = document.getElementById('svgEditor');
             if (se) se.value = project.svgIcon;
-            // Populate live preview panes
-            ['svgLivePreview','svgLivePreview48','svgLivePreview24'].forEach(id=>{
-                const el=document.getElementById(id);
-                if(el) try{ el.innerHTML=project.svgIcon; const s=el.querySelector('svg'); if(s){s.style.width='100%';s.style.height='100%';} }catch(_){}
-            });
+            // Populate live preview panes (isolated IDs to avoid gradient conflicts)
+            renderSvgToBoxes(project.svgIcon);
         }
 
         // Project name in nav
@@ -681,50 +700,150 @@ function setupPowerKeyboard(){
 }
 
 // ==================== CODE BEAUTIFIER ====================
-// Simple formatter: adds proper newlines/indentation to minified HTML/CSS/JS
+// Robust formatter — handles minified/single-line AI output correctly
 function beautifyHTML(code) {
     if (!code) return '';
-    let indent = 0;
     const tab = '  ';
-    const voidTags = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
-    return code
-        .replace(/>\s*</g, '>\n<')
-        .replace(/>\s*([^<\n])/g, '>\n$1')
-        .split('\n')
-        .map(line => {
-            line = line.trim();
-            if (!line) return '';
-            const isClose = /^<\//.test(line);
-            const isSelfClose = /\/>$/.test(line) || voidTags.test((line.match(/^<(\w+)/)||[])[1]||'');
-            const isOpen = /^<[^/!]/.test(line) && !isSelfClose;
-            if (isClose) indent = Math.max(0, indent - 1);
-            const out = tab.repeat(indent) + line;
-            if (isOpen && !isClose) indent++;
-            return out;
-        })
-        .filter(l => l !== '')
-        .join('\n');
+    const voidTags = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+    const inlineTags = new Set(['a','abbr','acronym','b','bdo','big','br','cite','code','dfn','em','i','img','input','kbd','label','map','object','output','q','s','samp','select','small','span','strong','sub','sup','textarea','time','tt','u','var']);
+    // Preserve content inside script/style/pre tags
+    const preserved = [];
+    code = code.replace(/<(script|style|pre)([\s\S]*?)>([\s\S]*?)<\/\1>/gi, (m, tag, attrs, content) => {
+        const idx = preserved.length;
+        preserved.push(m);
+        return `\x00PRESERVED_${idx}\x00`;
+    });
+    // Split on tag boundaries, preserving attributes
+    const tokens = [];
+    let i = 0;
+    while (i < code.length) {
+        if (code[i] === '<') {
+            let j = i + 1;
+            let inStr = false, strChar = '';
+            while (j < code.length) {
+                if (inStr) { if (code[j] === strChar) inStr = false; }
+                else if (code[j] === '"' || code[j] === "'") { inStr = true; strChar = code[j]; }
+                else if (code[j] === '>') { j++; break; }
+                j++;
+            }
+            tokens.push(code.slice(i, j));
+            i = j;
+        } else {
+            let j = code.indexOf('<', i);
+            if (j === -1) j = code.length;
+            const txt = code.slice(i, j).trim();
+            if (txt) tokens.push(txt);
+            i = j;
+        }
+    }
+    let indent = 0;
+    const lines = [];
+    for (let t of tokens) {
+        if (t.startsWith('</')) {
+            // closing tag
+            const tagName = (t.match(/<\/(\w+)/)||[])[1]?.toLowerCase()||'';
+            if (!inlineTags.has(tagName)) indent = Math.max(0, indent - 1);
+            lines.push(tab.repeat(indent) + t);
+        } else if (t.startsWith('<!') || t.startsWith('<?')) {
+            lines.push(tab.repeat(indent) + t);
+        } else if (t.startsWith('<')) {
+            const tagName = (t.match(/<(\w+)/)||[])[1]?.toLowerCase()||'';
+            const isVoid = voidTags.has(tagName);
+            const isSelfClose = t.endsWith('/>');
+            const isInline = inlineTags.has(tagName);
+            lines.push(tab.repeat(indent) + t);
+            if (!isVoid && !isSelfClose && !isInline) indent++;
+        } else {
+            // text node
+            lines.push(tab.repeat(indent) + t);
+        }
+    }
+    // Restore preserved blocks
+    let result = lines.join('\n').replace(/\x00PRESERVED_(\d+)\x00/g, (_, idx) => preserved[+idx]);
+    return result.replace(/\n{3,}/g, '\n\n').trim();
 }
 
 function beautifyCSS(code) {
     if (!code) return '';
-    return code
+    // Handle @rules with nested blocks
+    let result = code
+        .replace(/\/\*[\s\S]*?\*\//g, m => '\n' + m + '\n')  // preserve comments
         .replace(/\s*\{\s*/g, ' {\n  ')
-        .replace(/;\s*/g, ';\n  ')
+        .replace(/;\s*(?=[^\s}])/g, ';\n  ')
+        .replace(/\s*;\s*\}/g, ';\n}')
         .replace(/\s*\}\s*/g, '\n}\n')
+        .replace(/,\s*(?=[^\s])/g, ',\n')  // selector lists on separate lines
         .replace(/  \n}/g, '\n}')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
+    // Fix double-space before property values
+    result = result.replace(/^(  )(\s+)/gm, '  ');
+    return result;
 }
 
 function beautifyJS(code) {
     if (!code) return '';
-    // Basic: insert newlines after { ; }
-    return code
-        .replace(/([{;])\s*/g, '$1\n')
-        .replace(/\s*\}\s*/g, '\n}\n')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+
+    const preserved = [];
+    // Preserve template literals
+    code = code.replace(/`[\s\S]*?`/g, m => { const i = preserved.length; preserved.push(m); return '\x00P' + i + '\x00'; });
+    // Preserve single/double-quoted strings
+    code = code.replace(/(["'])(?:(?!\1)[^\\]|\\.)*\1/g, m => { const i = preserved.length; preserved.push(m); return '\x00P' + i + '\x00'; });
+
+    let out = '';
+    let i = 0;
+    let parenDepth = 0;
+
+    while (i < code.length) {
+        const ch = code[i];
+        if (ch === '(' || ch === '[') { parenDepth++; out += ch; }
+        else if (ch === ')' || ch === ']') { parenDepth--; out += ch; }
+        else if (ch === '{') {
+            out += ch;
+            let j = i + 1;
+            while (j < code.length && (code[j] === ' ' || code[j] === '\t')) j++;
+            if (j < code.length && code[j] !== '\n' && code[j] !== '}') {
+                out += '\n'; i = j - 1;
+            }
+        } else if (ch === '}') {
+            if (out.length && out[out.length-1] !== '\n') out += '\n';
+            out += ch;
+            let j = i + 1;
+            while (j < code.length && code[j] === ' ') j++;
+            const next = code[j];
+            if (next !== ',' && next !== ')' && next !== ';' && next !== '.' && j < code.length) {
+                out += '\n'; i = j - 1;
+            }
+        } else if (ch === ';') {
+            out += ch;
+            let j = i + 1;
+            while (j < code.length && (code[j] === ' ' || code[j] === '\t')) j++;
+            if (j < code.length && code[j] !== '\n') { out += '\n'; i = j - 1; }
+        } else {
+            out += ch;
+        }
+        i++;
+    }
+
+    out = out.replace(/\n{3,}/g, '\n\n').trim();
+
+    // Indent based on brace depth
+    let indent = 0;
+    const tab = '  ';
+    out = out.split('\n').map(line => {
+        line = line.trim();
+        if (!line) return '';
+        const startsClose = /^}/.test(line);
+        if (startsClose) indent = Math.max(0, indent - 1);
+        const r = tab.repeat(indent) + line;
+        const opens  = (line.match(/\{/g)||[]).length;
+        const closes = (line.match(/\}/g)||[]).length;
+        indent = Math.max(0, indent + opens - (startsClose ? closes - 1 : closes));
+        return r;
+    }).filter(Boolean).join('\n');
+
+    out = out.replace(/\x00P(\d+)\x00/g, (_, idx) => preserved[+idx]);
+    return out;
 }
 
 
@@ -784,11 +903,8 @@ async function generateCode(prompt){
         if(parsed.svgIcon){
             dcxAppSvgIcon=parsed.svgIcon;
             const se=document.getElementById('svgEditor');if(se)se.value=parsed.svgIcon;
-            // Refresh live preview panes if SVG tab was open
-            ['svgLivePreview','svgLivePreview48','svgLivePreview24'].forEach(id=>{
-                const el=document.getElementById(id);
-                if(el) try{el.innerHTML=parsed.svgIcon;const s=el.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';}}catch(_){}
-            });
+            // Refresh live preview panes (isolated IDs)
+            renderSvgToBoxes(parsed.svgIcon);
         }
         if(parsed.appName){dcxAppIconName=parsed.appName;}
         // Beautify code (AI often returns minified single-line output)
@@ -2077,15 +2193,11 @@ document.addEventListener('DOMContentLoaded', async function init(){
     // ── SVG editor live preview ───────────────────────────────────────────────
     document.getElementById('svgEditor')?.addEventListener('input', e => {
         dcxAppSvgIcon = e.target.value;
-        // Live preview in all sizes
-        const svgVal = dcxAppSvgIcon.trim();
-        ['svgLivePreview','svgLivePreview48','svgLivePreview24'].forEach(id=>{
-            const el=document.getElementById(id);
-            if(el) try{ el.innerHTML=svgVal; const s=el.querySelector('svg'); if(s){s.style.width='100%';s.style.height='100%';} }catch(_){}
-        });
+        // Live preview in all sizes (isolated IDs to avoid gradient conflicts)
+        renderSvgToBoxes(dcxAppSvgIcon.trim());
         // Refresh icon in result card if visible
         const cardIcon = document.getElementById('dcxCardIcon');
-        if(cardIcon) try{ cardIcon.innerHTML = svgVal; } catch(_){}
+        if(cardIcon) try{ cardIcon.innerHTML = dcxAppSvgIcon.trim(); } catch(_){}
     });
 
     // ── Auto-generate mode (coming from crear-app) ───────────────────────────

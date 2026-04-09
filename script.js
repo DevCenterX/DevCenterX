@@ -789,14 +789,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('✅ Chat controls ready');
 
-  // Event listener en el botón "Iniciar" - Ejecutar acción según modo seleccionado
-  if (startChatBtn) {
-    startChatBtn.addEventListener('click', () => {
-      console.log('🎯 Ejecutando acción para modo:', selectedMode);
-      sendMessage();
-    });
-  }
-
   // Función para mostrar notificaciones personalizadas
   function showNotification(message, icon = '⚠️') {
     const notification = document.createElement('div');
