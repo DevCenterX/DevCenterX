@@ -343,8 +343,8 @@ const autoSaveEditors = debounce(async () => {
     const html = document.getElementById('htmlEditor')?.value || '';
     const css = document.getElementById('cssEditor')?.value || '';
     const js = document.getElementById('jsEditor')?.value || '';
-    await saveToFirebase(html, css, js);
-    markSaved();
+    const ok = await saveToFirebase(html, css, js);
+    if (ok) markSaved('Autoguardado en Firebase');
 }, 2000); // Auto-save after 2 seconds of inactivity
 
 function setupEditorEvents() {
