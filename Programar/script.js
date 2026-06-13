@@ -1,4 +1,14 @@
 'use strict';
+
+// ==================== UTILITY: DEBOUNCE ====================
+function debounce(fn, ms) {
+    let id;
+    return (...args) => {
+        clearTimeout(id);
+        id = setTimeout(() => fn(...args), ms);
+    };
+}
+
 // ==================== SVG PREVIEW HELPER ====================
 // Renders SVG into all preview boxes, namespacing gradient/filter IDs per box
 // so identical defs across different size previews don't conflict.
@@ -262,7 +272,8 @@ function updateCursorPos(editor) {
 }
 
 // ==================== PREVIEW ====================
-function updatePreview() {
+// Debounce preview updates (max every 500ms)
+const debouncedPreview = debounce(() => {
     const html = document.getElementById('htmlEditor')?.value||'';
     const css  = document.getElementById('cssEditor')?.value||'';
     const js   = document.getElementById('jsEditor')?.value||'';
@@ -282,6 +293,10 @@ window.onerror=(m,s,l,c,e)=>window.parent.postMessage({type:'console',level:'err
     const url = URL.createObjectURL(blob);
     frame.src = url;
     setTimeout(()=>URL.revokeObjectURL(url),8000);
+}, 500);
+
+function updatePreview() {
+    debouncedPreview();
 }
 
 // ==================== TAB SWITCH ====================
@@ -322,6 +337,16 @@ function switchTab(fileType) {
 }
 
 // ==================== EDITOR EVENTS ====================
+// Auto-save debouncer
+const autoSaveEditors = debounce(async () => {
+    if (!dcxUid || !dcxProjectId) return;
+    const html = document.getElementById('htmlEditor')?.value || '';
+    const css = document.getElementById('cssEditor')?.value || '';
+    const js = document.getElementById('jsEditor')?.value || '';
+    await saveToFirebase(html, css, js);
+    markSaved();
+}, 2000); // Auto-save after 2 seconds of inactivity
+
 function setupEditorEvents() {
     ['htmlEditor','jsEditor','cssEditor'].forEach(id => {
         const ed = document.getElementById(id);
@@ -334,11 +359,18 @@ function setupEditorEvents() {
             if (gu) gu.scrollTop = ed.scrollTop;
         }
 
-        ed.addEventListener('input', () => {
-            updateHighlight(id); // syncs scroll internally
+        // Debounce highlight update (max every 300ms)
+        const debouncedHighlight = debounce(() => {
+            updateHighlight(id);
             updateGutter(id);
+        }, 300);
+
+        ed.addEventListener('input', () => {
+            debouncedHighlight();
             updateCursorPos(ed);
             markUnsaved();
+            autoSaveEditors(); // Trigger auto-save
+            updatePreview(); // Update preview with debounce internally
         });
 
         ed.addEventListener('scroll', () => {
