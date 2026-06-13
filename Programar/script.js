@@ -1859,6 +1859,107 @@ document.addEventListener('keydown', (e) => {
         formatActiveCode();
     }
 });
+
+// ==================== COMMAND PALETTE ====================
+function setupCommandPalette() {
+    const modal = document.getElementById('commandPaletteModal');
+    const input = document.getElementById('commandPaletteInput');
+    const list = document.getElementById('commandPaletteList');
+    const trigger = document.getElementById('commandPaletteBtn');
+    const backdrop = document.getElementById('commandPaletteBackdrop');
+    if (!modal || !input || !list) return;
+
+    const commands = [
+        { label: 'Abrir preview', hint: 'Ctrl+Enter', run: () => switchTab('preview') },
+        { label: 'Abrir HTML', hint: 'index.html', run: () => switchTab('html') },
+        { label: 'Abrir CSS', hint: 'style.css', run: () => switchTab('css') },
+        { label: 'Abrir JavaScript', hint: 'script.js', run: () => switchTab('js') },
+        { label: 'Editar icono SVG', hint: 'icon.svg', run: () => switchTab('svg') },
+        { label: 'Abrir Agent', hint: 'Chat', run: () => switchTab('agent') },
+        { label: 'Guardar proyecto', hint: 'Ctrl+S', run: () => saveToLocal() },
+        { label: 'Formatear archivo actual', hint: 'Ctrl+Shift+F', run: () => formatActiveCode() },
+        { label: 'Buscar en archivo', hint: 'Ctrl+F', run: () => openFindPanel('find') },
+        { label: 'Buscar y reemplazar', hint: 'Ctrl+H', run: () => openFindPanel('replace') },
+        { label: 'Refrescar preview', hint: 'Reload', run: () => updatePreview() },
+        { label: 'Ver historial de deploys', hint: 'Deploys', run: () => openDeployHistory() },
+        { label: 'Publicar en Vercel', hint: 'Publish', run: () => deployToVercel() },
+        { label: 'Cambiar tema', hint: 'Claro/Oscuro', run: () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('dcx_theme', next);
+            applyTheme(next);
+        }},
+        { label: 'Mostrar atajos', hint: '?', run: () => {
+            const shortcuts = document.getElementById('shortcutsModal');
+            if (shortcuts) shortcuts.style.display = 'flex';
+        }},
+    ];
+
+    let activeIndex = 0;
+    let filtered = commands;
+
+    function closePalette() {
+        modal.style.display = 'none';
+        input.value = '';
+    }
+
+    function runActive() {
+        const command = filtered[activeIndex];
+        if (!command) return;
+        closePalette();
+        command.run();
+    }
+
+    function renderCommands() {
+        const q = input.value.trim().toLowerCase();
+        filtered = commands.filter(cmd => cmd.label.toLowerCase().includes(q) || cmd.hint.toLowerCase().includes(q));
+        activeIndex = Math.min(activeIndex, Math.max(filtered.length - 1, 0));
+        list.innerHTML = '';
+        if (!filtered.length) {
+            const empty = document.createElement('div');
+            empty.className = 'command-empty';
+            empty.textContent = 'Sin comandos';
+            list.appendChild(empty);
+            return;
+        }
+        filtered.forEach((cmd, index) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'command-item' + (index === activeIndex ? ' active' : '');
+            item.innerHTML = `<span>${cmd.label}</span><kbd>${cmd.hint}</kbd>`;
+            item.addEventListener('mouseenter', () => { activeIndex = index; renderCommands(); });
+            item.addEventListener('click', () => { activeIndex = index; runActive(); });
+            list.appendChild(item);
+        });
+    }
+
+    function openPalette() {
+        modal.style.display = 'flex';
+        activeIndex = 0;
+        renderCommands();
+        requestAnimationFrame(() => {
+            input.focus();
+            input.select();
+        });
+    }
+
+    trigger?.addEventListener('click', openPalette);
+    backdrop?.addEventListener('click', closePalette);
+    input.addEventListener('input', () => { activeIndex = 0; renderCommands(); });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, filtered.length - 1); renderCommands(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0); renderCommands(); }
+        if (e.key === 'Enter') { e.preventDefault(); runActive(); }
+    });
+    document.addEventListener('keydown', e => {
+        const ctrl = e.ctrlKey || e.metaKey;
+        if (ctrl && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            modal.style.display === 'flex' ? closePalette() : openPalette();
+        }
+        if (e.key === 'Escape' && modal.style.display === 'flex') closePalette();
+    });
+}
 function setupAllListeners(){
     document.getElementById('fileTabs')?.addEventListener('click',e=>{const tab=e.target.closest('.file-tab');if(tab?.dataset.file)switchTab(tab.dataset.file);});
     document.getElementById('sendBtn')?.addEventListener('click',sendMessage);
@@ -2274,6 +2375,7 @@ document.addEventListener('DOMContentLoaded', async function init(){
     setupChatHistory();
     setupPreviewEmptyState();
     setupAgentPanel();
+    setupCommandPalette();
     setupProjectEdit();
     setupProjectSwitcher();
     setupProjectInfoModal();
@@ -2301,6 +2403,11 @@ document.addEventListener('DOMContentLoaded', async function init(){
     }
 
     setInterval(()=>{ if(hasUnsavedChanges) saveToLocal(); }, 60000);
+    window.addEventListener('beforeunload', e => {
+        if (!hasUnsavedChanges) return;
+        e.preventDefault();
+        e.returnValue = '';
+    });
 
     // ── Send prompt from dashboard into the AI chat ──────────────────────────
     if (promptFromDashboard) {
