@@ -3,6 +3,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -51,6 +52,98 @@
     --transition-fast: all 0.15s ease;
     --transition-slow: all 0.5s ease;
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Safe area insets (para dispositivos con muesca/notch) */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+
+    /* Header height dinámica */
+    --header-height: 70px;
+}
+
+/* ===== ANIMACIONES CENTRALIZADAS ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes floatAround {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25% { transform: translate(30px, -40px) rotate(90deg) scale(1.1); }
+    50% { transform: translate(-20px, -80px) rotate(180deg) scale(0.9); }
+    75% { transform: translate(-40px, -40px) rotate(270deg) scale(1.05); }
+}
+
+@keyframes typingBounce {
+    0%, 80%, 100% {
+        transform: scale(0.4);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1.5);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Estilos para descarga de archivos */
@@ -170,12 +263,31 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     line-height: 1.6;
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
+    /* Prevenir scroll rebote en iOS */
+    overscroll-behavior: none;
+    /* Evitar selección accidental en móvil */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Mejorar rendering en dispositivos de alta densidad */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Permitir selección de texto en mensajes y inputs */
+.message-text,
+#messageInput,
+input,
+textarea,
+select {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 /* Fondo simple y limpio */
@@ -196,13 +308,16 @@ body::before {
     background: var(--bg-secondary);
     border-bottom: 2px solid var(--border);
     padding: 0.75rem 1rem;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
     height: auto;
-    min-height: 70px;
+    min-height: var(--header-height);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     box-shadow: var(--shadow);
@@ -327,6 +442,7 @@ body::before {
     width: 100%;
     max-width: 340px;
     height: 100vh;
+    height: 100dvh;
     background: var(--bg-secondary);
     border-right: 2px solid var(--border);
     transform: translateX(-100%);
@@ -337,6 +453,12 @@ body::before {
     box-shadow: var(--shadow-xl);
     backdrop-filter: blur(20px);
     overflow-y: auto;
+    /* iOS scroll */
+    -webkit-overflow-scrolling: touch;
+    /* Safe area padding */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .sidebar.open {
@@ -672,6 +794,7 @@ body::before {
 .main {
     margin-top: 70px;
     height: calc(100vh - 70px);
+    height: calc(100dvh - 70px);
     overflow: hidden;
     position: relative;
 }
@@ -693,6 +816,9 @@ body::before {
     scrollbar-width: thin;
     scrollbar-color: var(--border-bright) transparent;
     min-height: 0;
+    /* Scroll suave en iOS */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .messages::-webkit-scrollbar {
@@ -724,6 +850,7 @@ body::before {
     .main {
         margin-top: 60px;
         height: calc(100vh - 60px);
+        height: calc(100dvh - 60px);
     }
     
     .chat-container {
@@ -739,6 +866,7 @@ body::before {
     .main {
         margin-top: 56px;
         height: calc(100vh - 56px);
+        height: calc(100dvh - 56px);
     }
     
     .chat-container {
@@ -1457,8 +1585,11 @@ body::before {
 /* Input Area mejorado */
 .input-area {
     padding: 1.5rem 0 2rem;
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
     position: relative;
     margin-top: auto;
+    /* Proteger el input del teclado virtual */
+    flex-shrink: 0;
 }
 
 .input-container {
@@ -1542,7 +1673,8 @@ body::before {
 /* Responsive para Input */
 @media (max-width: 768px) {
     .input-area {
-        padding: 1rem 0 1.5rem;
+        padding: 1rem 0;
+        padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem));
     }
     
     .input-container {
@@ -1562,7 +1694,8 @@ body::before {
 
 @media (max-width: 480px) {
     .input-area {
-        padding: 0.75rem 0 1rem;
+        padding: 0.75rem 0;
+        padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
     }
     
     .input-container {
@@ -1572,7 +1705,7 @@ body::before {
     }
     
     #messageInput {
-        font-size: 0.9rem;
+        font-size: 16px; /* Evitar zoom automático en iOS */
         padding: 0.4rem 0;
     }
     
@@ -1865,6 +1998,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     background: var(--bg-primary);
     z-index: 300;
     display: none;
@@ -1881,6 +2015,9 @@ body::before {
     background: var(--bg-secondary);
     border-bottom: 2px solid var(--border);
     padding: 1rem 1.5rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -1890,11 +2027,13 @@ body::before {
     overflow: visible;
     position: relative;
     z-index: 999999;
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
     .preview-header {
         padding: 0.75rem 1rem;
+        padding-top: max(0.75rem, env(safe-area-inset-top));
         gap: 0.75rem;
     }
 }
@@ -2517,7 +2656,9 @@ body::before {
     max-width: 600px;
     width: 100%;
     max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: var(--shadow-xl);
     backdrop-filter: blur(20px);
     animation: modalSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -2572,6 +2713,19 @@ body::before {
 
 .section-icon {
     font-size: 1.5rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.section-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
 }
 
 .section-header h4 {
@@ -2607,6 +2761,19 @@ body::before {
 
 .label-icon {
     font-size: 1.1rem;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.label-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
 }
 
 .input-group input,
@@ -3347,7 +3514,7 @@ body::before {
 }
 
 /* ============================================
-   ✨ MEJORADOR DE PROMPTS - ESTILOS MEJORADOS
+   MEJORADOR DE PROMPTS - ESTILOS MEJORADOS
    ============================================ */
 
 .prompt-improver-section {
@@ -4784,6 +4951,7 @@ body::before {
 @media (max-width: 425px) {
     .header {
         padding: 0.5rem 0.75rem;
+        padding-top: max(0.5rem, env(safe-area-inset-top));
     }
 
     .menu-btn,
@@ -4803,7 +4971,8 @@ body::before {
     }
 
     .input-area {
-        padding: 0.75rem 0.75rem 1rem;
+        padding: 0.75rem 0.75rem;
+        padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
         position: fixed;
         bottom: 0;
         left: 0;
@@ -4835,6 +5004,11 @@ body::before {
 
     .suggestion-btn {
         flex: 1 1 100%;
+    }
+
+    /* Ajustar mensajes para que no queden detrás del input fijo */
+    .messages {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
     }
 }
 
@@ -4876,12 +5050,14 @@ body::before {
     .chat-container {
         gap: 0.5rem;
         max-height: calc(100vh - 70px);
+        max-height: calc(100dvh - 70px);
         overflow: hidden;
     }
     
     .messages {
         min-height: 70vh !important;
         max-height: calc(100vh - 220px) !important;
+        max-height: calc(100dvh - 220px) !important;
         padding-bottom: 1rem !important;
         overflow-y: auto !important;
         flex-shrink: 1;
@@ -4914,3 +5090,308 @@ body::before {
     }
 }
 */
+
+/* ============================================================
+   MEJORAS ADICIONALES DE RESPONSIVIDAD Y ACCESIBILIDAD
+   ============================================================ */
+
+/* Preview menu button (versión mejorada - icono SVG) */
+.preview-menu-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: var(--transition);
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.preview-menu-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Saved notes SVG icon */
+.no-notes-icon svg {
+    width: 64px;
+    height: 64px;
+    opacity: 0.4;
+    stroke: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* Abilities menu - mejorado para móvil */
+@media (max-width: 425px) {
+    .abilities-menu {
+        min-width: 200px;
+        left: 0;
+        right: auto;
+    }
+
+    .ability-option {
+        padding: 0.75rem 0.9rem;
+    }
+}
+
+/* Mejora de touch targets en toda la app */
+@media (hover: none) and (pointer: coarse) {
+    /* Dispositivos touch */
+    .close-btn,
+    .user-info-btn,
+    .back-btn,
+    .chat-action-btn,
+    .message-action-btn,
+    .ability-option,
+    .header-menu-option,
+    .preview-menu-option {
+        min-height: 44px;
+    }
+
+    /* Quitar efectos hover que no funcionan bien en touch */
+    .chat-item:hover {
+        transform: none;
+    }
+    
+    .suggestion-btn:hover {
+        transform: none;
+    }
+
+    /* Mejorar target de tap en botones de código */
+    .copy-code-btn {
+        padding: 0.6rem 1rem;
+    }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .welcome-message {
+        padding: 1rem;
+    }
+
+    .welcome-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .welcome-message h3 {
+        font-size: 1.25rem;
+    }
+
+    .input-area {
+        padding: 0.5rem 0;
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    .header {
+        min-height: 50px;
+    }
+
+    .main {
+        margin-top: 50px;
+        height: calc(100dvh - 50px);
+    }
+}
+
+/* Tablet portrait */
+@media (min-width: 600px) and (max-width: 900px) {
+    .chat-container {
+        max-width: 100%;
+        padding: 0 1.5rem;
+    }
+
+    .sidebar {
+        max-width: 320px;
+    }
+
+    .welcome-message {
+        padding: 3rem 2rem;
+    }
+
+    .message {
+        max-width: 90%;
+    }
+
+    .message.user {
+        margin-left: auto;
+    }
+}
+
+/* Large desktop */
+@media (min-width: 1440px) {
+    .chat-container {
+        max-width: 1100px;
+    }
+
+    .header-content {
+        max-width: 1400px;
+    }
+}
+
+/* 4K y super-wide screens */
+@media (min-width: 1920px) {
+    .chat-container {
+        max-width: 1200px;
+    }
+
+    body {
+        font-size: 17px;
+    }
+}
+
+/* Accesibilidad: reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .floating-icon {
+        animation: none;
+    }
+
+    .welcome-icon {
+        animation: none;
+    }
+
+    .typing-indicator span {
+        animation: none;
+    }
+}
+
+/* Accesibilidad: alto contraste */
+@media (prefers-contrast: high) {
+    :root {
+        --border: rgba(255, 255, 255, 0.3);
+        --border-bright: rgba(88, 101, 242, 0.9);
+        --text-secondary: #d4d4d4;
+        --text-muted: #aaaaaa;
+    }
+}
+
+/* Modo claro - mejoras adicionales */
+@media (prefers-color-scheme: light) {
+    .abilities-menu {
+        background: rgba(255, 255, 255, 0.98);
+        border-color: rgba(88, 101, 242, 0.3);
+    }
+
+    .no-notes-icon svg {
+        stroke: var(--text-muted);
+    }
+
+    .abilities-menu::before,
+    .abilities-menu::after {
+        display: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .header,
+    .sidebar,
+    .overlay,
+    .input-area,
+    .suggestions,
+    #previewModal {
+        display: none !important;
+    }
+
+    .main {
+        margin-top: 0;
+        height: auto;
+    }
+
+    .messages {
+        overflow: visible;
+    }
+
+    .message-text {
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+}
+
+/* Fix para el modal de información de usuario en dispositivos pequeños */
+@media (max-width: 480px) {
+    .user-info-modal-content,
+    .ai-config-modal-content {
+        max-height: calc(100dvh - 2rem);
+        border-radius: var(--border-radius);
+        margin: 1rem;
+    }
+
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .input-group.full-width {
+        grid-column: 1;
+    }
+}
+
+/* Fix sidebar en iPhone con notch */
+@supports (padding: max(0px)) {
+    .sidebar {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+
+    .input-area {
+        padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
+    }
+
+    @media (max-width: 425px) {
+        .input-area {
+            padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+        }
+    }
+}
+
+/* Mejora del scroll en el contenido del sidebar */
+.sidebar-content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Mejora visual para el modal de notas guardadas en móvil */
+@media (max-width: 600px) {
+    .saved-notes-content {
+        max-height: calc(100dvh - 4rem);
+        border-radius: var(--border-radius);
+        margin: 2rem 1rem;
+    }
+}
+
+/* Mejora del chat item para táctil */
+.chat-item {
+    touch-action: manipulation;
+}
+
+/* Preview menu mejorado */
+.preview-menu {
+    position: fixed;
+    top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 10px);
+    right: 10px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 0.5rem;
+    min-width: 200px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(88, 101, 242, 0.6);
+    z-index: 999999;
+    animation: slideDown 0.3s ease;
+    backdrop-filter: blur(20px);
+}
+

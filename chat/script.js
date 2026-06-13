@@ -531,17 +531,17 @@ function showAiStatus() {
     const availableAis = aiConfigs.filter(ai => !failedAiIds.has(ai.id));
     const failedCount = failedAiIds.size;
 
-    let statusMessage = `🤖 Estado Actual de IA:\n\n`;
-    statusMessage += `📍 IA Actual: ${currentAi.name}\n`;
-    statusMessage += `✅ IAs Disponibles: ${availableAis.length}/${aiConfigs.length}\n`;
-    statusMessage += `❌ IAs Fallidas: ${failedCount}\n\n`;
+    let statusMessage = `Estado Actual de IA:\n\n`;
+    statusMessage += `IA Actual: ${currentAi.name}\n`;
+    statusMessage += `Disponibles: ${availableAis.length}/${aiConfigs.length}\n`;
+    statusMessage += `Con error: ${failedCount}\n\n`;
 
     if (failedCount > 0) {
-        statusMessage += `IAs temporalmente no disponibles:\n`;
+        statusMessage += `IAs no disponibles temporalmente:\n`;
         failedAiIds.forEach(failedId => {
             const failedAi = aiConfigs.find(ai => ai.id === failedId);
             if (failedAi) {
-                statusMessage += `• ${failedAi.name}\n`;
+                statusMessage += `- ${failedAi.name}\n`;
             }
         });
     }
@@ -568,21 +568,46 @@ function updateResponseModeIcon() {
 
     // Remover clases de modo anteriores
     btnElement.classList.remove('mode-corta', 'mode-media', 'mode-larga');
-    
+
+    // Iconos SVG por modo (sin emojis, solo iconos visuales)
+    const icons = {
+        corta: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="4" y1="6" x2="12" y2="6"/>
+            <line x1="4" y1="10" x2="10" y2="10"/>
+            <line x1="4" y1="14" x2="8" y2="14"/>
+        </svg>`,
+        media: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="4" y1="6" x2="18" y2="6"/>
+            <line x1="4" y1="10" x2="14" y2="10"/>
+            <line x1="4" y1="14" x2="18" y2="14"/>
+            <line x1="4" y1="18" x2="11" y2="18"/>
+        </svg>`,
+        larga: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="4" y1="5" x2="20" y2="5"/>
+            <line x1="4" y1="9" x2="20" y2="9"/>
+            <line x1="4" y1="13" x2="20" y2="13"/>
+            <line x1="4" y1="17" x2="20" y2="17"/>
+            <line x1="4" y1="21" x2="14" y2="21"/>
+        </svg>`
+    };
+
     switch(responseMode) {
         case 'corta':
-            iconElement.textContent = 'S';
+            iconElement.innerHTML = icons.corta;
             btnElement.title = 'Modo: Respuestas Cortas\n(Programador: 40k tokens - 950-1500 líneas - Código PRO)';
+            btnElement.setAttribute('aria-label', 'Modo respuesta corta');
             btnElement.classList.add('mode-corta');
             break;
         case 'media':
-            iconElement.textContent = 'M';
+            iconElement.innerHTML = icons.media;
             btnElement.title = 'Modo: Respuestas Medias\n(Programador: 85k tokens - 1520-2400 líneas - VISUAL ÉPICO)';
+            btnElement.setAttribute('aria-label', 'Modo respuesta media');
             btnElement.classList.add('mode-media');
             break;
         case 'larga':
-            iconElement.textContent = 'L';
+            iconElement.innerHTML = icons.larga;
             btnElement.title = 'Modo: Respuestas Largas\n(Programador: 150k tokens - 3800-6200 líneas - OBRA MAESTRA)';
+            btnElement.setAttribute('aria-label', 'Modo respuesta larga');
             btnElement.classList.add('mode-larga');
             break;
     }
@@ -5427,7 +5452,14 @@ function renderSavedNotes() {
     if (notes.length === 0) {
         notesBody.innerHTML = `
             <div class="no-notes">
-                <div class="no-notes-icon">📭</div>
+                <div class="no-notes-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="64" height="64">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                        <rect x="9" y="3" width="6" height="4" rx="1"/>
+                        <line x1="9" y1="12" x2="15" y2="12"/>
+                        <line x1="9" y1="16" x2="12" y2="16"/>
+                    </svg>
+                </div>
                 <p>No hay notas guardadas aún</p>
                 <small>Cuando la IA guarde información importante usando {GUARDAR: ...}, aparecerá aquí</small>
             </div>
