@@ -2435,6 +2435,7 @@ document.addEventListener('DOMContentLoaded', async function init(){
     setupPreviewEmptyState();
     setupAgentPanel();
     setupCommandPalette();
+    setupProfessionalChrome();
     setupProjectEdit();
     setupProjectSwitcher();
     setupProjectInfoModal();
