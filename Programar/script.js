@@ -661,17 +661,44 @@ function markUnsaved() {
     const btn=document.getElementById('saveBtn'), txt=document.getElementById('saveBtnText');
     if(btn){btn.classList.remove('saved','saving');}
     if(txt) txt.textContent='Guardar';
+    const status = document.getElementById('saveStatus');
+    if (status) {
+        status.textContent = 'Sin guardar';
+        status.className = 'status-bar-item save-status is-unsaved';
+    }
+}
+function markSaving() {
+    const btn=document.getElementById('saveBtn'), txt=document.getElementById('saveBtnText');
+    if(btn){btn.classList.remove('saved');btn.classList.add('saving');}
+    if(txt) txt.textContent='Guardando...';
+    const status = document.getElementById('saveStatus');
+    if (status) {
+        status.textContent = 'Guardando...';
+        status.className = 'status-bar-item save-status is-saving';
+    }
+}
+function markSaved(label='Guardado local') {
+    hasUnsavedChanges=false;
+    const btn=document.getElementById('saveBtn'), txt=document.getElementById('saveBtnText');
+    if(btn){btn.classList.remove('saving');btn.classList.add('saved');}
+    if(txt) {
+        txt.textContent = label.includes('Firebase') ? 'Guardado ✓' : 'Guardado local';
+        setTimeout(()=>{ if(txt) txt.textContent='Guardar'; }, 1800);
+    }
+    const status = document.getElementById('saveStatus');
+    if (status) {
+        status.textContent = label;
+        status.className = 'status-bar-item save-status is-saved';
+    }
 }
 async function saveToLocal() {
     const html = document.getElementById('htmlEditor')?.value||'';
     const css  = document.getElementById('cssEditor')?.value||'';
     const js   = document.getElementById('jsEditor')?.value||'';
-    try { localStorage.setItem('dcx_code', JSON.stringify({ html, css, js, savedAt: Date.now() })); hasUnsavedChanges=false; } catch(e) {}
-    const btn=document.getElementById('saveBtn'), txt=document.getElementById('saveBtnText');
-    if(btn) { btn.classList.remove('saving'); btn.classList.add('saved'); }
-    if(txt) txt.textContent='Guardando…';
+    markSaving();
+    try { localStorage.setItem('dcx_code', JSON.stringify({ html, css, js, savedAt: Date.now() })); } catch(e) {}
     const ok = await saveToFirebase(html, css, js);
-    if(txt) { txt.textContent = ok ? 'Guardado ✓' : 'Guardado local'; setTimeout(()=>{ if(txt) txt.textContent='Guardar'; }, 1800); }
+    markSaved(ok ? 'Guardado en Firebase' : 'Guardado local');
 }
 function loadFromLocal() {
     try{
