@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat | DevCenterX</title>
+  <meta name="description" content="Interfaz de chat inteligente de DevCenterX.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <button id="menuBtn" class="menu-btn" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="header-title">
+        <h1>Chat Inteligente</h1>
+        <p>Habla con tu asistente y obtén respuestas rápidas.</p>
+      </div>
+      <div class="header-actions">
+        <button id="newChatBtn" class="new-chat-btn" title="Nuevo chat">+</button>
+        <button id="responseModeBtn" class="abilities-menu-btn" title="Cambiar modo de respuesta">
+          <span id="responseModeIcon">S</span>
+        </button>
+        <button id="headerMenuBtn" class="header-menu-btn" title="Menú">⋮</button>
+      </div>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar" aria-label="Historial de chats">
+    <div class="sidebar-header">
+      <div>
+        <h2>Chats</h2>
+      </div>
+      <div>
+        <button id="userInfoBtn" class="user-info-btn" title="Información de usuario">👤</button>
+        <button id="closeSidebarBtn" class="close-btn" aria-label="Cerrar panel">×</button>
+      </div>
+    </div>
+    <div id="sidebarContent" class="sidebar-content">
+      <div class="no-chats">
+        <p>No hay chats recientes.</p>
+        <small>Inicia una nueva conversación usando el campo de entrada.</small>
+      </div>
+    </div>
+  </aside>
+
+  <div id="overlay" class="overlay"></div>
+
+  <main class="main">
+    <div class="chat-container">
+      <div class="messages" id="messages">
+        <div class="welcome-message">
+          <div class="floating-icons-container"></div>
+          <div class="welcome-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 2C6.477 2 2 5.582 2 10s4.477 8 10 8 10-3.582 10-8-4.477-8-10-8Zm0 14c-2.761 0-5-1.343-5-3s2.239-3 5-3 5 1.343 5 3-2.239 3-5 3Z"/>
+              <path d="M12 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/>
+            </svg>
+          </div>
+          <h3>Bienvenido a Chat</h3>
+          <p>Escribe tu primera pregunta y comienza a conversar con el asistente.</p>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-container">
+          <button id="abilitiesMenuBtn" class="abilities-menu-btn mode-agent" title="Cambiar modo">
+            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            </svg>
+          </button>
+          <div id="abilitiesMenu" class="abilities-menu" style="display:none;">
+            <button class="ability-option active" data-ability="agent">
+              <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              <span class="ability-text">Agente</span>
+            </button>
+            <button class="ability-option" data-ability="info">
+              <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span class="ability-text">Información</span>
+            </button>
+            <button class="ability-option" data-ability="memory">
+              <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2H3a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <span class="ability-text">Memoria Extendida</span>
+            </button>
+            <button class="ability-option" data-ability="program">
+              <svg class="ability-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <span class="ability-text">Programador</span>
+            </button>
+          </div>
+          <textarea id="messageInput" rows="2" placeholder="Escribe tu mensaje aquí..."></textarea>
+          <button id="sendBtn" aria-label="Enviar mensaje">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 2 11 13"></path>
+              <path d="M22 2 15 22 11 13 2 9 22 2Z"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="previewModal" class="preview-modal" style="display:none;">
+    <div class="preview-modal-header">
+      <button id="backBtn" class="close-btn" aria-label="Cerrar vista previa">←</button>
+      <div>
+        <div class="preview-title">Vista previa</div>
+        <div id="previewSubtitle" class="preview-subtitle">Previsualiza el contenido generado.</div>
+      </div>
+      <div class="preview-actions">
+        <button id="copyCodeBtn" class="preview-btn" title="Copiar código">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button id="editCodeBtn" class="preview-btn" title="Editar código">✏️</button>
+        <button id="downloadBtn" class="preview-btn" title="Descargar">⬇️</button>
+        <button id="fullscreenBtn" class="preview-btn" title="Pantalla completa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
+        <button id="shareBtn" class="preview-btn" title="Compartir">📤</button>
+      </div>
+    </div>
+    <div id="codeEditorPanel" class="code-editor-panel" style="display:none;">
+      <div class="code-editor-header">
+        <h3>Editar código</h3>
+        <button id="closeEditorBtn" class="close-btn">×</button>
+      </div>
+      <textarea id="codeEditorTextarea" class="code-editor-textarea" placeholder="Edita el código aquí..."></textarea>
+      <div class="code-editor-actions">
+        <button id="applyChangesBtn" class="preview-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Aplicar
+        </button>
+      </div>
+    </div>
+    <iframe id="previewFrame" class="preview-frame" title="Vista previa del contenido"></iframe>
+    <div id="previewMenuBtn" class="preview-menu-btn" style="display:none;">⋮</div>
+    <div id="previewMenu" class="preview-menu" style="display:none;">
+      <button id="mobileEditCodeBtn">Editar</button>
+      <button id="mobileShareBtn">Compartir</button>
+    </div>
+    <button id="fullscreenBackBtn" class="preview-back-btn" style="display:none;">← Salir</button>
+  </div>
+
+  <!-- MODALS -->
+  <div id="userInfoModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Información de Usuario</h2>
+        <button id="closeUserInfoModal" class="close-btn">×</button>
+      </div>
+      <form id="userInfoForm">
+        <div class="form-group">
+          <label for="userName">Nombre:</label>
+          <input type="text" id="userName" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label for="userBirth">Fecha de nacimiento:</label>
+          <input type="date" id="userBirth">
+        </div>
+        <div class="form-group">
+          <label for="userEmail">Email:</label>
+          <input type="email" id="userEmail" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+          <label for="userCustom">Personalización:</label>
+          <input type="text" id="userCustom" placeholder="Campo personalizado">
+        </div>
+        <div class="form-group">
+          <label for="aiResponseStyle">Estilo de respuesta:</label>
+          <select id="aiResponseStyle">
+            <option value="balanced">Balanceado</option>
+            <option value="formal">Formal</option>
+            <option value="casual">Casual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="detailLevel">Nivel de detalle:</label>
+          <select id="detailLevel">
+            <option value="short">Corto</option>
+            <option value="medium">Medio</option>
+            <option value="detailed">Detallado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="projectType">Tipo de proyecto:</label>
+          <select id="projectType">
+            <option value="general">General</option>
+            <option value="web">Web</option>
+            <option value="mobile">Mobile</option>
+            <option value="desktop">Desktop</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="codeStylePrefs">Preferencias de código:</label>
+          <textarea id="codeStylePrefs" placeholder="Ej: usar TypeScript, estilos funcionales..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="aiConfigModal" class="modal" style="display:none;">
+    <div class="modal-overlay" id="aiConfigOverlay"></div>
+    <div class="modal-content ai-config-modal-content">
+      <div class="modal-header">
+        <h2>Configuración de IA</h2>
+        <button id="closeAiConfigModalX" class="close-btn">×</button>
+      </div>
+      <form id="aiConfigForm">
+        <div id="aiListContainer"></div>
+        <button type="button" id="addAiBtn" class="btn-secondary">+ Añadir IA</button>
+        <button type="submit" class="btn-primary">Guardar</button>
+        <button type="button" id="closeAiConfigModal" class="btn-secondary">Cerrar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="savedNotesModal" class="modal" style="display:none;">
+    <div class="modal-overlay" id="savedNotesOverlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Notas Guardadas</h2>
+        <button id="savedNotesClose" class="close-btn">×</button>
+      </div>
+      <button id="addNoteBtn" class="btn-primary">+ Nueva Nota</button>
+      <div id="savedNotesBody" class="notes-body"></div>
+    </div>
+  </div>
+
+  <div id="noteEditModal" class="modal" style="display:none;">
+    <div class="modal-overlay" id="noteEditOverlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Nota</h2>
+        <button id="noteEditClose" class="close-btn">×</button>
+      </div>
+      <input type="text" id="noteEditTitle" placeholder="Título de la nota">
+      <textarea id="noteEditTextarea" placeholder="Contenido de la nota..."></textarea>
+      <button id="saveNoteBtn" class="btn-primary">Guardar</button>
+      <button id="cancelNoteBtn" class="btn-secondary">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="archivoModal" class="modal" style="display:none;">
+    <div class="modal-overlay" id="archivoOverlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Archivo de Sistema</h2>
+        <button id="archivoClose" class="close-btn">×</button>
+      </div>
+      <div class="prompt-char-counter">
+        <span id="promptCharCount">0</span> / 10000
+      </div>
+      <textarea id="systemPromptTextarea" placeholder="Sistema prompt..." maxlength="10000"></textarea>
+      <div class="modal-actions">
+        <label>
+          <input type="checkbox" id="autoSavePromptToggle"> Auto-guardar
+        </label>
+        <button id="clearPromptBtn" class="btn-secondary">Limpiar</button>
+        <button id="savePromptBtn" class="btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="headerDropdownMenu" class="header-dropdown-menu" style="display:none;">
+    <button id="notasMenuOption" class="header-menu-option">📝 Notas</button>
+    <button id="archivoMenuOption" class="header-menu-option">⚙️ Archivo</button>
+  </div>
+
+  <div id="loading" class="loading-screen" style="display:none;">
+    <div class="loading-content">
+      <p>Cargando...</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
