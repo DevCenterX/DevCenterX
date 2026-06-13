@@ -591,6 +591,60 @@
         </div>
     </div>
 
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+        <button class="status-bar-item status-command-trigger" id="commandPaletteBtn" title="Abrir comandos (Ctrl+K)">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 3.5L4.5 5.5L2 7.5M5.5 8H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Comandos
+        </button>
+        <span class="status-bar-item" id="statusLang">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="0.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1"/></svg>
+            HTML
+        </span>
+        <span class="status-bar-item" id="cursorPosition">Ln 1, Col 1</span>
+        <span class="status-bar-item" id="lineCountDisplay">· 1 línea</span>
+        <span class="status-bar-item" id="selectionInfo" style="display:none;">Sel <span id="selCount">0</span></span>
+        <div class="status-right">
+            <span class="status-bar-item save-status is-saved" id="saveStatus">Guardado local</span>
+            <button class="status-bar-item shortcuts-trigger" id="shortcutsHintBtn" title="Ver atajos">Atajos</button>
+        </div>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="command-palette-modal" id="commandPaletteModal" style="display:none;">
+        <div class="command-palette-backdrop" id="commandPaletteBackdrop"></div>
+        <div class="command-palette">
+            <div class="command-palette-search">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <input id="commandPaletteInput" type="text" placeholder="Buscar comando...">
+                <kbd>Esc</kbd>
+            </div>
+            <div class="command-palette-list" id="commandPaletteList"></div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts -->
+    <div class="shortcuts-modal" id="shortcutsModal" style="display:none;">
+        <div class="shortcuts-content">
+            <div class="shortcuts-header">
+                <h3>Atajos del editor</h3>
+                <button id="closeShortcutsBtn" title="Cerrar">×</button>
+            </div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">Guardar <span><kbd>Ctrl</kbd> + <kbd>S</kbd></span></div>
+                <div class="shortcut-item">Comandos <span><kbd>Ctrl</kbd> + <kbd>K</kbd></span></div>
+                <div class="shortcut-item">Buscar <span><kbd>Ctrl</kbd> + <kbd>F</kbd></span></div>
+                <div class="shortcut-item">Reemplazar <span><kbd>Ctrl</kbd> + <kbd>H</kbd></span></div>
+                <div class="shortcut-item">Formatear <span><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></span></div>
+                <div class="shortcut-item">Preview <span><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></div>
+                <div class="shortcut-item">Comentar línea <span><kbd>Ctrl</kbd> + <kbd>/</kbd></span></div>
+                <div class="shortcut-item">Duplicar línea <span><kbd>Ctrl</kbd> + <kbd>D</kbd></span></div>
+                <div class="shortcut-item">Mover línea <span><kbd>Alt</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd></span></div>
+                <div class="shortcut-item">Chat lateral <span><kbd>Ctrl</kbd> + <kbd>B</kbd></span></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Deploy History Panel -->
     <div class="deploy-history-modal" id="deployHistoryModal" style="display:none;">
         <div class="dhm-backdrop" id="dhmBackdrop"></div>
