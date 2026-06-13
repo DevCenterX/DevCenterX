@@ -8,8 +8,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="header">
+  <header class="header" role="banner">
     <div class="header-content">
+      <button id="navBackBtn" class="back-btn" title="Volver atrás" aria-label="Volver a la página anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <button id="menuBtn" class="menu-btn" aria-label="Abrir menú">
         <span></span>
         <span></span>
@@ -20,23 +25,44 @@
         <p>Habla con tu asistente y obtén respuestas rápidas.</p>
       </div>
       <div class="header-actions">
-        <button id="newChatBtn" class="new-chat-btn" title="Nuevo chat">+</button>
-        <button id="responseModeBtn" class="abilities-menu-btn" title="Cambiar modo de respuesta">
+        <button id="newChatBtn" class="new-chat-btn" title="Nuevo chat" aria-label="Iniciar nuevo chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button id="responseModeBtn" class="abilities-menu-btn" title="Cambiar modo de respuesta" aria-label="Cambiar modo de respuesta">
           <span id="responseModeIcon">S</span>
         </button>
-        <button id="headerMenuBtn" class="header-menu-btn" title="Menú">⋮</button>
+        <button id="headerMenuBtn" class="header-menu-btn" title="Menú" aria-label="Menú principal">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="12" cy="19" r="2"/>
+          </svg>
+        </button>
       </div>
     </div>
-  </div>
+  </header>
 
   <aside id="sidebar" class="sidebar" aria-label="Historial de chats">
     <div class="sidebar-header">
       <div>
-        <h2>Chats</h2>
+        <h2>Historial</h2>
       </div>
-      <div>
-        <button id="userInfoBtn" class="user-info-btn" title="Información de usuario">👤</button>
-        <button id="closeSidebarBtn" class="close-btn" aria-label="Cerrar panel">×</button>
+      <div class="sidebar-controls">
+        <button id="userInfoBtn" class="user-info-btn" title="Información de usuario" aria-label="Ver información de usuario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <button id="closeSidebarBtn" class="close-btn" aria-label="Cerrar panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
     </div>
     <div id="sidebarContent" class="sidebar-content">
@@ -105,27 +131,60 @@
 
   <div id="previewModal" class="preview-modal" style="display:none;">
     <div class="preview-modal-header">
-      <button id="backBtn" class="close-btn" aria-label="Cerrar vista previa">←</button>
+      <button id="backBtn" class="close-btn" aria-label="Cerrar vista previa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <div>
         <div class="preview-title">Vista previa</div>
         <div id="previewSubtitle" class="preview-subtitle">Previsualiza el contenido generado.</div>
       </div>
       <div class="preview-actions">
-        <button id="copyCodeBtn" class="preview-btn" title="Copiar código">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button id="copyCodeBtn" class="preview-btn" title="Copiar código" aria-label="Copiar código al portapapeles">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
         </button>
-        <button id="editCodeBtn" class="preview-btn" title="Editar código">✏️</button>
-        <button id="downloadBtn" class="preview-btn" title="Descargar">⬇️</button>
-        <button id="fullscreenBtn" class="preview-btn" title="Pantalla completa">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        <button id="editCodeBtn" class="preview-btn" title="Editar código" aria-label="Editar código">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
         </button>
-        <button id="shareBtn" class="preview-btn" title="Compartir">📤</button>
+        <button id="downloadBtn" class="preview-btn" title="Descargar" aria-label="Descargar archivo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+        <button id="fullscreenBtn" class="preview-btn" title="Pantalla completa" aria-label="Expandir a pantalla completa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+        <button id="shareBtn" class="preview-btn" title="Compartir" aria-label="Compartir contenido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
       </div>
     </div>
     <div id="codeEditorPanel" class="code-editor-panel" style="display:none;">
       <div class="code-editor-header">
         <h3>Editar código</h3>
-        <button id="closeEditorBtn" class="close-btn">×</button>
+        <button id="closeEditorBtn" class="close-btn" aria-label="Cerrar editor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <textarea id="codeEditorTextarea" class="code-editor-textarea" placeholder="Edita el código aquí..."></textarea>
       <div class="code-editor-actions">
@@ -140,7 +199,12 @@
       <button id="mobileEditCodeBtn">Editar</button>
       <button id="mobileShareBtn">Compartir</button>
     </div>
-    <button id="fullscreenBackBtn" class="preview-back-btn" style="display:none;">← Salir</button>
+    <button id="fullscreenBackBtn" class="preview-back-btn" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Salir
+    </button>
   </div>
 
   <!-- MODALS -->
@@ -148,7 +212,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Información de Usuario</h2>
-        <button id="closeUserInfoModal" class="close-btn">×</button>
+        <button id="closeUserInfoModal" class="close-btn" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <form id="userInfoForm">
         <div class="form-group">
@@ -206,7 +275,12 @@
     <div class="modal-content ai-config-modal-content">
       <div class="modal-header">
         <h2>Configuración de IA</h2>
-        <button id="closeAiConfigModalX" class="close-btn">×</button>
+        <button id="closeAiConfigModalX" class="close-btn" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <form id="aiConfigForm">
         <div id="aiListContainer"></div>
@@ -222,9 +296,20 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Notas Guardadas</h2>
-        <button id="savedNotesClose" class="close-btn">×</button>
+        <button id="savedNotesClose" class="close-btn" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-      <button id="addNoteBtn" class="btn-primary">+ Nueva Nota</button>
+      <button id="addNoteBtn" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; width: 1em; height: 1em; margin-right: 0.5em; vertical-align: -0.125em;">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva Nota
+      </button>
       <div id="savedNotesBody" class="notes-body"></div>
     </div>
   </div>
@@ -234,7 +319,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Editar Nota</h2>
-        <button id="noteEditClose" class="close-btn">×</button>
+        <button id="noteEditClose" class="close-btn" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <input type="text" id="noteEditTitle" placeholder="Título de la nota">
       <textarea id="noteEditTextarea" placeholder="Contenido de la nota..."></textarea>
@@ -248,7 +338,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Archivo de Sistema</h2>
-        <button id="archivoClose" class="close-btn">×</button>
+        <button id="archivoClose" class="close-btn" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <div class="prompt-char-counter">
         <span id="promptCharCount">0</span> / 10000
@@ -265,8 +360,21 @@
   </div>
 
   <div id="headerDropdownMenu" class="header-dropdown-menu" style="display:none;">
-    <button id="notasMenuOption" class="header-menu-option">📝 Notas</button>
-    <button id="archivoMenuOption" class="header-menu-option">⚙️ Archivo</button>
+    <button id="notasMenuOption" class="header-menu-option">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Notas
+    </button>
+    <button id="archivoMenuOption" class="header-menu-option">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="1"/>
+        <circle cx="19" cy="12" r="1"/>
+        <circle cx="5" cy="12" r="1"/>
+      </svg>
+      Archivo
+    </button>
   </div>
 
   <div id="loading" class="loading-screen" style="display:none;">

@@ -305,8 +305,34 @@ function updateStatusLang(ft) {
     const c={html:'#f97316',js:'#fbbf24',css:'#06b6d4',svg:'#a78bfa'}, n={html:'HTML',js:'JavaScript',css:'CSS',svg:'SVG Icon'};
     el.innerHTML=`<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="0.5" width="10" height="10" rx="2" stroke="${c[ft]||'#818cf8'}" stroke-width="1"/></svg> ${n[ft]||ft.toUpperCase()}`;
 }
+function updateProfessionalChrome(fileType) {
+    const names = {
+        html: 'index.html',
+        css: 'style.css',
+        js: 'script.js',
+        svg: 'icon.svg',
+        preview: 'preview.local',
+        agent: 'Agent'
+    };
+    const activeFile = document.getElementById('workspaceActiveFile');
+    if (activeFile) activeFile.textContent = names[fileType] || names[currentTab] || 'index.html';
+
+    document.querySelectorAll('.workspace-file-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.file === fileType);
+    });
+
+    document.querySelectorAll('.rail-btn').forEach(btn => {
+        const action = btn.dataset.railAction;
+        const active =
+            (action === 'agent' && fileType === 'agent') ||
+            (action === 'preview' && fileType === 'preview') ||
+            (action === 'files' && ['html','css','js','svg'].includes(fileType));
+        btn.classList.toggle('active', active);
+    });
+}
 function switchTab(fileType) {
     if (fileType!=='agent') currentTab=fileType;
+    updateProfessionalChrome(fileType);
     document.querySelectorAll('.file-tab').forEach(t=>t.classList.remove('active'));
     document.querySelector(`.file-tab[data-file="${fileType}"]`)?.classList.add('active');
     const aw=document.getElementById('agentPanelWrapper');
@@ -1959,6 +1985,39 @@ function setupCommandPalette() {
         }
         if (e.key === 'Escape' && modal.style.display === 'flex') closePalette();
     });
+}
+
+function setupProfessionalChrome() {
+    document.querySelectorAll('.workspace-file-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.file) switchTab(btn.dataset.file);
+        });
+    });
+
+    document.querySelectorAll('.rail-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.railAction;
+            if (action === 'agent') {
+                if (document.getElementById('leftSidebar')?.classList.contains('collapsed')) {
+                    window.expandSidebar?.();
+                } else {
+                    switchTab('agent');
+                }
+            }
+            if (action === 'files') switchTab(currentTab === 'preview' || currentTab === 'agent' ? 'html' : currentTab);
+            if (action === 'search') openFindPanel('find');
+            if (action === 'preview') switchTab('preview');
+            if (action === 'deploy') openDeployHistory();
+            if (action === 'commands') document.getElementById('commandPaletteBtn')?.click();
+        });
+    });
+
+    document.getElementById('workspaceRunBtn')?.addEventListener('click', () => {
+        updatePreview();
+        switchTab('preview');
+    });
+
+    updateProfessionalChrome(currentTab);
 }
 function setupAllListeners(){
     document.getElementById('fileTabs')?.addEventListener('click',e=>{const tab=e.target.closest('.file-tab');if(tab?.dataset.file)switchTab(tab.dataset.file);});
