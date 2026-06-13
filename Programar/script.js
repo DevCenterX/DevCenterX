@@ -1799,13 +1799,46 @@ function showToast(msg, type = 'info') {
     }, 5000);
 }
 
-// ==================== ALL LISTENERS ====================
+// ==================== CODE FORMATTING ====================
+function formatActiveCode() {
+    const ed = getActiveEditor();
+    if (!ed) return;
+    
+    let formatted = '';
+    if (currentTab === 'html') formatted = beautifyHTML(ed.value);
+    else if (currentTab === 'css') formatted = beautifyCSS(ed.value);
+    else if (currentTab === 'js') formatted = beautifyJS(ed.value);
+    else return;
+    
+    ed.value = formatted;
+    ed.dispatchEvent(new Event('input'));
+    
+    // Visual feedback
+    const btn = document.getElementById('saveBtn');
+    if (btn) {
+        const txt = btn.querySelector('#saveBtnText');
+        if (txt) {
+            const orig = txt.textContent;
+            txt.textContent = 'Formateado ✓';
+            setTimeout(() => { if (txt) txt.textContent = orig; }, 1200);
+        }
+    }
+}
+
+// Keyboard shortcut: Ctrl+Shift+F to format
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        formatActiveCode();
+    }
+});
 function setupAllListeners(){
     document.getElementById('fileTabs')?.addEventListener('click',e=>{const tab=e.target.closest('.file-tab');if(tab?.dataset.file)switchTab(tab.dataset.file);});
     document.getElementById('sendBtn')?.addEventListener('click',sendMessage);
     document.getElementById('chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
     document.getElementById('chatInput')?.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
     document.getElementById('saveBtn')?.addEventListener('click',saveToLocal);
+    document.getElementById('formatBtn')?.addEventListener('click',formatActiveCode);
     document.getElementById('homeBtn')?.addEventListener('click',()=>{saveToLocal();window.location.href='/';});
     document.getElementById('refreshPreview')?.addEventListener('click',updatePreview);
     document.getElementById('fullscreenBtn')?.addEventListener('click',()=>{const pc=document.getElementById('previewContainer');if(!document.fullscreenElement)pc?.requestFullscreen?.();else document.exitFullscreen?.();});

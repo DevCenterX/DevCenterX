@@ -240,43 +240,42 @@ body {
 .file-tab {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
+    gap: 6px;
+    padding: 8px 14px;
     background: transparent;
     border: 1px solid transparent;
-    border-bottom: none;
+    border-bottom: 2px solid transparent;
     color: var(--text2);
-    font-size: 11.5px;
+    font-size: 12px;
+    font-weight: 500;
     font-family: var(--font-ui);
     cursor: pointer;
     border-radius: 6px 6px 0 0;
-    transition: all 0.15s;
+    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
     white-space: nowrap;
     height: calc(100% - 0px);
     position: relative;
-    /* NO close-tab buttons - fix the bug */
 }
 
 .file-tab:hover {
     background: var(--bg2);
     color: var(--text1);
-    border-color: var(--border);
+    border-color: transparent;
 }
 
 .file-tab.active {
     background: var(--bg-editor);
     color: var(--text0);
-    border-color: var(--border);
-    border-bottom-color: var(--bg-editor);
-    font-weight: 500;
+    border-bottom: 2px solid;
+    font-weight: 600;
 }
 
 /* Tab accent lines per file type */
-.file-tab[data-file="html"].active { box-shadow: inset 0 2px 0 #f97316; }
-.file-tab[data-file="js"].active   { box-shadow: inset 0 2px 0 #fbbf24; }
-.file-tab[data-file="css"].active  { box-shadow: inset 0 2px 0 #06b6d4; }
-.file-tab[data-file="svg"].active  { box-shadow: inset 0 2px 0 #a78bfa; }
-.file-tab[data-file="preview"].active { box-shadow: inset 0 2px 0 var(--accent); }
+.file-tab[data-file="html"].active { border-bottom-color: #f97316; }
+.file-tab[data-file="js"].active   { border-bottom-color: #fbbf24; }
+.file-tab[data-file="css"].active  { border-bottom-color: #06b6d4; }
+.file-tab[data-file="svg"].active  { border-bottom-color: #a78bfa; }
+.file-tab[data-file="preview"].active { border-bottom-color: var(--accent); }
 
 .tab-dot {
     width: 5px; height: 5px;
@@ -297,50 +296,85 @@ body {
 .save-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
+    gap: 6px;
+    padding: 7px 14px;
     background: var(--bg2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border2);
     color: var(--text1);
-    font-size: 11.5px;
+    font-size: 12px;
     font-family: var(--font-ui);
     cursor: pointer;
-    border-radius: 7px;
-    transition: all 0.18s;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     font-weight: 500;
 }
-.save-btn:hover { background: var(--bg3); color: var(--text0); }
+.save-btn:hover { 
+    background: var(--bg3); 
+    color: var(--text0); 
+    border-color: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15);
+}
 
 .settings-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    padding: 6px 8px;
     background: transparent;
     border: 1px solid transparent;
     color: var(--text2);
     cursor: pointer;
-    border-radius: 7px;
-    transition: all 0.18s;
+    border-radius: 8px;
+    transition: all 0.2s;
 }
-.settings-btn:hover { background: var(--bg2); color: var(--text0); border-color: var(--border); }
+.settings-btn:hover { 
+    background: var(--bg2); 
+    color: var(--text0); 
+    border-color: var(--border2);
+}
+
+.format-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.format-btn:hover { 
+    background: var(--bg2); 
+    color: var(--accent2); 
+    border-color: rgba(34, 211, 238, 0.3);
+}
+.format-btn:active {
+    transform: scale(0.95);
+}
 
 .publish-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    background: linear-gradient(135deg, #10b981, #059669);
+    gap: 6px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
-    border-radius: 7px;
-    font-size: 11.5px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     font-family: var(--font-ui);
-    transition: all 0.18s;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
-.publish-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
+.publish-btn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
 
 /* Settings panel */
 .settings-panel {
@@ -796,19 +830,21 @@ body {
 
 /* Gutter */
 .editor-gutter {
-    width: 48px;
-    min-width: 48px;
+    width: 56px;
+    min-width: 56px;
     flex-shrink: 0;
-    background: var(--bg-gutter);
-    border-right: 1px solid var(--border);
+    background: linear-gradient(to right, var(--bg-gutter), var(--bg1));
+    border-right: 2px solid var(--border);
     overflow: hidden;
     font-family: var(--font-mono);
     font-size: 11.5px;
+    font-weight: 500;
     line-height: calc(var(--editor-font-size) * var(--editor-line-h));
     color: var(--text3);
     padding-top: 14px;
+    padding-left: 4px;
     text-align: right;
-    padding-right: 8px;
+    padding-right: 10px;
     user-select: none;
     z-index: 2;
 }
@@ -816,8 +852,13 @@ body {
     display: block;
     height: calc(var(--editor-font-size) * var(--editor-line-h));
     line-height: calc(var(--editor-font-size) * var(--editor-line-h));
+    transition: color 0.15s, background 0.15s, font-weight 0.15s;
 }
-.gutter-line.active-line { color: var(--text1); background: rgba(99,102,241,0.06); }
+.gutter-line.active-line { 
+    color: var(--accent); 
+    background: rgba(99,102,241,0.1);
+    font-weight: 700;
+}
 
 /* Editor main area */
 .editor-main-area {
@@ -2445,8 +2486,321 @@ kbd { background: var(--bg3); border: 1px solid var(--border2); border-radius: 4
     display: none !important;
 }
 
+
 /* Disabled chat input during generation */
 #chatInput:disabled {
     opacity: .5;
     cursor: not-allowed;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN — Mobile optimizations
+   ============================================================ */
+
+@media (max-width: 1200px) {
+    :root {
+        --sidebar-w: 260px;
+        --editor-font-size: 12px;
+    }
+    
+    .secondary-nav-right {
+        gap: 2px;
+    }
+    
+    .file-tab {
+        padding: 7px 11px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 900px) {
+    :root {
+        --sidebar-w: 240px;
+        --topnav-h: 40px;
+        --tabnav-h: 38px;
+    }
+    
+    .left-sidebar.collapsed {
+        position: absolute;
+        left: -260px;
+        top: 0;
+        height: 100%;
+        z-index: 400;
+        transition: left 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    
+    .left-sidebar.collapsed.open {
+        left: 0;
+    }
+    
+    .app-title {
+        font-size: 11px;
+    }
+    
+    .publish-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .save-btn {
+        padding: 6px 11px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-w: 100%;
+        --editor-font-size: 11.5px;
+        --topnav-h: 38px;
+        --tabnav-h: 36px;
+    }
+    
+    /* Hide sidebar by default on mobile */
+    .left-sidebar {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        min-width: 100% !important;
+        z-index: 500;
+        display: none;
+        border-right: none !important;
+    }
+    
+    .left-sidebar.mobile-visible {
+        display: flex !important;
+    }
+    
+    /* Show open sidebar button */
+    .open-btn-blue {
+        display: flex !important;
+    }
+    
+    /* Reduce padding on nav */
+    .top-nav {
+        padding: 0 8px;
+    }
+    
+    .nav-left, .nav-right {
+        gap: 2px;
+    }
+    
+    /* File tabs should be smaller */
+    .file-tab {
+        padding: 6px 9px;
+        font-size: 10px;
+        gap: 4px;
+    }
+    
+    .file-tabs {
+        gap: 1px;
+    }
+    
+    /* Hide unused buttons */
+    .upgrade-btn {
+        display: none;
+    }
+    
+    .publish-btn {
+        padding: 5px 10px;
+        font-size: 10px;
+        gap: 4px;
+    }
+    
+    .save-btn {
+        padding: 5px 9px;
+        font-size: 10px;
+    }
+    
+    .settings-btn {
+        padding: 5px;
+    }
+    
+    /* Reduce gutter width */
+    .editor-gutter {
+        width: 48px;
+        min-width: 48px;
+        padding-right: 8px;
+    }
+    
+    /* Reduce editor padding */
+    .code-editor,
+    .highlight-layer {
+        padding: 10px 12px !important;
+    }
+    
+    /* Preview toolbar smaller */
+    .preview-toolbar {
+        height: 40px;
+        padding: 4px 8px;
+    }
+    
+    .pv-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    /* Console panel narrower */
+    .console-panel {
+        width: 240px;
+        min-width: 200px;
+    }
+    
+    /* Agent panel input more compact */
+    .agp-input-wrapper textarea {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    /* Project switcher panel */
+    .project-switcher-panel {
+        width: 220px;
+    }
+    
+    /* Deploy url bar more compact */
+    .deploy-url-bar {
+        max-width: 200px;
+    }
+    
+    .deploy-url-text {
+        max-width: 120px;
+        font-size: 10px;
+    }
+    
+    /* Buttons text on mobile */
+    #saveBtnText,
+    #publishBtnText {
+        display: none;
+    }
+    
+    .publish-btn::after {
+        content: '';
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --editor-font-size: 11px;
+        --topnav-h: 36px;
+        --tabnav-h: 34px;
+    }
+    
+    /* Full mobile view */
+    .top-nav {
+        padding: 0 6px;
+        gap: 4px;
+    }
+    
+    .nav-left {
+        min-width: 0;
+    }
+    
+    /* Collapse some buttons */
+    .nav-divider {
+        display: none;
+    }
+    
+    /* Hide project dropdown on very small screens */
+    .project-switcher-wrap {
+        flex-shrink: 0;
+    }
+    
+    .file-tab {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+    
+    /* Reduce font sizes */
+    .secondary-nav {
+        gap: 0;
+    }
+    
+    .agent-usage-wrap {
+        display: none;
+    }
+    
+    .deploy-credits {
+        display: none;
+    }
+    
+    /* Minimize console */
+    .console-panel {
+        width: 200px;
+        min-width: 180px;
+    }
+    
+    /* Settings dropdown narrower */
+    .settings-dropdown {
+        width: 240px;
+        right: -10px;
+    }
+    
+    /* Mobile friendly modals */
+    .shortcuts-content,
+    .proj-info-modal,
+    .dhm-panel {
+        width: 95vw;
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --editor-font-size: 10.5px;
+    }
+    
+    .file-tab {
+        padding: 5px 6px;
+        font-size: 8.5px;
+        gap: 3px;
+    }
+    
+    .top-nav {
+        padding: 0 4px;
+    }
+    
+    /* Icon buttons only */
+    .nav-btn {
+        padding: 4px;
+    }
+    
+    .gutter-line {
+        font-size: 10px;
+    }
+    
+    /* Editor gutter minimal */
+    .editor-gutter {
+        width: 40px;
+        min-width: 40px;
+        padding-right: 4px;
+        font-size: 10px;
+    }
+    
+    /* Code editor minimal padding */
+    .code-editor,
+    .highlight-layer {
+        padding: 8px 8px !important;
+    }
+    
+    /* Hide secondary nav text */
+    .file-tab svg {
+        display: none;
+    }
+    
+    /* Very compact preview */
+    .preview-toolbar {
+        gap: 2px;
+        height: 36px;
+    }
+    
+    .pv-btn {
+        padding: 3px 6px;
+        font-size: 9px;
+    }
+    
+    /* Minimal status bar */
+    .status-bar {
+        font-size: 10px;
+        padding: 0 8px;
+        gap: 8px;
+    }
 }
