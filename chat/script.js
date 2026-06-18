@@ -551,6 +551,26 @@ function showAiStatus() {
 
 // Notificaciones desactivadas por solicitud del usuario
 
+// Función de estadísticas del sistema
+function showSystemStats() {
+    const chatsCount = chats.length;
+    const totalMessages = chats.reduce((acc, c) => acc + (c.messages ? c.messages.length : 0), 0);
+    const storageUsed = JSON.stringify(chats).length;
+    const storageKb = (storageUsed / 1024).toFixed(1);
+
+    const statsMessage =
+        `Estadísticas del Sistema:\n\n` +
+        `Chats guardados: ${chatsCount}\n` +
+        `Total de mensajes: ${totalMessages}\n` +
+        `Almacenamiento usado: ${storageKb} KB\n` +
+        `Modo activo: ${activeAbility}\n` +
+        `Modo de respuesta: ${responseMode}\n` +
+        `IAs configuradas: ${aiConfigs.length}\n` +
+        `Versión: DevCenter Chat v4`;
+
+    alert(statsMessage);
+}
+
 // Funciones para el modo de respuesta
 function toggleResponseMode() {
     const modes = ['corta', 'media', 'larga'];
@@ -1169,7 +1189,7 @@ function setupEventListeners() {
             }
             
             // Notificar al usuario
-            applyChangesBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ✓ Guardado`;
+            applyChangesBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Guardado`;
             setTimeout(() => {
                 applyChangesBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Aplicar`;
             }, 2000);
@@ -2208,7 +2228,7 @@ function addMessage(type, content, generatedCode = null, save = true, messageId 
     
     // Detectar comandos especiales si es un mensaje de la IA
     if (type === 'ai' && !isError && save) {
-        detectAndModifyPrompt(content);
+        detectAndSaveNotes(content);
     }
     
     if (save) {
@@ -2349,7 +2369,7 @@ function addMessageWithTyping(type, content, generatedCode = null) {
         } else {
             clearInterval(typingInterval);
             // Cuando termine, guardar el mensaje y detectar comandos especiales
-            detectAndModifyPrompt(content);
+            detectAndSaveNotes(content);
             
             // Guardar en el chat
             const chat = getCurrentChat();
@@ -3156,6 +3176,11 @@ async function sendMessage(customPrompt) {
         isGenerating = false;
         handleInputChange();
     }
+
+    // Restaurar el modo original si el agente lo cambió temporalmente
+    if (originalAbility === 'agent') {
+        activeAbility = 'agent';
+    }
 }
 
 // IA y generación de código
@@ -3833,7 +3858,7 @@ ${contextualInfo}
 INFORMACIÓN DEL USUARIO:
 ${userInfoText}
 
-HISTORIAL DE MENSACIÓN:
+HISTORIAL DE MENSAJES:
 ${historyText}
 
 Responde de manera:
@@ -4030,18 +4055,18 @@ const loadingTexts = [
 ];
 
 const loadingTextsImage = [
-    "🎨 Generando imagen",
-    "🖼️ Creando arte con IA",
-    "✨ Dibujando con píxeles",
-    "🌈 Pintando con colores",
-    "🎭 Dando vida a tu idea",
-    "🖌️ Aplicando detalles",
-    "💫 Refinando la imagen",
-    "🎪 Ajustando composición",
-    "🌟 Optimizando calidad",
-    "🎨 Casi lista tu imagen",
-    "✨ Finalizando obra maestra",
-    "🖼️ Puliendo detalles finales",
+    "Generando imagen",
+    "Creando arte con IA",
+    "Dibujando con píxeles",
+    "Pintando con colores",
+    "Dando vida a tu idea",
+    "Aplicando detalles",
+    "Refinando la imagen",
+    "Ajustando composición",
+    "Optimizando calidad",
+    "Casi lista tu imagen",
+    "Finalizando obra maestra",
+    "Puliendo detalles finales",
 ];
 
 function showLoading(isImage = false) {
@@ -4396,7 +4421,7 @@ function renderAiConfigPanelByType() {
             mensajesPanel.style.color = '#fff';
             mensajesPanel.style.boxShadow = '0 2px 16px 0 rgba(59,130,246,0.13)';
             mensajesPanel.innerHTML = `
-                <h4 style="margin-bottom:0.7rem;color:#fff;font-size:1.12em;text-shadow:0 0 8px #0ff1ce;">💬 Configuración de mensajes por chat</h4>
+                <h4 style="margin-bottom:0.7rem;color:#fff;font-size:1.12em;text-shadow:0 0 8px #0ff1ce;">Configuración de mensajes por chat</h4>
                 <div style="display:flex;align-items:center;gap:0.7em;">
                 <label for="maxMessagesPerChat" style="color:#e0e0e0;font-size:1em;font-weight:500;">
                         Máximo de mensajes por chat:
@@ -4673,10 +4698,8 @@ async function listenMessage(messageId) {
             // Restaurar botón a estado original (escuchar)
             button.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <path d="M12 19v4"></path>
-                    <path d="M8 23h8"></path>
+                    <polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
             `;
             button.style.color = '';
@@ -4722,7 +4745,7 @@ async function listenMessage(messageId) {
         utterance.lang = 'es-ES';
         utterance.rate = 1.2;
         utterance.pitch = 1.1;
-        utterance.volume = 1.4;
+        utterance.volume = 1.0;
 
         // Actualizar estado global
         currentSpeakingMessageId = messageId;
@@ -4755,10 +4778,8 @@ async function listenMessage(messageId) {
             currentUtterance = null;
             button.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <path d="M12 19v4"></path>
-                    <path d="M8 23h8"></path>
+                    <polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
             `;
             button.style.color = '';
@@ -4772,10 +4793,8 @@ async function listenMessage(messageId) {
             currentUtterance = null;
             button.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <path d="M12 19v4"></path>
-                    <path d="M8 23h8"></path>
+                    <polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
             `;
             button.style.color = '';
@@ -4804,32 +4823,14 @@ async function listenMessage(messageId) {
 }
 
 // Función global para detener la reproducción de voz
-window.stopSpeech = function (button) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-
-        // 🔹 ocultar stop cuando se cancela manualmente
-        toggleStopButton(button);
-
-
-
-
-
-
-    }
-}
-
-
-
-
-
 // Función global para detener la reproducción de voz
 window.stopSpeech = function () {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+        currentSpeakingMessageId = null;
+        currentUtterance = null;
     }
 }
-
 // Función para recargar/regenerar respuesta - MEJORADA Y OPTIMIZADA
 async function reloadMessage(messageId) {
     const chat = getCurrentChat();
